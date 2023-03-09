@@ -1,0 +1,9 @@
+BPM=60
+Tuning=-2,0,0,0,0,0
+Title=Tab Parse Test
+Artist=Devin Mix
+///
+022|||--
+022|||--
+022|||--
+022|||--
