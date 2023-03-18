@@ -1,3 +1,5 @@
+from RecordingStateManager import RecordingStateManager
+
 from multiprocessing import Pool, SimpleQueue
 
 
@@ -6,7 +8,7 @@ from multiprocessing import Pool, SimpleQueue
 def main():
     # Should contain the classes of all processes to be launched
     # Python treats classes like objects themselves, so just load them up here
-    process_classes = []
+    process_classes = [RecordingStateManager]
 
     # Create dictionary mapping classes of sub-processes to their respective queues
     outgoing_process_queues = {}
