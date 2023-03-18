@@ -44,7 +44,7 @@ class Tab:
                     print("Line too short in {} (\"{}\"), disregarding...")
                 else:
                     line_chord = Chord(line)
-                    chord_len_sec = pow(self.bpm * (1.0 / 60.0), -1.0) * (line_chord.chord_len)
+                    chord_len_sec = pow(self.bpm * (1.0 / 60.0), -1.0) * line_chord.chord_len
                     self.chords.append((line_chord, scan_time, chord_len_sec))
                     scan_time = scan_time + chord_len_sec
 
