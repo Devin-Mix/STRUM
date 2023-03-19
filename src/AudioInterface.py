@@ -13,7 +13,7 @@ class AudioInterface(PyAudio):
             if not ii_device_info["name"] in device_names:
                 device_names.append(ii_device_info["name"])
 
-    # Find device whose name matches device_name with lowest input latency
+    # Find device whose name matches device_name with the lowest input latency
     def get_lowest_latency_instance(self, device_name):
         if not type(device_name) == str:
             raise (TypeError("Invalid argument type for AudioInterface.get_lowest_latency_instance (expected str"
