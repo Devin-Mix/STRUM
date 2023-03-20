@@ -27,6 +27,8 @@ class RecordingStateManager:
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
             if message.type == "Start Recording":
+                # TODO: Tell GUI event broker to start recording and playback (need to know how audio is going to work
+                #  to do this)
                 tab_file = message.content["tab_file"]
                 self.current_tab = Tab(tab_file)
                 self.start_time = time()
@@ -57,7 +59,8 @@ class RecordingStateManager:
             elif message.type == "Get GUI update":
                 # TODO: This may cause playback to end prematurely. Investigate.
                 if False:  # len(next_chords) == 0:
-                    # TODO: Signal that song is over and end recording
+                    # TODO: Tell GUI event broker to end recording and playback (need to know how audio is going to work
+                    #  to do this)
                     pass
                 else:
                     to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords()
