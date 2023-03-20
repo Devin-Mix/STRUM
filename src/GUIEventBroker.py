@@ -6,10 +6,10 @@ from queue import Queue
 class GUIEventBroker:
     def __init__(self, incoming_queue, outgoing_queue):
         if not isinstance(incoming_queue, Queue):
-            raise TypeError("Invalid incoming_queue type for GUIEventBroker (expected managers.BaseProxy, got {})".
+            raise TypeError("Invalid incoming_queue type for GUIEventBroker (expected queue.Queue, got {})".
                             format(type(incoming_queue)))
         elif not isinstance(outgoing_queue, Queue):
-            raise TypeError("Invalid outgoing_queue type for GUIEventBroker (expected managers.BaseProxy, got {})"
+            raise TypeError("Invalid outgoing_queue type for GUIEventBroker (expected queue.Queue, got {})"
                             .format(type(incoming_queue)))
         else:
             self.incoming_queue = incoming_queue
@@ -23,7 +23,7 @@ class GUIEventBroker:
 
             pygame.init()
             self.screen = pygame.display.set_mode(self.config["resolution"])
-            print("GUI Event Broker init complete")
+            pygame.display.set_caption("S.T.R.U.M.")
 
     def handle(self):
         if not self.incoming_queue.empty():

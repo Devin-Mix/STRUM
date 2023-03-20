@@ -1,11 +1,14 @@
+from ConfigurationStateManager import ConfigurationStateManager
 from GUIEventBroker import GUIEventBroker
 from RecordingStateManager import RecordingStateManager
 from Message import Message
+from pygame import QUIT
 from queue import Queue
 
 # Should contain the classes of all processes to be launched
 # Python treats classes like objects themselves, so just load them up here
-process_classes = {"GUIEventBroker":GUIEventBroker,
+process_classes = {"ConfigurationStateManager":ConfigurationStateManager,
+                   "GUIEventBroker":GUIEventBroker,
                    "RecordingStateManager":RecordingStateManager}
 
 # Main function of the application state manager
@@ -34,9 +37,9 @@ def main():
     #TODO: A message should be queued here for the title screen state manager in order to start the application's interaction process
     # For now, this can be used for debugging
     incoming_process_queues[GUIEventBroker].put(Message(target="RecordingStateManager",
-                                                               source="GUIEventBroker", # A little lying never hurt
-                                                               message_type="Start Recording",
-                                                               content=None))
+                                                        source="GUIEventBroker", # A little lying never hurt
+                                                        message_type="Start Recording",
+                                                        content={"tab_file":"../test/TabParseTest.txt"}))
 
     # Main loop of the ASM. Should involve checking individual processes' queues and responding to/forwarding messages
     while True:
@@ -45,6 +48,10 @@ def main():
             while not incoming_process_queues[class_needing_check].empty():
                 # Get the message at the head of the queue
                 message = incoming_process_queues[class_needing_check].get()
+                if message.type == "Get GUI update":
+                    for event in message.content:
+                        if event.type == QUIT:
+                            exit()
                 # Pass along and handle the message itself here
                 outgoing_process_queues[process_classes[message.target]].put(message)
                 process_objects[process_classes[message.target]].handle()
