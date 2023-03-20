@@ -71,7 +71,7 @@ class RecordingStateManager:
                     self.fading_chords = [ii.update_time(self.now_time) for ii in self.fading_chords]
                     self.fading_chords = [ii for ii in self.fading_chords if ii.is_alive()]
                     to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords() + \
-                              self.fading_chords
+                        self.fading_chords
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
                                                     message_type="render",
