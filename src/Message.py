@@ -3,6 +3,7 @@
 # a circular dependency issue.
 process_class_keys = ["ConfigurationStateManager", "GUIEventBroker", "RecordingStateManager"]
 
+
 # Defines messages to be exchanged between processes
 class Message:
     def __init__(self, target, source, message_type, content):

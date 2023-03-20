@@ -1,6 +1,7 @@
 from Message import Message
 from queue import Queue
 
+
 class ConfigurationStateManager:
     def __init__(self, incoming_queue, outgoing_queue):
         if not isinstance(incoming_queue, Queue):

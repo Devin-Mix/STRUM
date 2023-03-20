@@ -1,4 +1,5 @@
-import pygame, Renderables
+import pygame
+import Renderables
 from Message import Message
 from queue import Queue
 

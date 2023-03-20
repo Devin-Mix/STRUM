@@ -7,9 +7,10 @@ from queue import Queue
 
 # Should contain the classes of all processes to be launched
 # Python treats classes like objects themselves, so just load them up here
-process_classes = {"ConfigurationStateManager":ConfigurationStateManager,
-                   "GUIEventBroker":GUIEventBroker,
-                   "RecordingStateManager":RecordingStateManager}
+process_classes = {"ConfigurationStateManager": ConfigurationStateManager,
+                   "GUIEventBroker": GUIEventBroker,
+                   "RecordingStateManager": RecordingStateManager}
+
 
 # Main function of the application state manager
 # All functionality (launching state-specific managers/GUI event broker, querying messages, etc.) should go here
@@ -34,12 +35,12 @@ def main():
     # All processes are now launched. The "processes" dictionary can be queried for the results of a process
     # Values of the "processes" dictionary are multiprocessing.pool.AsyncResult objects
 
-    #TODO: A message should be queued here for the title screen state manager in order to start the application's interaction process
-    # For now, this can be used for debugging
+    # TODO: A message should be queued here for the title screen state manager in order to start the application's
+    #  interaction process. For now, this can be used for debugging.
     incoming_process_queues[GUIEventBroker].put(Message(target="RecordingStateManager",
-                                                        source="GUIEventBroker", # A little lying never hurt
+                                                        source="GUIEventBroker",  # A little lying never hurt
                                                         message_type="Start Recording",
-                                                        content={"tab_file":"../test/TabParseTest.txt"}))
+                                                        content={"tab_file": "../test/TabParseTest.txt"}))
 
     # Main loop of the ASM. Should involve checking individual processes' queues and responding to/forwarding messages
     while True:
@@ -55,6 +56,7 @@ def main():
                 # Pass along and handle the message itself here
                 outgoing_process_queues[process_classes[message.target]].put(message)
                 process_objects[process_classes[message.target]].handle()
+
 
 # Automatically run main() if script is run on its own (intended behavior)
 if __name__ == "__main__":

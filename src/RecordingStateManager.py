@@ -4,6 +4,7 @@ from Renderables import *
 from Tab import Tab
 from time import time
 
+
 class RecordingStateManager:
     def __init__(self, incoming_queue, outgoing_queue):
         if not isinstance(incoming_queue, Queue):
@@ -54,9 +55,9 @@ class RecordingStateManager:
                                                 message_type="render",
                                                 content=to_draw))
             elif message.type == "Get GUI update":
-                #TODO: This may cause playback to end prematurely. Investigate.
-                if False: #len(next_chords) == 0:
-                    #TODO: Signal that song is over and end recording
+                # TODO: This may cause playback to end prematurely. Investigate.
+                if False:  # len(next_chords) == 0:
+                    # TODO: Signal that song is over and end recording
                     pass
                 else:
                     to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords()
@@ -94,7 +95,8 @@ class RecordingStateManager:
         res = []
         for ii in next_chords:
             remaining_fall_time = ii[1] - now_time
-            y_offset = (95 - (25 * self.recording_vertical_scale)) - ((90 - (25 * self.recording_vertical_scale)) * remaining_fall_time / self.recording_fall_time)
+            y_offset = (95 - (25 * self.recording_vertical_scale)) - ((90 - (25 * self.recording_vertical_scale)) *
+                                                                      remaining_fall_time / self.recording_fall_time)
             for jj in range(6):
                 res.append(StringLine(95, y_offset + jj * 5 * self.recording_vertical_scale))
             for string_number in range(len(ii[0].play_string)):
@@ -104,5 +106,6 @@ class RecordingStateManager:
                     for kk in range(fret_number):
                         fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
                     fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
-                    res.append(FretMark(fret_offset, y_offset + (5 - string_number) * 5 * self.recording_vertical_scale))
+                    res.append(FretMark(fret_offset, y_offset + (5 - string_number) * 5 *
+                                        self.recording_vertical_scale))
         return res

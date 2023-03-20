@@ -15,8 +15,8 @@ class StringLine:
     # Expects a resolution in the format (x_resolution, y_resolution)
     def draw(self, screen):
         if not type(screen) == pygame.surface.Surface:
-            raise TypeError("Unexpected argument type for Renderables.StringLine.draw() (Expected "
-                                "pygame.surface.Surface, got {})".format(type(screen)))
+            raise TypeError("Unexpected argument type for Renderables.StringLine.draw() (Expected pygame.surface."
+                            "Surface, got {})".format(type(screen)))
         else:
             start_x = ((100.0 - self.width_percent) / 200) * screen.get_width()
             end_x = screen.get_width() - start_x
@@ -27,6 +27,7 @@ class StringLine:
                              (start_x, y),
                              (end_x, y))
             screen.blit(s, (0, 0))
+
 
 class FretLine:
     def __init__(self, x_percent, height_percent):
@@ -42,7 +43,7 @@ class FretLine:
     def draw(self, screen):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FretLine.draw() (Expected pygame.surface.Surface,"
-                                " got {})".format(type(screen)))
+                            " got {})".format(type(screen)))
         else:
             start_y = (95.0 - self.height_percent) * screen.get_height() / 100
             end_y = 0.95 * screen.get_height()
@@ -51,6 +52,7 @@ class FretLine:
                              "white",
                              (x, start_y),
                              (x, end_y))
+
 
 class FretMark:
     def __init__(self, x_percent, y_percent):
