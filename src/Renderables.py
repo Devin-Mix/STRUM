@@ -1,4 +1,5 @@
 import pygame
+from time import time
 
 
 class StringLine:
@@ -59,11 +60,11 @@ class FretMark:
         if 0.0 <= x_percent <= 100.0:
             self.x_percent = x_percent
         else:
-            raise ValueError("x_percent out of bounds for FretLine renderable ({})".format(x_percent))
+            raise ValueError("x_percent out of bounds for FretMark renderable ({})".format(x_percent))
         if 0.0 <= y_percent <= 100.0:
             self.y_percent = y_percent
         else:
-            raise ValueError("height_percent out of bounds for FretLine renderable ({})".format(y_percent))
+            raise ValueError("height_percent out of bounds for FretMark renderable ({})".format(y_percent))
 
     def draw(self, screen):
         if not type(screen) == pygame.surface.Surface:
@@ -78,6 +79,37 @@ class FretMark:
                                (x, y),
                                0.01 * screen.get_width())
             screen.blit(s, (0, 0))
+
+
+class FadingFretMark:
+    def __init__(self, x_percent, y_percent, birth_time, time_to_live):
+        if 0.0 <= x_percent <= 100.0:
+            self.x_percent = x_percent
+        else:
+            raise ValueError("x_percent out of bounds for FretMark renderable ({})".format(x_percent))
+        if 0.0 <= y_percent <= 100.0:
+            self.y_percent = y_percent
+        else:
+            raise ValueError("height_percent out of bounds for FretMark renderable ({})".format(y_percent))
+        self.birth_time = birth_time
+        self.time_to_live = time_to_live
+
+    def draw(self, screen):
+        if not type(screen) == pygame.surface.Surface:
+            raise TypeError("Unexpected argument type for Renderables.FretMark.draw() (Expected pygame.surface.Surface,"
+                            " got {})".format(type(screen)))
+        else:
+            x = self.x_percent * screen.get_width() / 100.0
+            y = self.y_percent * screen.get_height() / 100.0
+            s = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+            pygame.draw.circle(s,
+                               (255, 255, 255, 255 * (1 - ((time() - self.birth_time)/self.time_to_live))),
+                               (x, y),
+                               0.01 * screen.get_width())
+            screen.blit(s, (0, 0))
+
+    def is_dead(self):
+        return (1 - ((time() - self.birth_time)/self.time_to_live)) > 0
 
 
 # Add available classes here for indexing by other modules
