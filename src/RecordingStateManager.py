@@ -22,6 +22,9 @@ class RecordingStateManager:
             self.recording_vertical_scale = None
             self.start_time = None
             self.final_fret_offset = None
+            self.last_render_time = None
+            self.fading_chords = []
+            self.now_time = None
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -63,11 +66,17 @@ class RecordingStateManager:
                     #  to do this)
                     pass
                 else:
-                    to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords()
+                    self.now_time = time() - self.start_time
+                    self.fading_chords = self.fading_chords + self.get_fading_chords()
+                    self.fading_chords = [ii.update_time(self.now_time) for ii in self.fading_chords]
+                    self.fading_chords = [ii for ii in self.fading_chords if ii.is_alive()]
+                    to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords() + \
+                              self.fading_chords
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
                                                     message_type="render",
                                                     content=to_draw))
+                    self.last_render_time = self.now_time
 
     def get_string_lines(self):
         res = []
@@ -92,12 +101,11 @@ class RecordingStateManager:
         return res
 
     def get_falling_chords(self):
-        now_time = time() - self.start_time
-        next_chords = [ii for ii in self.current_tab.get_next_chords(now_time)
-                       if ii[1] < now_time + self.recording_fall_time]
+        next_chords = [ii for ii in self.current_tab.get_next_chords(self.now_time)
+                       if ii[1] < self.now_time + self.recording_fall_time]
         res = []
         for ii in next_chords:
-            remaining_fall_time = ii[1] - now_time
+            remaining_fall_time = ii[1] - self.now_time
             y_offset = (95 - (25 * self.recording_vertical_scale)) - ((90 - (25 * self.recording_vertical_scale)) *
                                                                       remaining_fall_time / self.recording_fall_time)
             for jj in range(6):
@@ -111,4 +119,27 @@ class RecordingStateManager:
                     fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
                     res.append(FretMark(fret_offset, y_offset + (5 - string_number) * 5 *
                                         self.recording_vertical_scale))
+        return res
+
+    def get_fading_chords(self):
+        res = []
+        if self.last_render_time is not None:
+            last_chords = self.current_tab.get_next_chords(self.last_render_time)
+            now_chords = self.current_tab.get_next_chords(self.now_time)
+            if len(now_chords) > 0 and now_chords[0] in last_chords:
+                fade_chords = last_chords[:last_chords.index(now_chords[0])]
+            else:
+                fade_chords = last_chords
+            y_offset = 95 - (25 * self.recording_vertical_scale)
+            for fade_chord in fade_chords:
+                for string_number in range(len(fade_chord[0].play_string)):
+                    if fade_chord[0].play_string[string_number]:
+                        fret_number = fade_chord[0].string_fret[string_number]
+                        fret_offset = 0.0
+                        for kk in range(fret_number):
+                            fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
+                        fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
+                        res.append(FadingFretMark(fret_offset,
+                                                  y_offset + (5 - string_number) * 5 * self.recording_vertical_scale,
+                                                  fade_chord[1], fade_chord[2], self.now_time))
         return res
