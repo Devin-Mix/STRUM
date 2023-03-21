@@ -5,9 +5,12 @@ import wave
 from math import floor
 from Message import Message
 from queue import Queue
+from Tab import Tab
 from time import time
 
+
 class GUIEventBroker:
+
     def __init__(self, incoming_queue, outgoing_queue):
         if not isinstance(incoming_queue, Queue):
             raise TypeError("Invalid incoming_queue type for GUIEventBroker (expected queue.Queue, got {})".
@@ -37,6 +40,12 @@ class GUIEventBroker:
             self.playback_pos = None
             self.playback_frame_num_bytes = None
             self.play_to_pos = None
+            self.playback_format = None
+            self.play_tone = None
+            self.play_song = None
+            self.tab_object = None
+            self.playback_num_channels = None
+            self.playback_framerate = None
 
             pygame.init()
             self.screen = pygame.display.set_mode(self.config["resolution"])
@@ -71,19 +80,28 @@ class GUIEventBroker:
                 self.average_frame_time = sum(self.frame_lengths) / len(self.frame_lengths)
                 self.last_frame_time = self.this_frame_time
             elif message.type == "Start playback":
-                self.playback_file_name = message.content
+                self.playback_file_name = message.content["song_file"]
+                self.play_song = message.content["play_song"]
+                self.play_tone = message.content["play_tone"]
+                self.tab_object = message.content["tab_object"]
                 self.playback_file = wave.open(self.playback_file_name, "rb")
                 self.playback_frames = self.playback_file.readframes(self.playback_file.getnframes())
-                self.playback_frame_duration = 1.0 / float(self.playback_file.getframerate())
+                self.playback_framerate = self.playback_file.getframerate()
+                self.playback_frame_duration = 1.0 / float(self.playback_framerate)
                 self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
+                self.playback_format = self.p.get_format_from_width(self.playback_file.getsampwidth())
+                self.playback_num_channels = self.playback_file.getnchannels()
+                if self.play_tone:
+                    self.playback_frames = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
+                                                                         self.playback_num_channels)
+                self.playback_pos = 0
+                self.play_to_pos = 0
                 self.out_stream = self.p.open(format=self.p.get_format_from_width(self.playback_file.getsampwidth()),
-                                              channels=self.playback_file.getnchannels(),
+                                              channels=self.playback_num_channels,
                                               rate=self.playback_file.getframerate(),
                                               output=True,
                                               stream_callback=self.playback_callback)
                 self.playback_file.close()
-                self.playback_pos = 0
-                self.play_to_pos = 0
             elif message.type == "Update playback":
                 play_to_time = message.content
                 self.play_to_pos = floor(play_to_time / self.playback_frame_duration) * self.playback_frame_num_bytes
