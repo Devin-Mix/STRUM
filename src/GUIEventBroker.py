@@ -77,9 +77,8 @@ class GUIEventBroker:
             elif message.type == "Update playback":
                 play_to_time = message.content
                 play_to_pos = floor(play_to_time / self.playback_frame_duration)
-                if play_to_pos > 0:
-                    while self.playback_file.tell() <= play_to_pos:
-                        self.out_stream.write(self.playback_file.readframes(pow(2, 0)))
+                to_load = play_to_pos - self.playback_file.tell()
+                self.out_stream.write(self.playback_file.readframes(to_load))
             elif message.type == "Quit":
                 self.quit()
 
