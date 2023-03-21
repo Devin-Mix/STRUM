@@ -33,6 +33,10 @@ class GUIEventBroker:
             self.playback_file_name = None
             self.out_stream = None
             self.playback_frame_duration = None
+            self.playback_frames = None
+            self.playback_pos = None
+            self.playback_frame_num_bytes = None
+            self.play_to_pos = None
 
             pygame.init()
             self.screen = pygame.display.set_mode(self.config["resolution"])
@@ -69,23 +73,37 @@ class GUIEventBroker:
             elif message.type == "Start playback":
                 self.playback_file_name = message.content
                 self.playback_file = wave.open(self.playback_file_name, "rb")
+                self.playback_frames = self.playback_file.readframes(self.playback_file.getnframes())
                 self.playback_frame_duration = 1.0 / float(self.playback_file.getframerate())
+                self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
                 self.out_stream = self.p.open(format=self.p.get_format_from_width(self.playback_file.getsampwidth()),
                                               channels=self.playback_file.getnchannels(),
                                               rate=self.playback_file.getframerate(),
-                                              output=True)
+                                              output=True,
+                                              stream_callback=self.playback_callback)
+                self.playback_file.close()
+                self.playback_pos = 0
+                self.play_to_pos = 0
             elif message.type == "Update playback":
                 play_to_time = message.content
-                play_to_pos = floor(play_to_time / self.playback_frame_duration)
-                to_load = play_to_pos - self.playback_file.tell()
-                self.out_stream.write(self.playback_file.readframes(to_load))
+                self.play_to_pos = floor(play_to_time / self.playback_frame_duration) * self.playback_frame_num_bytes
+                positional_lag = self.playback_pos - self.play_to_pos
+                # Resync if audio is drifting too far outside of tolerance
+                if abs(positional_lag) > 8000:
+                    self.playback_pos = self.play_to_pos
             elif message.type == "Quit":
                 self.quit()
 
+    def playback_callback(self, in_data, frame_count,  time_info, status):
+        bytes_count = frame_count * self.playback_frame_num_bytes
+        if abs(self.playback_pos - self.play_to_pos) > 8000:
+            self.playback_pos = self.play_to_pos
+        playback_buffer = self.playback_frames[self.playback_pos:min(self.playback_pos + bytes_count, len(self.playback_frames))]
+        self.playback_pos = self.playback_pos + bytes_count
+        return playback_buffer, pyaudio.paContinue
+
     def quit(self):
         pygame.quit()
-        if self.playback_file is not None:
-            self.playback_file.close()
         if self.out_stream is not None:
             self.out_stream.close()
         self.p.terminate()

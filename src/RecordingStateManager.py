@@ -25,6 +25,8 @@ class RecordingStateManager:
             self.last_render_time = None
             self.fading_chords = []
             self.now_time = None
+            self.playback_started = None
+            self.playback_start_time = None
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -35,10 +37,7 @@ class RecordingStateManager:
                 tab_file = message.content["tab_file"]
                 self.current_tab = Tab(tab_file)
                 self.start_time = time()
-                self.outgoing_queue.put(Message(target="GUIEventBroker",
-                                                source="RecordingStateManager",
-                                                message_type="Start playback",
-                                                content=self.current_tab.song_file))
+                self.playback_started = False
                 self.outgoing_queue.put(Message(target="ConfigurationStateManager",
                                                 source="RecordingStateManager",
                                                 message_type="Get fret count",
@@ -73,15 +72,24 @@ class RecordingStateManager:
                     pass
                 else:
                     self.now_time = time() - self.start_time
+                    fading_chords = self.get_fading_chords()
+                    if not self.playback_started and not len(fading_chords) == 0:
+                        self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                        source="RecordingStateManager",
+                                                        message_type="Start playback",
+                                                        content=self.current_tab.song_file))
+                        self.playback_started = True
+                        self.playback_start_time = self.now_time
                     self.fading_chords = self.fading_chords + self.get_fading_chords()
                     self.fading_chords = [ii.update_time(self.now_time) for ii in self.fading_chords]
                     self.fading_chords = [ii for ii in self.fading_chords if ii.is_alive()]
                     to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords() + \
                         self.fading_chords
-                    self.outgoing_queue.put(Message(target="GUIEventBroker",
-                                                    source="RecordingStateManager",
-                                                    message_type="Update playback",
-                                                    content=self.now_time))
+                    if self.playback_started:
+                        self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                        source="RecordingStateManager",
+                                                        message_type="Update playback",
+                                                        content=self.now_time - self.playback_start_time))
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
                                                     message_type="render",

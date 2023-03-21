@@ -43,7 +43,7 @@ class Tab:
                           format(file_to_open, line))
             else:
                 if len(line) < 6:
-                    print("Line too short in {} (\"{}\"), disregarding...")
+                    print("Line too short in {} (\"{}\"), disregarding...".format(file_to_open, line))
                 else:
                     line_chord = Chord(line)
                     chord_len_sec = pow(self.bpm * (1.0 / 60.0), -1.0) * line_chord.chord_len
