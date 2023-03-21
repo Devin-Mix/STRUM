@@ -14,11 +14,14 @@ class Message:
                             "Get recording fall time",
                             "Get recording vertical scale",
                             "Get resolution",
+                            "Quit",
                             "Recording fall time",
                             "Recording vertical scale",
                             "render",
                             "Resolution",
-                            "Start Recording"]
+                            "Start playback",
+                            "Start Recording",
+                            "Update playback"]
 
         # Type checking ensures that every message has a type
         if message_type in self.valid_types:

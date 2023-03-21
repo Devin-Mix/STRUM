@@ -49,10 +49,6 @@ def main():
             while not incoming_process_queues[class_needing_check].empty():
                 # Get the message at the head of the queue
                 message = incoming_process_queues[class_needing_check].get()
-                if message.type == "Get GUI update":
-                    for event in message.content:
-                        if event.type == QUIT:
-                            exit()
                 # Pass along and handle the message itself here
                 outgoing_process_queues[process_classes[message.target]].put(message)
                 process_objects[process_classes[message.target]].handle()

@@ -33,7 +33,7 @@ class Tab:
                     except ValueError:
                         print("ValueError setting tempo for {} (\"{}\"), discarding tempo".format(file_to_open, line))
                 elif len(line) > 10 and line[0:10] == "Song file=":
-                    self.song_file = line.split("Song file=")
+                    self.song_file = str(line.split("Song file=")[1])
                 elif len(line) > 6 and line[0:6] == "Title=":
                     self.title = line.split("Title=")[1]
                 elif len(line) > 7 and line[0:7] == "Artist=":

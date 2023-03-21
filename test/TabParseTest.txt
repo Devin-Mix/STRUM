@@ -2,6 +2,7 @@ BPM=60
 Tuning=-2,0,0,0,0,0
 Title=Tab Parse Test
 Artist=Devin Mix
+Song file=../test/Wendy_Clear.wav
 ///
 022|||--
 022|||--

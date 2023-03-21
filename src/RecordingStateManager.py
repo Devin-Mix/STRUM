@@ -35,6 +35,10 @@ class RecordingStateManager:
                 tab_file = message.content["tab_file"]
                 self.current_tab = Tab(tab_file)
                 self.start_time = time()
+                self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                source="RecordingStateManager",
+                                                message_type="Start playback",
+                                                content=self.current_tab.song_file))
                 self.outgoing_queue.put(Message(target="ConfigurationStateManager",
                                                 source="RecordingStateManager",
                                                 message_type="Get fret count",
@@ -60,10 +64,12 @@ class RecordingStateManager:
                                                 message_type="render",
                                                 content=to_draw))
             elif message.type == "Get GUI update":
-                # TODO: This may cause playback to end prematurely. Investigate.
-                if False:  # len(next_chords) == 0:
-                    # TODO: Tell GUI event broker to end recording and playback (need to know how audio is going to work
-                    #  to do this)
+                if self.now_time is not None and self.now_time >= self.current_tab.get_next_chords(0.0)[-1][1] + \
+                        self.current_tab.get_next_chords(0.0)[-1][2]:
+                    self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                    source="RecordingStateManager",
+                                                    message_type="Quit",
+                                                    content=None))
                     pass
                 else:
                     self.now_time = time() - self.start_time
@@ -72,6 +78,10 @@ class RecordingStateManager:
                     self.fading_chords = [ii for ii in self.fading_chords if ii.is_alive()]
                     to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords() + \
                         self.fading_chords
+                    self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                    source="RecordingStateManager",
+                                                    message_type="Update playback",
+                                                    content=self.now_time))
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
                                                     message_type="render",
