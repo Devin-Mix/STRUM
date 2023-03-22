@@ -5,7 +5,6 @@ import wave
 from math import floor
 from Message import Message
 from queue import Queue
-from Tab import Tab
 from time import time
 
 
@@ -98,7 +97,7 @@ class GUIEventBroker:
                 self.play_to_pos = 0
                 self.out_stream = self.p.open(format=self.p.get_format_from_width(self.playback_file.getsampwidth()),
                                               channels=self.playback_num_channels,
-                                              rate=self.playback_file.getframerate(),
+                                              rate=self.playback_framerate,
                                               output=True,
                                               stream_callback=self.playback_callback)
                 self.playback_file.close()
@@ -116,7 +115,8 @@ class GUIEventBroker:
         bytes_count = frame_count * self.playback_frame_num_bytes
         if abs(self.playback_pos - self.play_to_pos) > 8000:
             self.playback_pos = self.play_to_pos
-        playback_buffer = self.playback_frames[self.playback_pos:min(self.playback_pos + bytes_count, len(self.playback_frames))]
+        playback_buffer = self.playback_frames[self.playback_pos:min(self.playback_pos + bytes_count,
+                                                                     len(self.playback_frames))]
         self.playback_pos = self.playback_pos + bytes_count
         return playback_buffer, pyaudio.paContinue
 

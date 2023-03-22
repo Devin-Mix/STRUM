@@ -1,3 +1,4 @@
+from math import floor
 import numpy as np
 
 
@@ -81,10 +82,13 @@ class Tab:
 
     def get_tone_wave(self, sample_rate, pyaudio_data_type, num_channels=2):
         output_wave = None
+        last_output_chunk_num_samples = None
+        output_chunk_count = 0
         for group in self.chords:
             output_chunk = None
             chord = group[0]
             chord_len = group[2]
+            samples = None
             num_active_strings = chord.play_string.count(True)
             for i in range(6):
                 if chord.play_string[i]:
@@ -92,6 +96,7 @@ class Tab:
                     # Big credit to
                     # https://stackoverflow.com/questions/48043004/how-do-i-generate-a-sine-wave-using-python
                     samples = np.arange(chord_len * sample_rate) / sample_rate
+                    last_output_chunk_num_samples = np.size(samples)
                     if output_chunk is None:
                         output_chunk = np.sin(2 * np.pi * string_frequency * samples) / num_active_strings
                     else:
@@ -99,15 +104,62 @@ class Tab:
                                        (np.sin(2 * np.pi * string_frequency * samples) / num_active_strings)
                 else:
                     continue
-            for i in range(num_channels):
-                if output_chunk is None and output_wave is None:
-                    output_wave = np.zeros(chord_len * sample_rate)
-                elif output_chunk is None and output_wave is not None:
-                    output_wave = np.concatenate([output_wave, np.zeros(chord_len * sample_rate)])
-                elif output_chunk is not None and output_wave is None:
-                    output_wave = output_chunk
-                else:
-                    output_wave = np.concatenate([output_wave, output_chunk])
+
+            if output_wave is not None:
+                mix_chunk = None
+                count_samples_to_mix = floor(-last_output_chunk_num_samples / 4)
+                for i in range(6):
+                    if chord.play_string[i]:
+                        string_frequency = self.midi_number_to_frequency(i, chord.string_fret[i])
+                        # Big credit to
+                        # https://stackoverflow.com/questions/48043004/how-do-i-generate-a-sine-wave-using-python
+                        mix_samples = np.arange(count_samples_to_mix, 0) / sample_rate
+                        if mix_chunk is None:
+                            mix_chunk = np.sin(2 * np.pi * string_frequency * mix_samples) / num_active_strings
+                        else:
+                            mix_chunk = mix_chunk + \
+                                           (np.sin(2 * np.pi * string_frequency * mix_samples) / num_active_strings)
+                    else:
+                        continue
+                output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * \
+                    np.arange(1, 0, 1 / count_samples_to_mix)
+                mix_chunk = mix_chunk * np.arange(0, 1, abs(1 / count_samples_to_mix))
+                output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] + mix_chunk
+                last_output_chunk_num_samples = np.size(samples)
+            else:
+                last_output_chunk_num_samples = np.size(samples)
+
+            if output_chunk is None and output_wave is None:
+                output_wave = np.zeros(chord_len * sample_rate)
+            elif output_chunk is None and output_wave is not None:
+                output_wave = np.concatenate([output_wave, np.zeros(chord_len * sample_rate)])
+            elif output_chunk is not None and output_wave is None:
+                output_wave = output_chunk
+            else:
+                output_wave = np.concatenate([output_wave, output_chunk])
+
+            output_chunk_count = output_chunk_count + 1
+
+        count_samples_to_mix = floor(-last_output_chunk_num_samples / 4)
+        output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * np.arange(1, 0,
+                                                                                            1 / count_samples_to_mix)
+
+        # with wave.open("output_tone.wav".format(output_chunk_count), "wb") as file:
+        #     file.setnchannels(1)
+        #     file.setsampwidth(np.dtype(pa_data_type_to_np(pyaudio_data_type)).itemsize)
+        #     file.setframerate(sample_rate)
+        #     np_data_type = pa_data_type_to_np(pyaudio_data_type)
+        #     print("Tone wave bytes per sample: {}".format(np.dtype(np_data_type).itemsize))
+        #     if np_data_type is np.uint8:
+        #         scaler = np.iinfo(np_data_type).max
+        #     else:
+        #         scaler = min(abs(np.iinfo(np_data_type).min), abs(np.iinfo(np_data_type).max))
+        #     file.writeframes(pa_data_type_to_np(pyaudio_data_type)(output_wave * scaler).tobytes())
+
+        to_flatten = []
+        for i in range(num_channels):
+            to_flatten.append(output_wave)
+        output_wave = np.array(to_flatten).T.flatten()
 
         np_data_type = pa_data_type_to_np(pyaudio_data_type)
         if np_data_type is np.uint8:
