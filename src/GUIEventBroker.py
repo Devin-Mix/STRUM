@@ -4,7 +4,9 @@ import Renderables
 import wave
 from math import floor
 from Message import Message
+import numpy as np
 from queue import Queue
+from Tab import pa_data_type_to_np
 from time import time
 
 
@@ -90,9 +92,13 @@ class GUIEventBroker:
                 self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
                 self.playback_format = self.p.get_format_from_width(self.playback_file.getsampwidth())
                 self.playback_num_channels = self.playback_file.getnchannels()
-                if self.play_tone:
-                    self.playback_frames = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
-                                                                         self.playback_num_channels)
+                self.tone_wave = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
+                                                               self.playback_num_channels)
+                if not self.play_song and self.play_tone:
+                    self.playback_frames = self.tone_wave
+                elif self.play_song and self.play_tone:
+                    self.mix_tone(0.5)
+
                 self.playback_pos = 0
                 self.play_to_pos = 0
                 self.out_stream = self.p.open(format=self.p.get_format_from_width(self.playback_file.getsampwidth()),
@@ -126,3 +132,9 @@ class GUIEventBroker:
             self.out_stream.close()
         self.p.terminate()
         exit()
+
+    def mix_tone(self, song_volume):
+        signal_1 = np.frombuffer(self.playback_frames, pa_data_type_to_np(self.playback_format)).copy()
+        signal_2 = np.frombuffer(self.tone_wave, pa_data_type_to_np(self.playback_format))
+        signal_1[:np.size(signal_2)] = (signal_1[:np.size(signal_2)] * song_volume) + (signal_2 * (1 - song_volume))
+        self.playback_frames = pa_data_type_to_np(self.playback_format)(signal_1).tobytes()

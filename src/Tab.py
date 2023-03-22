@@ -130,7 +130,7 @@ class Tab:
                 last_output_chunk_num_samples = np.size(samples)
 
             if output_chunk is None and output_wave is None:
-                output_wave = np.zeros(chord_len * sample_rate)
+                output_wave = np.zeros(floor(chord_len * sample_rate))
             elif output_chunk is None and output_wave is not None:
                 output_wave = np.concatenate([output_wave, np.zeros(chord_len * sample_rate)])
             elif output_chunk is not None and output_wave is None:
