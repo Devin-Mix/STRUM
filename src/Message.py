@@ -19,8 +19,11 @@ class Message:
                             "Recording vertical scale",
                             "render",
                             "Resolution",
+                            "Send recording",
+                            "Start analysis",
                             "Start playback",
-                            "Start Recording",
+                            "Start recording",
+                            "Start recording session",
                             "Update playback"]
 
         # Type checking ensures that every message has a type

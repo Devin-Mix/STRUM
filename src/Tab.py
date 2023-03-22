@@ -123,8 +123,9 @@ class Tab:
                         continue
                 output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * \
                     np.arange(1, 0, 1 / count_samples_to_mix)
-                mix_chunk = mix_chunk * np.arange(0, 1, abs(1 / count_samples_to_mix))
-                output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] + mix_chunk
+                if mix_chunk is not None:
+                    mix_chunk = mix_chunk * np.arange(0, 1, abs(1 / count_samples_to_mix))
+                    output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] + mix_chunk
                 last_output_chunk_num_samples = np.size(samples)
             else:
                 last_output_chunk_num_samples = np.size(samples)
@@ -132,7 +133,7 @@ class Tab:
             if output_chunk is None and output_wave is None:
                 output_wave = np.zeros(floor(chord_len * sample_rate))
             elif output_chunk is None and output_wave is not None:
-                output_wave = np.concatenate([output_wave, np.zeros(chord_len * sample_rate)])
+                output_wave = np.concatenate([output_wave, np.zeros(floor(chord_len * sample_rate))])
             elif output_chunk is not None and output_wave is None:
                 output_wave = output_chunk
             else:

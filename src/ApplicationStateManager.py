@@ -39,7 +39,7 @@ def main():
     #  interaction process. For now, this can be used for debugging.
     incoming_process_queues[GUIEventBroker].put(Message(target="RecordingStateManager",
                                                         source="GUIEventBroker",  # A little lying never hurt
-                                                        message_type="Start Recording",
+                                                        message_type="Start recording session",
                                                         content={"tab_file": "../test/TabParseTest.txt"}))
 
     # Main loop of the ASM. Should involve checking individual processes' queues and responding to/forwarding messages

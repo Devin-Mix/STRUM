@@ -47,6 +47,12 @@ class GUIEventBroker:
             self.tab_object = None
             self.playback_num_channels = None
             self.playback_framerate = None
+            self.tone_wave = None
+            self.in_stream = None
+            self.recording_data = None
+            self.out_stream_done = None
+            self.sending_recording = None
+            self.input_latency = None
 
             pygame.init()
             self.screen = pygame.display.set_mode(self.config["resolution"])
@@ -101,12 +107,22 @@ class GUIEventBroker:
 
                 self.playback_pos = 0
                 self.play_to_pos = 0
+                self.out_stream_done = False
+                self.sending_recording = False
                 self.out_stream = self.p.open(format=self.p.get_format_from_width(self.playback_file.getsampwidth()),
                                               channels=self.playback_num_channels,
                                               rate=self.playback_framerate,
                                               output=True,
                                               stream_callback=self.playback_callback)
                 self.playback_file.close()
+            elif message.type == "Start recording":
+                # Recording should only start after playback has begun in order to use playback parameters
+                self.in_stream = self.p.open(channels=2,
+                                             input=True,
+                                             stream_callback=self.recording_callback,
+                                             rate=self.playback_framerate,
+                                             format=self.playback_format)
+                self.input_latency = self.in_stream.get_input_latency()
             elif message.type == "Update playback":
                 play_to_time = message.content
                 self.play_to_pos = floor(play_to_time / self.playback_frame_duration) * self.playback_frame_num_bytes
@@ -114,22 +130,53 @@ class GUIEventBroker:
                 # Resync if audio is drifting too far outside of tolerance
                 if abs(positional_lag) > 8000:
                     self.playback_pos = self.play_to_pos
+            elif message.type == "Send recording":
+                self.sending_recording = True
+                while not self.out_stream_done:
+                    pass
+                self.sending_recording = None
+                self.out_stream.close()
+                self.out_stream = None
+                self.in_stream.close()
+                self.in_stream = None
+                self.outgoing_queue.put(Message(target="AnalysisStateManager",
+                                                source="GUIEventBroker",
+                                                message_type="Start analysis",
+                                                content={"latency": self.input_latency,
+                                                         "data": self.recording_data}))
+                self.input_latency = None
+                self.recording_data = None
+                self.quit()
             elif message.type == "Quit":
                 self.quit()
 
     def playback_callback(self, in_data, frame_count,  time_info, status):
+        if self.sending_recording:
+            self.out_stream_done = True
+            return bytes(), pyaudio.paComplete
         bytes_count = frame_count * self.playback_frame_num_bytes
         if abs(self.playback_pos - self.play_to_pos) > 8000:
             self.playback_pos = self.play_to_pos
         playback_buffer = self.playback_frames[self.playback_pos:min(self.playback_pos + bytes_count,
                                                                      len(self.playback_frames))]
         self.playback_pos = self.playback_pos + bytes_count
+        if self.playback_pos > len(self.playback_frames):
+            self.out_stream_done = True
         return playback_buffer, pyaudio.paContinue
+
+    def recording_callback(self, in_data, frame_count, time_info, status):
+        if self.recording_data is None:
+            self.recording_data = in_data
+        else:
+            self.recording_data = self.recording_data + in_data
+        return None, pyaudio.paContinue
 
     def quit(self):
         pygame.quit()
         if self.out_stream is not None:
             self.out_stream.close()
+        if self.in_stream is not None:
+            self.in_stream.close()
         self.p.terminate()
         exit()
 

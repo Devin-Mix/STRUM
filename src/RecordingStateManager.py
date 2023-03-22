@@ -31,7 +31,7 @@ class RecordingStateManager:
     def handle(self):
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
-            if message.type == "Start Recording":
+            if message.type == "Start recording session":
                 # TODO: Tell GUI event broker to start recording and playback (need to know how audio is going to work
                 #  to do this)
                 tab_file = message.content["tab_file"]
@@ -67,7 +67,7 @@ class RecordingStateManager:
                         self.current_tab.get_next_chords(0.0)[-1][2]:
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
-                                                    message_type="Quit",
+                                                    message_type="Send recording",
                                                     content=None))
                     pass
                 else:
@@ -78,9 +78,13 @@ class RecordingStateManager:
                                                         source="RecordingStateManager",
                                                         message_type="Start playback",
                                                         content={"song_file": self.current_tab.song_file,
-                                                                 "play_song": True,
+                                                                 "play_song": False,
                                                                  "play_tone": True,
                                                                  "tab_object": self.current_tab}))
+                        self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                        source="RecordingStateManager",
+                                                        message_type="Start recording",
+                                                        content=None))
                         self.playback_started = True
                         self.playback_start_time = self.now_time
                     self.fading_chords = self.fading_chords + self.get_fading_chords()
