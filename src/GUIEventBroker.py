@@ -134,7 +134,7 @@ class GUIEventBroker:
                 # Resync if audio is drifting too far outside of tolerance
                 if abs(positional_lag) > 8000:
                     self.playback_pos = self.play_to_pos
-                    print("Resync ({})".format(positional_lag))
+                    # print("Resync ({})".format(positional_lag))
             elif message.type == "Send recording":
                 self.sending_recording = True
                 while not self.out_stream_done:

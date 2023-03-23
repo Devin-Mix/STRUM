@@ -58,7 +58,7 @@ class AnalysisStateManager:
                     self.tone_wave = self.tone_wave[:np.size(self.recording_data)]
                 else:
                     self.recording_data = self.recording_data[:np.size(self.tone_wave)]
-                self.precision_level = 32
+                self.precision_level = 256
                 self.current_num_divisions = 1
                 self.current_division_num = 0
                 self.number_of_ffts = np.sum(np.arange(self.precision_level + 1))
@@ -77,7 +77,7 @@ class AnalysisStateManager:
                     dynamics_score, accuracy_score = get_scores(low_index, high_index, self.recording_data_normalized, self.tone_wave_normalized, self.framerate)
                     self.dynamics_scores[self.current_num_divisions].append(dynamics_score)
                     self.accuracy_scores[self.current_num_divisions].append(accuracy_score)
-                    self.load_percent = self.load_percent + (100.0 / self.number_of_ffts)
+                    self.load_percent = min(self.load_percent + (100.0 / self.number_of_ffts), 100.0)
                     self.current_division_num = self.current_division_num + 1
                     self.number_of_ffts_completed = self.number_of_ffts_completed + 1
                     if self.current_division_num == self.current_num_divisions:
@@ -104,8 +104,12 @@ class AnalysisStateManager:
                                                              Text(50.0, 15.0, 95.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.italic_font),
                                                              Text(50.0, 22.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.italic_font),
                                                              Text(50.0, 30.0, 95.0, 5.0, "Dynamic Accuracy:", self.regular_font),
-                                                             AnalysisGraph(40.0, 95.0, 15, self.dynamics_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
-                                                             AnalysisGraph(55, 95.0, 15, self.accuracy_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length)]))
+                                                             AnalysisGraph(42.5, 95.0, 25, self.dynamics_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
+                                                             Text(50.0, 60.0, 95.0, 5.0, "Pitch / Tempo Accuracy:",
+                                                                  self.regular_font),
+                                                             AnalysisGraph(72.5, 95.0, 25, self.accuracy_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
+                                                             Button(25.625, 92.5, 46.25, 10, "Save Recording", 46.25, 7.5, self.regular_font),
+                                                             Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.regular_font)]))
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):
@@ -117,8 +121,18 @@ def get_scores(low_index, high_index, recording_data_normalized, tone_wave_norma
     difference_power = np.sum(difference_amplitudes)
     tone_power = np.sum(tone_amplitudes)
     recording_power = np.sum(recording_amplitudes)
-    dynamics_ratio = abs(recording_power / tone_power)
-    dynamics_score = 1.0 / pow(log10(abs(dynamics_ratio - 1.0) + 10.0), 100.0)
-    accuracy_ratio = abs(difference_power / recording_power)
-    accuracy_score = 1.0 - (1.0 / pow(log10(abs(accuracy_ratio - 1.0) + 10.0), 100.0))
+    if tone_power == 0 and recording_power > 0:
+        dynamics_score = 0.0
+    elif tone_power == 0 and recording_power == 0:
+        dynamics_score = 1.0
+    else:
+        dynamics_ratio = abs(recording_power / tone_power)
+        dynamics_score = 1.0 / pow(log10(abs(dynamics_ratio - 1.0) + 10.0), 100.0)
+    if recording_power == 0 and difference_power > 0:
+        accuracy_score = 0.0
+    elif recording_power == 0 and difference_power == 0:
+        accuracy_score = 1.0
+    else:
+        accuracy_ratio = abs(difference_power / recording_power)
+        accuracy_score = 1.0 - (1.0 / pow(log10(abs(accuracy_ratio - 1.0) + 10.0), 100.0))
     return dynamics_score, accuracy_score

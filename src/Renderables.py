@@ -195,6 +195,9 @@ class Text:
                 while width > max_width:
                     size = size * 0.99
                     width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
+                    if size < 0.5:
+                        size = 1
+                        break
                 height = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).height
                 if self.align_center:
                     self.font.render_to(screen,
@@ -259,26 +262,64 @@ class AnalysisGraph:
                          (screen.get_width() * (self.width_percent + ((100 - self.width_percent) / 2)) / 100, screen.get_height() * (
                                      self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100))
         seconds_per_timing_mark = 5
-        num_timing_marks = (self.song_length - (self.song_length % seconds_per_timing_mark)) / seconds_per_timing_mark
-        timing_mark_width = self.width_percent * ((self.song_length - (self.song_length % seconds_per_timing_mark)) / num_timing_marks) / self.song_length
-        next_mark_percent = 0.0
-        next_mark_num = 0
-        while next_mark_percent <= self.width_percent:
-            pygame.draw.line(screen,
-                             "white",
-                             (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
-                              screen.get_height() * (self.y_percent + (self.height_percent / 2) - key_height) / 100),
-                             (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
-                              screen.get_height() * (self.y_percent + (self.height_percent / 2) - (key_height / 2)) / 100))
-            if next_mark_percent > 0.0:
-                Text(50.0 - (self.width_percent / 2) + next_mark_percent - (timing_mark_width / 2) + (0.025 * timing_mark_width),
-                     self.y_percent + (self.height_percent / 2) - (key_height / 2) + (0.025 * key_height),
-                     0.95 * timing_mark_width,
-                     0.95 * key_height,
-                     "{} - {}".format(as_time_string((next_mark_num - 1) * seconds_per_timing_mark), as_time_string(next_mark_num * seconds_per_timing_mark)),
-                     self.regular_font).draw(screen)
-            next_mark_percent = next_mark_percent + timing_mark_width
-            next_mark_num = next_mark_num + 1
+        if self.song_length > seconds_per_timing_mark:
+            num_timing_marks = (self.song_length - (self.song_length % seconds_per_timing_mark)) / seconds_per_timing_mark
+            timing_mark_width = self.width_percent * ((self.song_length - (self.song_length % seconds_per_timing_mark)) / num_timing_marks) / self.song_length
+            next_mark_percent = 0.0
+            next_mark_num = 0
+            while next_mark_percent <= self.width_percent:
+                pygame.draw.line(screen,
+                                 "white",
+                                 (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
+                                  screen.get_height() * (self.y_percent + (self.height_percent / 2) - key_height) / 100),
+                                 (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
+                                  screen.get_height() * (self.y_percent + (self.height_percent / 2) - (key_height / 2)) / 100))
+                if next_mark_percent > 0.0:
+                    Text(50.0 - (self.width_percent / 2) + next_mark_percent - (timing_mark_width / 2),
+                         self.y_percent + (self.height_percent / 2) - (key_height / 2),
+                         0.5 * timing_mark_width,
+                         0.5 * key_height,
+                         "{} - {}".format(as_time_string((next_mark_num - 1) * seconds_per_timing_mark), as_time_string(next_mark_num * seconds_per_timing_mark)),
+                         self.regular_font).draw(screen)
+                next_mark_percent = next_mark_percent + timing_mark_width
+                next_mark_num = next_mark_num + 1
+
+class Button:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent, text_height_percent, font):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.Button ({})".format(y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.Button ({})".format(x_percent + width_percent))
+        self.text = "{}".format(text)
+        if 0.0 <= text_width_percent <= width_percent:
+            self.text_width_percent = text_width_percent
+        else:
+            raise ValueError("Text width percent out of bounds for Renderables.Button ({})".format(text_width_percent))
+        if 0.0 <= text_height_percent <= height_percent:
+            self.text_height_percent = text_height_percent
+        else:
+            raise ValueError("Text height percent out of bounds for Renderables.Button ({})".format(text_height_percent))
+        if type(font) == pygame.freetype.Font:
+            self.font = font
+        else:
+            raise TypeError("Invalid font type for Renderables.AnalysisGraph ({})".format(type(font)))
+
+    def draw(self, screen):
+        bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
+                                                      (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
+                                                      screen.get_width() * self.width_percent / 100,
+                                                      screen.get_height() * self.height_percent / 100)
+        pygame.draw.rect(screen, "white", bounding_box)
+        Text(self.x_percent, self.y_percent, self.text_width_percent, self.text_height_percent, self.text, self.font).draw(screen)
+        return bounding_box
 
 
 def as_time_string(seconds):
@@ -287,4 +328,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, FadingFretMark, FretLine, FretMark, LoadBar, StringLine, Text]
+available = [AnalysisGraph, Button, FadingFretMark, FretLine, FretMark, LoadBar, StringLine, Text]
