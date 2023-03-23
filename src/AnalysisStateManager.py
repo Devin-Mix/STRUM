@@ -4,6 +4,7 @@ from Message import Message
 from queue import Queue
 from Renderables import *
 from scipy.fft import rfft, rfftfreq
+from Fonts import *
 
 class AnalysisStateManager:
     def __init__(self, incoming_queue, outgoing_queue):
@@ -28,6 +29,7 @@ class AnalysisStateManager:
             self.precision_level = None
             self.number_of_ffts = None
             self.current_num_divisions = None
+            self.header_font = header
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -80,7 +82,8 @@ class AnalysisStateManager:
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="AnalysisStateManager",
                                                     message_type="render",
-                                                    content=[LoadBar(45.0, 95.0, 10.0, self.load_percent)]))
+                                                    content=[LoadBar(45.0, 95.0, 10.0, self.load_percent),
+                                                             Text(50.0, 50.0, 95.0, 10.0, "Analysing... {}%".format(round(self.load_percent, 1)), self.header_font)]))
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):

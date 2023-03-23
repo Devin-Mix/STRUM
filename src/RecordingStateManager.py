@@ -1,4 +1,5 @@
 from Message import Message
+from Fonts import *
 from queue import Queue
 from Renderables import *
 from Tab import Tab
@@ -27,6 +28,9 @@ class RecordingStateManager:
             self.now_time = None
             self.playback_started = None
             self.playback_start_time = None
+            self.header_font = header
+            self.regular_font = regular
+            self.italic_font = italic
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -91,7 +95,8 @@ class RecordingStateManager:
                     self.fading_chords = [ii.update_time(self.now_time) for ii in self.fading_chords]
                     self.fading_chords = [ii for ii in self.fading_chords if ii.is_alive()]
                     to_draw = self.get_string_lines() + self.get_fret_lines() + self.get_falling_chords() + \
-                        self.fading_chords
+                        self.fading_chords + [Text(2.5, 2.5, 95, 10.0, self.current_tab.title, self.header_font, align_center=False),
+                                              Text(2.5, 12.5, 95, 5.0, self.current_tab.artist, self.italic_font, align_center=False)]
                     if self.playback_started:
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",

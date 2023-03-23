@@ -1,7 +1,7 @@
 BPM=236
 Tuning=-0,0,0,0,0,0
-Title=Tab Parse Test
-Artist=Devin Mix
+Title=Wendy Clear
+Artist=Blink-182
 Song file=../test/Wendy_Clear.wav
 ///
 ||||||---.

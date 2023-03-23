@@ -1,5 +1,5 @@
 import pygame
-
+from math import floor
 
 class StringLine:
     def __init__(self, width_percent, y_percent):
@@ -144,6 +144,74 @@ class LoadBar:
             y = self.y_percent * screen.get_height() / 100.0
             pygame.draw.rect(screen, "white", pygame.Rect(x, y, width, height))
 
+class Text:
+    def __init__(self, x_percent, y_percent, max_width_percent, max_height_percent, text, font, align_center=True):
+        if 0.0 <= x_percent <= 100.0:
+            if (align_center and (
+                    x_percent - (max_width_percent / 2.0) >= 0.0 and x_percent + (max_width_percent / 2.0) <= 100.0)) \
+                    or (not align_center) and x_percent + max_width_percent <= 100.0:
+                self.x_percent = x_percent
+                self.max_width_percent = max_width_percent
+            else:
+                raise ValueError(
+                    "max_width_percent too large in combination with x_percent for Renderables.Text (x_percent: {}, max_width_percent: {}, align_center: {})".format(
+                        x_percent, max_width_percent, align_center))
+        else:
+            raise ValueError("x_percent out of bounds for Renderables.Text ({})".format(x_percent))
+        if 0.0 <= y_percent <= 100.0:
+            if (align_center and (
+                    y_percent - (max_height_percent / 2.0) >= 0.0 and y_percent + (max_height_percent / 2.0) <= 100.0)) \
+                    or (not align_center) and y_percent + max_height_percent <= 100.0:
+                self.y_percent = y_percent
+                self.max_height_percent = max_height_percent
+            else:
+                raise ValueError(
+                    "max_height_percent too large in combination with y_percent for Renderables.Text (y_percent: {}, max_height_percent: {}, align_center: {})".format(
+                        y_percent, max_height_percent, align_center))
+        else:
+            raise ValueError("y_percent out of bounds for Renderables.Text ({})".format(y_percent))
+        self.text = "{}".format(text)
+        if type(align_center) is bool:
+            self.align_center = align_center
+        else:
+            raise TypeError("Invalid align_center type for Renderables.Text ({})".format(type(align_center)))
+        if type(font) == pygame.freetype.Font:
+            self.font = font
+        else:
+            raise TypeError("Invalid font type for Renderables.Text ({})".format(type(font)))
+
+    def draw(self, screen):
+        if not type(screen) == pygame.surface.Surface:
+            raise TypeError("Unexpected argument type for Renderables.Text.draw() (Expected "
+                            "pygame.surface.Surface, got {})".format(type(screen)))
+        else:
+            if self.font.scalable:
+                x = self.x_percent * screen.get_width() / 100.0
+                y = self.y_percent * screen.get_height() / 100.0
+                max_width = self.max_width_percent * screen.get_width() / 100.0
+                max_height = self.max_height_percent * screen.get_height() / 100.0
+                size = floor(0.75 * max_height)
+                width = self.font.get_rect(self.text, size=size).width
+                while width > max_width:
+                    size = size - 1
+                    width = self.font.get_rect(self.text, size=size).width
+                height = self.font.get_rect(self.text, size=size).height
+                if self.align_center:
+                    self.font.render_to(screen,
+                                        (x - (width / 2.0), y - (height / 2.0)),
+                                        self.text,
+                                        fgcolor="black",
+                                        size=size)
+                else:
+                    self.font.render_to(screen,
+                                        (x, y),
+                                        self.text,
+                                        fgcolor="black",
+                                        size=size)
+            else:
+                raise TypeError("Font {} not scalable".format(self.font))
+
+
 
 # Add available classes here for indexing by other modules
-available = [FadingFretMark, FretLine, FretMark, LoadBar, StringLine]
+available = [FadingFretMark, FretLine, FretMark, LoadBar, StringLine, Text]

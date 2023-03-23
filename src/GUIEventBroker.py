@@ -57,7 +57,7 @@ class GUIEventBroker:
             self.playback_start_time = None
 
             pygame.init()
-            self.screen = pygame.display.set_mode(self.config["resolution"])
+            self.screen = pygame.display.set_mode(self.config["resolution"], pygame.RESIZABLE)
             pygame.display.set_caption("S.T.R.U.M.")
 
     def handle(self):
