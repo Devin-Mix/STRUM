@@ -117,6 +117,33 @@ class FadingFretMark:
         self.time_now = time_now
         return self
 
+class LoadBar:
+    def __init__(self, y_percent, width_percent, height_percent, load_percent):
+        if 0.0 <= y_percent + height_percent <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError("Height plus offset out of bounds for Renderables.LoadBar ({})".format(y_percent + height_percent))
+        if 0.0 <= width_percent <= 100.0:
+            self.width_percent = width_percent
+        else:
+            raise ValueError("Width out of bounds for Renderables.LoadBar ({})".format(width_percent))
+        if 0.0 <= load_percent <= 100.0:
+            self.load_percent = load_percent
+        else:
+            raise ValueError("Load percent out of bounts for Renderables.LoadBar ({})".format(load_percent))
+
+    def draw(self, screen):
+        if not type(screen) == pygame.surface.Surface:
+            raise TypeError("Unexpected argument type for Renderables.LoadBar.draw() (Expected "
+                            "pygame.surface.Surface, got {})".format(type(screen)))
+        else:
+            x = (50.0 - (self.width_percent / 2.0)) * screen.get_width() / 100.0
+            width = (self.width_percent * screen.get_width() / 100.0) * (self.load_percent / 100.0)
+            height = self.height_percent * screen.get_height() / 100.0
+            y = self.y_percent * screen.get_height() / 100.0
+            pygame.draw.rect(screen, "white", pygame.Rect(x, y, width, height))
+
 
 # Add available classes here for indexing by other modules
-available = [FadingFretMark, FretLine, FretMark, StringLine]
+available = [FadingFretMark, FretLine, FretMark, LoadBar, StringLine]

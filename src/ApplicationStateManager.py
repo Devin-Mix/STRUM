@@ -1,3 +1,4 @@
+from AnalysisStateManager import AnalysisStateManager
 from ConfigurationStateManager import ConfigurationStateManager
 from GUIEventBroker import GUIEventBroker
 from RecordingStateManager import RecordingStateManager
@@ -7,7 +8,8 @@ from queue import Queue
 
 # Should contain the classes of all processes to be launched
 # Python treats classes like objects themselves, so just load them up here
-process_classes = {"ConfigurationStateManager": ConfigurationStateManager,
+process_classes = {"AnalysisStateManager": AnalysisStateManager,
+                   "ConfigurationStateManager": ConfigurationStateManager,
                    "GUIEventBroker": GUIEventBroker,
                    "RecordingStateManager": RecordingStateManager}
 

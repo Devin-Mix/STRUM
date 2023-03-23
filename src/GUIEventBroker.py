@@ -53,6 +53,8 @@ class GUIEventBroker:
             self.out_stream_done = None
             self.sending_recording = None
             self.input_latency = None
+            self.recording_start_time = None
+            self.playback_start_time = None
 
             pygame.init()
             self.screen = pygame.display.set_mode(self.config["resolution"])
@@ -143,14 +145,20 @@ class GUIEventBroker:
                                                 source="GUIEventBroker",
                                                 message_type="Start analysis",
                                                 content={"latency": self.input_latency,
-                                                         "data": self.recording_data}))
+                                                         "data": self.recording_data,
+                                                         "recording_start_time": self.recording_start_time,
+                                                         "playback_start_time": self.playback_start_time,
+                                                         "tone_wave": self.tone_wave}))
                 self.input_latency = None
                 self.recording_data = None
-                self.quit()
+                self.recording_start_time = None
+                self.playback_start_time = None
             elif message.type == "Quit":
                 self.quit()
 
     def playback_callback(self, in_data, frame_count,  time_info, status):
+        if self.playback_start_time is None:
+            self.playback_start_time = time()
         if self.sending_recording:
             self.out_stream_done = True
             return bytes(), pyaudio.paComplete
@@ -166,6 +174,7 @@ class GUIEventBroker:
 
     def recording_callback(self, in_data, frame_count, time_info, status):
         if self.recording_data is None:
+            self.recording_start_time = time()
             self.recording_data = in_data
         else:
             self.recording_data = self.recording_data + in_data
