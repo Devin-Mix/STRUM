@@ -214,7 +214,7 @@ class Text:
                 raise TypeError("Font {} not scalable".format(self.font))
 
 class AnalysisGraph:
-    def __init__(self, y_percent, width_percent, height_percent, values, regular_font, italic_font):
+    def __init__(self, y_percent, width_percent, height_percent, values, regular_font, italic_font, song_length):
         if 0.0 <= y_percent + height_percent <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
@@ -233,15 +233,16 @@ class AnalysisGraph:
             self.italic_font = italic_font
         else:
             raise TypeError("Invalid italic font type for Renderables.AnalysisGraph ({})".format(type(italic_font)))
+        self.song_length = song_length
 
     def draw(self, screen):
         division_width = self.width_percent / len(self.values)
         main_height = self.height_percent * 0.35
-        key_height = 1.0 - (2.0 * main_height)
+        key_height = self.height_percent - (2.0 * main_height)
         for ii in range(len(self.values)):
-            Text(50.0 - (self.width_percent / 2) + (ii * division_width) + (division_width / 2),
-                 self.y_percent - (self.height_percent / 2) + (main_height / 2),
-                 0.95 * (division_width),
+            Text(50.0 - (self.width_percent / 2) + (ii * division_width) + (division_width / 2) + (0.025 * division_width),
+                 self.y_percent - (self.height_percent / 2) + (main_height / 2) + (0.025 * main_height),
+                 0.95 * division_width,
                  0.95 * main_height,
                  "{}%".format(round(100 * self.values[ii], 2)),
                  self.regular_font).draw(screen)
@@ -257,7 +258,33 @@ class AnalysisGraph:
                                      self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100),
                          (screen.get_width() * (self.width_percent + ((100 - self.width_percent) / 2)) / 100, screen.get_height() * (
                                      self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100))
-        #TODO: Add time marks in remaining space
+        seconds_per_timing_mark = 5
+        num_timing_marks = (self.song_length - (self.song_length % seconds_per_timing_mark)) / seconds_per_timing_mark
+        timing_mark_width = self.width_percent * ((self.song_length - (self.song_length % seconds_per_timing_mark)) / num_timing_marks) / self.song_length
+        next_mark_percent = 0.0
+        next_mark_num = 0
+        while next_mark_percent <= self.width_percent:
+            pygame.draw.line(screen,
+                             "white",
+                             (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
+                              screen.get_height() * (self.y_percent + (self.height_percent / 2) - key_height) / 100),
+                             (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
+                              screen.get_height() * (self.y_percent + (self.height_percent / 2) - (key_height / 2)) / 100))
+            if next_mark_percent > 0.0:
+                Text(50.0 - (self.width_percent / 2) + next_mark_percent - (timing_mark_width / 2) + (0.025 * timing_mark_width),
+                     self.y_percent + (self.height_percent / 2) - (key_height / 2) + (0.025 * key_height),
+                     0.95 * timing_mark_width,
+                     0.95 * key_height,
+                     "{} - {}".format(as_time_string((next_mark_num - 1) * seconds_per_timing_mark), as_time_string(next_mark_num * seconds_per_timing_mark)),
+                     self.regular_font).draw(screen)
+            next_mark_percent = next_mark_percent + timing_mark_width
+            next_mark_num = next_mark_num + 1
+
+
+def as_time_string(seconds):
+    minutes = round((seconds - (seconds % 60)) / 60)
+    seconds = "{}".format(seconds % 60).rjust(2, "0")
+    return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
 available = [AnalysisGraph, FadingFretMark, FretLine, FretMark, LoadBar, StringLine, Text]

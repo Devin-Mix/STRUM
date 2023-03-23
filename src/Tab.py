@@ -71,6 +71,7 @@ class Tab:
                     chord_len_sec = pow(self.bpm * (1.0 / 60.0), -1.0) * line_chord.chord_len
                     self.chords.append((line_chord, scan_time, chord_len_sec))
                     scan_time = scan_time + chord_len_sec
+        self.length = scan_time
 
     def get_next_chords(self, current_time):
         return [i for i in self.chords if i[1] >= current_time]

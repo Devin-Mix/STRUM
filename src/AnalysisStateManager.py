@@ -104,19 +104,21 @@ class AnalysisStateManager:
                                                              Text(50.0, 15.0, 95.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.italic_font),
                                                              Text(50.0, 22.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.italic_font),
                                                              Text(50.0, 30.0, 95.0, 5.0, "Dynamic Accuracy:", self.regular_font),
-                                                             AnalysisGraph(40.0, 95.0, 15, self.dynamics_scores[self.current_num_divisions], self.regular_font, self.italic_font)]))
+                                                             AnalysisGraph(40.0, 95.0, 15, self.dynamics_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
+                                                             AnalysisGraph(55, 95.0, 15, self.accuracy_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length)]))
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):
     recording_amplitudes = np.abs(rfft(recording_data_normalized[low_index:high_index]))
     tone_amplitudes = np.abs(rfft(tone_wave_normalized[low_index:high_index]))
     frequencies = rfftfreq(high_index - low_index, 1 / int(framerate))
-    difference_amplitudes = abs(recording_amplitudes - tone_amplitudes)
+    difference_amplitudes = np.abs(recording_amplitudes - tone_amplitudes)
+
     difference_power = np.sum(difference_amplitudes)
     tone_power = np.sum(tone_amplitudes)
     recording_power = np.sum(recording_amplitudes)
     dynamics_ratio = abs(recording_power / tone_power)
     dynamics_score = 1.0 / pow(log10(abs(dynamics_ratio - 1.0) + 10.0), 100.0)
-    accuracy_ratio = abs(difference_power / tone_power)
+    accuracy_ratio = abs(difference_power / recording_power)
     accuracy_score = 1.0 - (1.0 / pow(log10(abs(accuracy_ratio - 1.0) + 10.0), 100.0))
     return dynamics_score, accuracy_score
