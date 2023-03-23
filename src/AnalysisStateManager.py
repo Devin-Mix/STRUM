@@ -30,11 +30,17 @@ class AnalysisStateManager:
             self.number_of_ffts = None
             self.current_num_divisions = None
             self.header_font = header
+            self.regular_font = regular
+            self.italic_font = italic
+            self.analysing = None
+            self.number_of_ffts_completed = None
+            self.current_tab = None
 
     def handle(self):
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
             if message.type == "Start analysis":
+                self.analysing = True
                 self.input_latency = message.content["latency"]
                 self.recording_data = np.frombuffer(message.content["data"], message.content["sample_format"])[0::2]
                 self.recording_data_normalized = self.recording_data / np.max(np.abs(self.recording_data))
@@ -43,8 +49,8 @@ class AnalysisStateManager:
                 self.tone_wave = np.frombuffer(message.content["tone_wave"], message.content["sample_format"])[0::2]
                 self.tone_wave_normalized = self.tone_wave / np.max(np.abs(self.tone_wave))
                 self.framerate = message.content["sample_rate"]
+                self.current_tab = message.content["tab"]
                 self.load_percent = 0.0
-                print("Input latency: {}, Input start time: {}, Output start time: {}".format(self.input_latency, self.recording_start_time, self.playback_start_time))
                 self.total_input_delay_seconds = self.recording_start_time - self.playback_start_time
                 self.total_input_delay_samples = 2 * floor(self.total_input_delay_seconds * self.framerate)
                 self.tone_wave = self.tone_wave[self.total_input_delay_samples:]
@@ -52,38 +58,53 @@ class AnalysisStateManager:
                     self.tone_wave = self.tone_wave[:np.size(self.recording_data)]
                 else:
                     self.recording_data = self.recording_data[:np.size(self.tone_wave)]
-                self.precision_level = 8
+                self.precision_level = 32
                 self.current_num_divisions = 1
                 self.current_division_num = 0
                 self.number_of_ffts = np.sum(np.arange(self.precision_level + 1))
-                print(self.number_of_ffts)
+                self.number_of_ffts_completed = 0
+                self.dynamics_scores = {1: []}
+                self.accuracy_scores = {1: []}
                 self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                 source="AnalysisStateManager",
                                                 message_type="render",
                                                 content=[LoadBar(45.0, 95.0, 10.0, self.load_percent)]))
 
             if message.type == "Get GUI update":
-                low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
-                high_index = floor((self.current_division_num + 1) * np.size(self.tone_wave) / self.current_num_divisions)
-                dynamics_score, accuracy_score = get_scores(low_index, high_index, self.tone_wave_normalized, self.tone_wave_normalized, self.framerate)
-                print("Dynamics score for segment {} of {}: {}".format(self.current_division_num + 1, self.current_num_divisions, dynamics_score))
-                print("Accuracy score for segment {} of {}: {}".format(self.current_division_num + 1, self.current_num_divisions, accuracy_score))
-                self.load_percent = self.load_percent + (100.0 / self.number_of_ffts)
-                self.current_division_num = self.current_division_num + 1
-                if self.current_division_num == self.current_num_divisions:
-                    self.current_division_num = 0
-                    self.current_num_divisions = self.current_num_divisions + 1
-                if round(self.load_percent) >= 100.0:
-                    self.outgoing_queue.put(Message(target="GUIEventBroker",
-                                                    source="AnalysisStateManager",
-                                                    message_type="Quit",
-                                                    content=None))
-                else:
+                if self.analysing:
+                    low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
+                    high_index = floor((self.current_division_num + 1) * np.size(self.tone_wave) / self.current_num_divisions)
+                    dynamics_score, accuracy_score = get_scores(low_index, high_index, self.recording_data_normalized, self.tone_wave_normalized, self.framerate)
+                    self.dynamics_scores[self.current_num_divisions].append(dynamics_score)
+                    self.accuracy_scores[self.current_num_divisions].append(accuracy_score)
+                    self.load_percent = self.load_percent + (100.0 / self.number_of_ffts)
+                    self.current_division_num = self.current_division_num + 1
+                    self.number_of_ffts_completed = self.number_of_ffts_completed + 1
+                    if self.current_division_num == self.current_num_divisions:
+                        self.current_division_num = 0
+                        self.current_num_divisions = self.current_num_divisions + 1
+                        self.dynamics_scores[self.current_num_divisions] = []
+                        self.accuracy_scores[self.current_num_divisions] = []
+                    if self.number_of_ffts == self.number_of_ffts_completed:
+                        self.analysing = False
+                        self.number_of_ffts_completed = None
+                        self.accuracy_scores.pop(self.current_num_divisions)
+                        self.dynamics_scores.pop(self.current_num_divisions)
+                        self.current_num_divisions = self.current_num_divisions - 1
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="AnalysisStateManager",
                                                     message_type="render",
                                                     content=[LoadBar(45.0, 95.0, 10.0, self.load_percent),
                                                              Text(50.0, 50.0, 95.0, 10.0, "Analysing... {}%".format(round(self.load_percent, 1)), self.header_font)]))
+                else:
+                    self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                    source="AnalysisStateManager",
+                                                    message_type="render",
+                                                    content=[Text(50.0, 7.5, 95, 10, "Analysis Results", self.header_font),
+                                                             Text(50.0, 15.0, 95.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.italic_font),
+                                                             Text(50.0, 22.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.italic_font),
+                                                             Text(50.0, 30.0, 95.0, 5.0, "Dynamic Accuracy:", self.regular_font),
+                                                             AnalysisGraph(40.0, 95.0, 15, self.dynamics_scores[self.current_num_divisions], self.regular_font, self.italic_font)]))
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):

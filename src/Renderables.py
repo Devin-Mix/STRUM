@@ -1,5 +1,5 @@
 import pygame
-from math import floor
+from math import ceil
 
 class StringLine:
     def __init__(self, width_percent, y_percent):
@@ -190,28 +190,74 @@ class Text:
                 y = self.y_percent * screen.get_height() / 100.0
                 max_width = self.max_width_percent * screen.get_width() / 100.0
                 max_height = self.max_height_percent * screen.get_height() / 100.0
-                size = floor(0.75 * max_height)
-                width = self.font.get_rect(self.text, size=size).width
+                size = 0.75 * max_height
+                width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
                 while width > max_width:
-                    size = size - 1
-                    width = self.font.get_rect(self.text, size=size).width
-                height = self.font.get_rect(self.text, size=size).height
+                    size = size * 0.99
+                    width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
+                height = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).height
                 if self.align_center:
                     self.font.render_to(screen,
                                         (x - (width / 2.0), y - (height / 2.0)),
                                         self.text,
                                         fgcolor="black",
-                                        size=size)
+                                        size=size,
+                                        style=pygame.freetype.STYLE_NORMAL)
                 else:
                     self.font.render_to(screen,
                                         (x, y),
                                         self.text,
                                         fgcolor="black",
-                                        size=size)
+                                        size=size,
+                                        style=pygame.freetype.STYLE_NORMAL)
             else:
                 raise TypeError("Font {} not scalable".format(self.font))
 
+class AnalysisGraph:
+    def __init__(self, y_percent, width_percent, height_percent, values, regular_font, italic_font):
+        if 0.0 <= y_percent + height_percent <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError("Height plus offset out of bounds for Renderables.AnalysisGraph ({})".format(y_percent + height_percent))
+        if 0.0 <= width_percent <= 100.0:
+            self.width_percent = width_percent
+        else:
+            raise ValueError("Width out of bounds for Renderables.AnalysisGraph ({})".format(width_percent))
+        self.values = values
+        if type(regular_font) == pygame.freetype.Font:
+            self.regular_font = regular_font
+        else:
+            raise TypeError("Invalid regular font type for Renderables.AnalysisGraph ({})".format(type(regular_font)))
+        if type(italic_font) == pygame.freetype.Font:
+            self.italic_font = italic_font
+        else:
+            raise TypeError("Invalid italic font type for Renderables.AnalysisGraph ({})".format(type(italic_font)))
 
+    def draw(self, screen):
+        division_width = self.width_percent / len(self.values)
+        main_height = self.height_percent * 0.35
+        key_height = 1.0 - (2.0 * main_height)
+        for ii in range(len(self.values)):
+            Text(50.0 - (self.width_percent / 2) + (ii * division_width) + (division_width / 2),
+                 self.y_percent - (self.height_percent / 2) + (main_height / 2),
+                 0.95 * (division_width),
+                 0.95 * main_height,
+                 "{}%".format(round(100 * self.values[ii], 2)),
+                 self.regular_font).draw(screen)
+            pygame.draw.rect(screen,
+                             "white",
+                             pygame.Rect(screen.get_width() * (50.0 - (self.width_percent / 2) + (ii * division_width)) / 100,
+                                         screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height) - (main_height * self.values[ii])) / 100,
+                                         screen.get_width() * division_width / 100,
+                                         ceil(self.values[ii] * main_height * screen.get_height() / 100)))
+        pygame.draw.line(screen,
+                         "white",
+                         (screen.get_width() * (100 - self.width_percent) / 200, screen.get_height() * (
+                                     self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100),
+                         (screen.get_width() * (self.width_percent + ((100 - self.width_percent) / 2)) / 100, screen.get_height() * (
+                                     self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100))
+        #TODO: Add time marks in remaining space
 
 # Add available classes here for indexing by other modules
-available = [FadingFretMark, FretLine, FretMark, LoadBar, StringLine, Text]
+available = [AnalysisGraph, FadingFretMark, FretLine, FretMark, LoadBar, StringLine, Text]

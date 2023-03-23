@@ -153,7 +153,8 @@ class GUIEventBroker:
                                                          "playback_start_time": self.playback_start_time,
                                                          "tone_wave": self.tone_wave,
                                                          "sample_rate": self.playback_framerate,
-                                                         "sample_format": pa_data_type_to_np(self.playback_format)}))
+                                                         "sample_format": pa_data_type_to_np(self.playback_format),
+                                                         "tab": message.content}))
                 self.input_latency = None
                 self.recording_data = None
                 self.recording_start_time = None

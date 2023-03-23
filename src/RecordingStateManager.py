@@ -72,7 +72,7 @@ class RecordingStateManager:
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
                                                     message_type="Send recording",
-                                                    content=None))
+                                                    content=self.current_tab))
                     pass
                 else:
                     self.now_time = time() - self.start_time
