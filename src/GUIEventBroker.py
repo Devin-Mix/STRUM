@@ -132,6 +132,7 @@ class GUIEventBroker:
                 # Resync if audio is drifting too far outside of tolerance
                 if abs(positional_lag) > 8000:
                     self.playback_pos = self.play_to_pos
+                    print("Resync ({})".format(positional_lag))
             elif message.type == "Send recording":
                 self.sending_recording = True
                 while not self.out_stream_done:
@@ -163,8 +164,6 @@ class GUIEventBroker:
             self.out_stream_done = True
             return bytes(), pyaudio.paComplete
         bytes_count = frame_count * self.playback_frame_num_bytes
-        if abs(self.playback_pos - self.play_to_pos) > 8000:
-            self.playback_pos = self.play_to_pos
         playback_buffer = self.playback_frames[self.playback_pos:min(self.playback_pos + bytes_count,
                                                                      len(self.playback_frames))]
         self.playback_pos = self.playback_pos + bytes_count
