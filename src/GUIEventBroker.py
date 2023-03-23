@@ -106,6 +106,8 @@ class GUIEventBroker:
                     self.playback_frames = self.tone_wave
                 elif self.play_song and self.play_tone:
                     self.mix_tone(0.5)
+                elif not self.play_song and not self.play_tone:
+                    self.playback_frames = bytes()
 
                 self.playback_pos = 0
                 self.play_to_pos = 0

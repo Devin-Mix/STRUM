@@ -1,5 +1,5 @@
 import numpy as np
-from math import floor
+from math import floor, log10
 from Message import Message
 from queue import Queue
 from Renderables import *
@@ -35,10 +35,11 @@ class AnalysisStateManager:
             if message.type == "Start analysis":
                 self.input_latency = message.content["latency"]
                 self.recording_data = np.frombuffer(message.content["data"], message.content["sample_format"])[0::2]
-                self.recording_data = (self.recording_data / np.abs(self.recording_data).max()) * np.iinfo(message.content["sample_format"]).max
+                self.recording_data_normalized = self.recording_data / np.max(np.abs(self.recording_data))
                 self.recording_start_time = message.content["recording_start_time"]
                 self.playback_start_time = message.content["playback_start_time"]
                 self.tone_wave = np.frombuffer(message.content["tone_wave"], message.content["sample_format"])[0::2]
+                self.tone_wave_normalized = self.tone_wave / np.max(np.abs(self.tone_wave))
                 self.framerate = message.content["sample_rate"]
                 self.load_percent = 0.0
                 print("Input latency: {}, Input start time: {}, Output start time: {}".format(self.input_latency, self.recording_start_time, self.playback_start_time))
@@ -62,15 +63,9 @@ class AnalysisStateManager:
             if message.type == "Get GUI update":
                 low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
                 high_index = floor((self.current_division_num + 1) * np.size(self.tone_wave) / self.current_num_divisions)
-                recording_amplitudes = np.abs(rfft(self.recording_data[low_index:high_index]))
-                tone_amplitudes = np.abs(rfft(self.tone_wave[low_index:high_index]))
-                frequencies = rfftfreq(high_index - low_index, 1 / int(self.framerate))
-                difference_amplitudes = abs(recording_amplitudes - tone_amplitudes)
-                tone_power = np.sum(tone_amplitudes)
-                recording_power = np.sum(recording_amplitudes)
-                dynamics_score = 1.0 - (abs((recording_power / tone_power) - 1))
+                dynamics_score, accuracy_score = get_scores(low_index, high_index, self.tone_wave_normalized, self.tone_wave_normalized, self.framerate)
                 print("Dynamics score for segment {} of {}: {}".format(self.current_division_num + 1, self.current_num_divisions, dynamics_score))
-                print("Accuracy score for segment {} of {}: {}".format(self.current_division_num + 1, self.current_num_divisions, 1 - abs(np.sum(difference_amplitudes) / tone_power)))
+                print("Accuracy score for segment {} of {}: {}".format(self.current_division_num + 1, self.current_num_divisions, accuracy_score))
                 self.load_percent = self.load_percent + (100.0 / self.number_of_ffts)
                 self.current_division_num = self.current_division_num + 1
                 if self.current_division_num == self.current_num_divisions:
@@ -86,3 +81,18 @@ class AnalysisStateManager:
                                                     source="AnalysisStateManager",
                                                     message_type="render",
                                                     content=[LoadBar(45.0, 95.0, 10.0, self.load_percent)]))
+
+
+def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):
+    recording_amplitudes = np.abs(rfft(recording_data_normalized[low_index:high_index]))
+    tone_amplitudes = np.abs(rfft(tone_wave_normalized[low_index:high_index]))
+    frequencies = rfftfreq(high_index - low_index, 1 / int(framerate))
+    difference_amplitudes = abs(recording_amplitudes - tone_amplitudes)
+    difference_power = np.sum(difference_amplitudes)
+    tone_power = np.sum(tone_amplitudes)
+    recording_power = np.sum(recording_amplitudes)
+    dynamics_ratio = abs(recording_power / tone_power)
+    dynamics_score = 1.0 / pow(log10(abs(dynamics_ratio - 1.0) + 10.0), 100.0)
+    accuracy_ratio = abs(difference_power / tone_power)
+    accuracy_score = 1.0 - (1.0 / pow(log10(abs(accuracy_ratio - 1.0) + 10.0), 100.0))
+    return dynamics_score, accuracy_score
