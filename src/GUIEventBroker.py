@@ -66,13 +66,17 @@ class GUIEventBroker:
             if message.type == "render":
                 self.current_source = message.source
                 self.screen.fill(self.config["background color"])
+                interactables = []
                 # GUI event broker expects a list of Renderable objects in message content
                 # Objects should be provided in the order in which they should be rendered
                 for render_object in message.content:
                     if not type(render_object) in Renderables.available:
                         raise TypeError("Invalid render object type (got {})".format(type(render_object)))
                     else:
-                        render_object.draw(self.screen)
+                        interactable_to_add = render_object.draw(self.screen)
+                        if interactable_to_add is not None:
+                            # Using a tuple here makes the pygame.rect.Rect returned hashable
+                            interactables.append((interactable_to_add, render_object))
                 pygame.display.flip()
                 events = pygame.event.get()
                 for event in events:
@@ -81,7 +85,7 @@ class GUIEventBroker:
                 self.outgoing_queue.put(Message(target=self.current_source,
                                                 source="GUIEventBroker",
                                                 message_type="Get GUI update",
-                                                content=events))
+                                                content={"events":events, "interactables": interactables}))
                 self.this_frame_time = time()
                 self.frame_lengths.append(self.this_frame_time - self.last_frame_time)
                 if len(self.frame_lengths) > 50:
@@ -154,7 +158,8 @@ class GUIEventBroker:
                                                          "tone_wave": self.tone_wave,
                                                          "sample_rate": self.playback_framerate,
                                                          "sample_format": pa_data_type_to_np(self.playback_format),
-                                                         "tab": message.content}))
+                                                         "tab": message.content,
+                                                         "original_sample_format": self.playback_format}))
                 self.input_latency = None
                 self.recording_data = None
                 self.recording_start_time = None

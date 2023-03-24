@@ -193,8 +193,15 @@ class Text:
                 size = 0.75 * max_height
                 width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
                 while width > max_width:
-                    size = size * 0.99
+                    size = size / 2
                     width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
+                    if width < max_width:
+                        while width < max_width:
+                            size = size * 1.1
+                            width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
+                        if width > max_width:
+                            size = size / 1.1
+                            width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
                     if size < 0.5:
                         size = 1
                         break
@@ -242,6 +249,8 @@ class AnalysisGraph:
         division_width = self.width_percent / len(self.values)
         main_height = self.height_percent * 0.35
         key_height = self.height_percent - (2.0 * main_height)
+        points = [(screen.get_width() * (50.0 - (self.width_percent / 2)) / 100,
+                   screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height)) / 100)]
         for ii in range(len(self.values)):
             Text(50.0 - (self.width_percent / 2) + (ii * division_width) + (division_width / 2) + (0.025 * division_width),
                  self.y_percent - (self.height_percent / 2) + (main_height / 2) + (0.025 * main_height),
@@ -249,12 +258,24 @@ class AnalysisGraph:
                  0.95 * main_height,
                  "{}%".format(round(100 * self.values[ii], 2)),
                  self.regular_font).draw(screen)
-            pygame.draw.rect(screen,
-                             "white",
-                             pygame.Rect(screen.get_width() * (50.0 - (self.width_percent / 2) + (ii * division_width)) / 100,
-                                         screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height) - (main_height * self.values[ii])) / 100,
-                                         screen.get_width() * division_width / 100,
-                                         ceil(self.values[ii] * main_height * screen.get_height() / 100)))
+
+            points.append((screen.get_width() * (50.0 - (self.width_percent / 2) + (ii * division_width)) / 100,
+                           screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height) - (main_height * self.values[ii])) / 100))
+            points.append((points[-1][0] + screen.get_width() * division_width / 100,
+                           points[-1][1]))
+            #pygame.draw.rect(screen,
+            #                 "white",
+            #                 pygame.Rect(screen.get_width() * (50.0 - (self.width_percent / 2) + (ii * division_width)) / 100,
+            #                             screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height) - (main_height * self.values[ii])) / 100,
+            #                             screen.get_width() * division_width / 100,
+            #                             ceil(self.values[ii] * main_height * screen.get_height() / 100)))
+        points.append((screen.get_width() * (50.0 + (self.width_percent / 2)) / 100,
+                       points[0][1]))
+        points.append(points[0])
+        pygame.draw.polygon(screen,
+                            "white",
+                            points,
+                            width=1)
         pygame.draw.line(screen,
                          "white",
                          (screen.get_width() * (100 - self.width_percent) / 200, screen.get_height() * (
@@ -285,7 +306,7 @@ class AnalysisGraph:
                 next_mark_num = next_mark_num + 1
 
 class Button:
-    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent, text_height_percent, font):
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent, text_height_percent, font, function):
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
@@ -311,6 +332,7 @@ class Button:
             self.font = font
         else:
             raise TypeError("Invalid font type for Renderables.AnalysisGraph ({})".format(type(font)))
+        self.function = function
 
     def draw(self, screen):
         bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,

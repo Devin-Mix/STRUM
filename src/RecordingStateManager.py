@@ -82,8 +82,8 @@ class RecordingStateManager:
                                                         source="RecordingStateManager",
                                                         message_type="Start playback",
                                                         content={"song_file": self.current_tab.song_file,
-                                                                 "play_song": True,
-                                                                 "play_tone": True,
+                                                                 "play_song": False,
+                                                                 "play_tone": False,
                                                                  "tab_object": self.current_tab}))
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
