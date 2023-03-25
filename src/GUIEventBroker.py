@@ -26,7 +26,7 @@ class GUIEventBroker:
             # TODO: Replace with configuration from either a file or another state manager
             # A default set of config values could potentially be used in lieu of "real" values as well
             self.config = {"resolution": (640, 480),
-                           "background color": "blue"}
+                           "background color": "grey"}
             self.current_source = None
             self.last_frame_time = time()
             self.this_frame_time = self.last_frame_time
@@ -101,8 +101,8 @@ class GUIEventBroker:
                 self.playback_frames = self.playback_file.readframes(self.playback_file.getnframes())
                 self.playback_framerate = self.playback_file.getframerate()
                 self.playback_frame_duration = 1.0 / float(self.playback_framerate)
-                self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
                 self.playback_format = self.p.get_format_from_width(self.playback_file.getsampwidth())
+                self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
                 self.playback_num_channels = self.playback_file.getnchannels()
                 self.tone_wave = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
                                                                self.playback_num_channels)
@@ -159,7 +159,7 @@ class GUIEventBroker:
                                                          "sample_rate": self.playback_framerate,
                                                          "sample_format": pa_data_type_to_np(self.playback_format),
                                                          "tab": message.content,
-                                                         "original_sample_format": self.playback_format}))
+                                                         "original_sample_width": self.playback_frame_num_bytes}))
                 self.input_latency = None
                 self.recording_data = None
                 self.recording_start_time = None
@@ -177,7 +177,7 @@ class GUIEventBroker:
         playback_buffer = self.playback_frames[self.playback_pos:min(self.playback_pos + bytes_count,
                                                                      len(self.playback_frames))]
         self.playback_pos = self.playback_pos + bytes_count
-        if self.playback_pos > len(self.playback_frames):
+        if self.playback_pos >= len(self.playback_frames):
             self.out_stream_done = True
         return playback_buffer, pyaudio.paContinue
 

@@ -1,4 +1,5 @@
 import wave
+from copy import deepcopy
 import numpy as np
 from datetime import datetime
 from math import floor, log10
@@ -49,7 +50,8 @@ class AnalysisStateManager:
                 self.analysing = True
                 self.input_latency = message.content["latency"]
                 self.recording_data_bytes = message.content["data"]
-                self.original_sample_format = message.content["original_sample_format"]
+                self.temp_recording_data_bytes = deepcopy(self.recording_data_bytes)
+                self.original_sample_width = message.content["original_sample_width"]
                 self.recording_data = np.frombuffer(self.recording_data_bytes, message.content["sample_format"])[0::2]
                 self.recording_data_normalized = self.recording_data / np.max(np.abs(self.recording_data))
                 self.recording_start_time = message.content["recording_start_time"]
@@ -139,13 +141,13 @@ class AnalysisStateManager:
                                                  datetime_info.second,
                                                  datetime_info.microsecond)
         with wave.open("../exports/{}".format(filename), "w") as file:
-            file.setparams((2,
-                            self.original_sample_format,
-                            self.framerate,
-                            len(self.recording_data_bytes),
-                            None,
-                            None))
-            file.writeframes(self.recording_data_bytes)
+            file.setnchannels(2)
+            print(self.temp_recording_data_bytes)
+            print(self.original_sample_width)
+            print(self.framerate)
+            file.setsampwidth(self.original_sample_width)
+            file.setframerate(self.framerate)
+            file.writeframes(self.temp_recording_data_bytes)
 
     def return_to_menu(self):
         print("Returning to menu")

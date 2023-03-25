@@ -42,7 +42,7 @@ def main():
     incoming_process_queues[GUIEventBroker].put(Message(target="RecordingStateManager",
                                                         source="GUIEventBroker",  # A little lying never hurt
                                                         message_type="Start recording session",
-                                                        content={"tab_file": "../test/TabParseTest.txt"}))
+                                                        content={"tab_file": "../test/Wendy_Clear.txt"}))
 
     # Main loop of the ASM. Should involve checking individual processes' queues and responding to/forwarding messages
     while True:
