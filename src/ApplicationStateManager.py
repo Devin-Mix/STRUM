@@ -2,6 +2,7 @@ from AnalysisStateManager import AnalysisStateManager
 from ConfigurationStateManager import ConfigurationStateManager
 from GUIEventBroker import GUIEventBroker
 from RecordingStateManager import RecordingStateManager
+from SongSelectStateManager import SongSelectStateManager
 from Message import Message
 from pygame import QUIT
 from queue import Queue
@@ -11,7 +12,8 @@ from queue import Queue
 process_classes = {"AnalysisStateManager": AnalysisStateManager,
                    "ConfigurationStateManager": ConfigurationStateManager,
                    "GUIEventBroker": GUIEventBroker,
-                   "RecordingStateManager": RecordingStateManager}
+                   "RecordingStateManager": RecordingStateManager,
+                   "SongSelectStateManager": SongSelectStateManager}
 
 
 # Main function of the application state manager
@@ -39,10 +41,10 @@ def main():
 
     # TODO: A message should be queued here for the title screen state manager in order to start the application's
     #  interaction process. For now, this can be used for debugging.
-    incoming_process_queues[GUIEventBroker].put(Message(target="RecordingStateManager",
+    incoming_process_queues[GUIEventBroker].put(Message(target="SongSelectStateManager",
                                                         source="GUIEventBroker",  # A little lying never hurt
-                                                        message_type="Start recording session",
-                                                        content={"tab_file": "../test/Wendy_Clear.txt"}))
+                                                        message_type="Get GUI update",
+                                                        content={"events": []}))
 
     # Main loop of the ASM. Should involve checking individual processes' queues and responding to/forwarding messages
     while True:

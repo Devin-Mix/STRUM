@@ -117,7 +117,7 @@ class GUIEventBroker:
                 self.play_to_pos = 0
                 self.out_stream_done = False
                 self.sending_recording = False
-                self.out_stream = self.p.open(format=self.p.get_format_from_width(self.playback_file.getsampwidth()),
+                self.out_stream = self.p.open(format=self.playback_format,
                                               channels=self.playback_num_channels,
                                               rate=self.playback_framerate,
                                               output=True,

@@ -21,12 +21,19 @@ class StringLine:
             start_x = ((100.0 - self.width_percent) / 200) * screen.get_width()
             end_x = screen.get_width() - start_x
             y = screen.get_height() * self.y_percent / 100
-            s = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
-            pygame.draw.line(s,
-                             (255, 255, 255, 255 * min(1.0, (self.y_percent - 5.0) / 90.0)),
-                             (start_x, y),
-                             (end_x, y))
-            screen.blit(s, (0, 0))
+            if (self.y_percent - 5.0 / 50) > 1.0:
+                s = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+                s.set_alpha(round(255 * min(1.0, (self.y_percent - 5.0) / 50)), pygame.RLEACCEL)
+                pygame.draw.line(s,
+                                 "white",
+                                 (start_x, y),
+                                 (end_x, y))
+                screen.blit(s, (0, 0))
+            else:
+                pygame.draw.line(screen,
+                                 "white",
+                                 (start_x, y),
+                                 (end_x, y))
 
 
 class FretLine:
@@ -73,10 +80,11 @@ class FretMark:
             x = self.x_percent * screen.get_width() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
             s = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+            s.set_alpha(round(255 * min(1.0, (self.y_percent - 5.0) / 90.0))) #, pygame.RLEACCEL)
             pygame.draw.circle(s,
-                               (255, 255, 255, 255 * min(1.0, (self.y_percent - 5.0) / 90.0)),
+                               "white",
                                (x, y),
-                               0.01 * screen.get_width())
+                               0.01 * max(screen.get_width(), screen.get_height()))
             screen.blit(s, (0, 0))
 
 
@@ -102,13 +110,13 @@ class FadingFretMark:
         else:
             x = self.x_percent * screen.get_width() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
-            s = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
-            alpha = 255 * (1 - ((self.time_now - self.birth_time)/self.time_to_live))
-            pygame.draw.circle(s,
-                               (255, 255, 255, alpha),
+            #s = pygame.Surface((screen.get_width(), screen.get_height()))
+            #s.set_alpha(round(255 * (1 - ((self.time_now - self.birth_time)/self.time_to_live))), pygame.RLEACCEL)
+            pygame.draw.circle(screen,
+                               "white",
                                (x, y),
-                               0.01 * screen.get_width())
-            screen.blit(s, (0, 0))
+                               0.01 * max(screen.get_width(), screen.get_height()) * (1 - ((self.time_now - self.birth_time)/self.time_to_live)))
+            #screen.blit(s, (0, 0))
 
     def is_alive(self):
         return (1 - ((self.time_now - self.birth_time)/self.time_to_live)) > 0
@@ -190,19 +198,20 @@ class Text:
                 y = self.y_percent * screen.get_height() / 100.0
                 max_width = self.max_width_percent * screen.get_width() / 100.0
                 max_height = self.max_height_percent * screen.get_height() / 100.0
-                size = 0.75 * max_height
+                size = max(0.75 * max_height, 1)
                 width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
                 while width > max_width:
                     size = size / 2
-                    width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
-                    if width < max_width:
-                        while width < max_width:
-                            size = size * 1.1
+                    if size > 0.5:
+                        width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
+                        if width < max_width:
+                            while width < max_width:
+                                size = size * 1.1
+                                width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
+                            if width > max_width:
+                                size = size / 1.1
                             width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
-                        if width > max_width:
-                            size = size / 1.1
-                            width = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).width
-                    if size < 0.5:
+                    else:
                         size = 1
                         break
                 height = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).height
@@ -331,7 +340,7 @@ class Button:
         if type(font) == pygame.freetype.Font:
             self.font = font
         else:
-            raise TypeError("Invalid font type for Renderables.AnalysisGraph ({})".format(type(font)))
+            raise TypeError("Invalid font type for Renderables.Button ({})".format(type(font)))
         self.function = function
 
     def draw(self, screen):
@@ -343,6 +352,181 @@ class Button:
         Text(self.x_percent, self.y_percent, self.text_width_percent, self.text_height_percent, self.text, self.font).draw(screen)
         return bounding_box
 
+class UpArrowButton:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, function):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.UpArrowButton ({})".format(y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.UpArrowButton ({})".format(x_percent + width_percent))
+        self.function = function
+
+    def draw(self, screen):
+        bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
+                                                      (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
+                                                      screen.get_width() * self.width_percent / 100,
+                                                      screen.get_height() * self.height_percent / 100)
+        pygame.draw.rect(screen, "white", bounding_box)
+        pygame.draw.line(screen,
+                         "black",
+                         ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                         (self.x_percent * screen.get_width() / 100,
+                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+        pygame.draw.line(screen,
+                         "black",
+                         ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                         (self.x_percent * screen.get_width() / 100,
+                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+        return bounding_box
+
+class DownArrowButton:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, function):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.DownArrowButton ({})".format(y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.DownArrowButton ({})".format(x_percent + width_percent))
+        self.function = function
+
+    def draw(self, screen):
+        bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
+                                                      (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
+                                                      screen.get_width() * self.width_percent / 100,
+                                                      screen.get_height() * self.height_percent / 100)
+        pygame.draw.rect(screen, "white", bounding_box)
+        pygame.draw.line(screen,
+                         "black",
+                         ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                         (self.x_percent * screen.get_width() / 100,
+                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+        pygame.draw.line(screen,
+                         "black",
+                         ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                         (self.x_percent * screen.get_width() / 100,
+                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+        return bounding_box
+
+class FadeInButton:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent,
+                 text_height_percent, font, function, time_alive, lifespan):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.FadeInButton ({})".format(y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.FadeInButton ({})".format(x_percent + width_percent))
+        self.text = "{}".format(text)
+        if 0.0 <= text_width_percent <= width_percent:
+            self.text_width_percent = text_width_percent
+        else:
+            raise ValueError(
+                "Text width percent out of bounds for Renderables.FadeInButton ({})".format(text_width_percent))
+        if 0.0 <= text_height_percent <= height_percent:
+            self.text_height_percent = text_height_percent
+        else:
+            raise ValueError(
+                "Text height percent out of bounds for Renderables.FadeInButton ({})".format(text_height_percent))
+        if type(font) == pygame.freetype.Font:
+            self.font = font
+        else:
+            raise TypeError("Invalid font type for Renderables.FadeInButton ({})".format(type(font)))
+        self.function = function
+        if time_alive <= lifespan:
+            self.age_percent = time_alive / lifespan
+        else:
+            raise ValueError("Time alive exceeds lifespan for Renderables.FadeInButton ({}, {})".format(time_alive, lifespan))
+
+    def draw(self, screen):
+        if not type(screen) == pygame.surface.Surface:
+            raise TypeError("Unexpected argument type for Renderables.FadeInButton.draw() (Expected "
+                            "pygame.surface.Surface, got {})".format(type(screen)))
+        else:
+            s = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+            current_x_percent = self.x_percent + ((self.width_percent / 2) * (1 - self.age_percent))
+            current_width_percent = self.width_percent * self.age_percent
+            current_height_percent = self.height_percent * self.age_percent
+            current_text_width_percent = self.text_width_percent * self.age_percent
+            current_text_height_percent = self.text_height_percent * self.age_percent
+            s.set_alpha(round(255 * self.age_percent, pygame.RLEACCEL))
+            bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s)
+            screen.blit(s, (0, 0))
+            return bounding_box
+
+class FadeOutButton:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent,
+                 text_height_percent, font, function, time_alive, lifespan):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.FadeOutButton ({})".format(y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.FadeOutButton ({})".format(x_percent + width_percent))
+        self.text = "{}".format(text)
+        if 0.0 <= text_width_percent <= width_percent:
+            self.text_width_percent = text_width_percent
+        else:
+            raise ValueError(
+                "Text width percent out of bounds for Renderables.FadeOutButton ({})".format(text_width_percent))
+        if 0.0 <= text_height_percent <= height_percent:
+            self.text_height_percent = text_height_percent
+        else:
+            raise ValueError(
+                "Text height percent out of bounds for Renderables.FadeOutButton ({})".format(text_height_percent))
+        if type(font) == pygame.freetype.Font:
+            self.font = font
+        else:
+            raise TypeError("Invalid font type for Renderables.FadeOutButton ({})".format(type(font)))
+        self.function = function
+        if time_alive <= lifespan:
+            self.age_percent = time_alive / lifespan
+        else:
+            raise ValueError("Time alive exceeds lifespan for Renderables.FadeOutButton ({}, {})".format(time_alive, lifespan))
+
+    def draw(self, screen):
+        if not type(screen) == pygame.surface.Surface:
+            raise TypeError("Unexpected argument type for Renderables.FadeOutButton.draw() (Expected "
+                            "pygame.surface.Surface, got {})".format(type(screen)))
+        else:
+            s = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+            current_x_percent = self.x_percent + ((self.width_percent / 2) * self.age_percent)
+            current_width_percent = self.width_percent * (1 - self.age_percent)
+            current_height_percent = self.height_percent * (1 - self.age_percent)
+            current_text_width_percent = self.text_width_percent * (1 - self.age_percent)
+            current_text_height_percent = self.text_height_percent * (1 - self.age_percent)
+            s.set_alpha(round(255 * (1 - self.age_percent)), pygame.RLEACCEL)
+            bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s)
+            screen.blit(s, (0, 0))
+            return bounding_box
 
 def as_time_string(seconds):
     minutes = round((seconds - (seconds % 60)) / 60)
@@ -350,4 +534,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, Button, FadingFretMark, FretLine, FretMark, LoadBar, StringLine, Text]
+available = [AnalysisGraph, Button, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, StringLine, Text, UpArrowButton]

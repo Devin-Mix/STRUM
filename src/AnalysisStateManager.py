@@ -1,5 +1,4 @@
 import wave
-from copy import deepcopy
 import numpy as np
 from datetime import datetime
 from math import floor, log10
@@ -50,8 +49,9 @@ class AnalysisStateManager:
                 self.analysing = True
                 self.input_latency = message.content["latency"]
                 self.recording_data_bytes = message.content["data"]
-                self.temp_recording_data_bytes = deepcopy(self.recording_data_bytes)
                 self.original_sample_width = message.content["original_sample_width"]
+                self.original_sample_format = message.content["sample_format"]
+                self.recording_data_to_save = np.frombuffer(self.recording_data_bytes, message.content["sample_format"])
                 self.recording_data = np.frombuffer(self.recording_data_bytes, message.content["sample_format"])[0::2]
                 self.recording_data_normalized = self.recording_data / np.max(np.abs(self.recording_data))
                 self.recording_start_time = message.content["recording_start_time"]
@@ -133,28 +133,26 @@ class AnalysisStateManager:
     def save_recording(self):
         print("Saving recording")
         datetime_info = datetime.now()
-        filename = "{}-{}-{}_{}-{}-{}-{}.wav".format(datetime_info.year,
-                                                 datetime_info.month,
-                                                 datetime_info.day,
-                                                 datetime_info.hour,
-                                                 datetime_info.minute,
-                                                 datetime_info.second,
-                                                 datetime_info.microsecond)
-        with wave.open("../exports/{}".format(filename), "w") as file:
+        filename = "../exports/{}-{}-{}_{}-{}-{}-{}.wav".format(datetime_info.year,
+                                                                datetime_info.month,
+                                                                datetime_info.day,
+                                                                datetime_info.hour,
+                                                                datetime_info.minute,
+                                                                datetime_info.second,
+                                                                datetime_info.microsecond)
+        with wave.open(filename, "wb") as file:
             file.setnchannels(2)
-            print(self.temp_recording_data_bytes)
-            print(self.original_sample_width)
-            print(self.framerate)
-            file.setsampwidth(self.original_sample_width)
+            file.setsampwidth(np.dtype(self.original_sample_format).itemsize)
             file.setframerate(self.framerate)
-            file.writeframes(self.temp_recording_data_bytes)
+            file.writeframes(self.recording_data_to_save.tobytes())
 
     def return_to_menu(self):
         print("Returning to menu")
-        self.outgoing_queue.put(Message("GUIEventBroker",
-                                        "AnalysisStateManager",
-                                        message_type="Quit",
-                                        content=None))
+        self.outgoing_queue.put(Message(target="SongSelectStateManager",
+                                        source="AnalysisStateManager",
+                                        message_type="Get GUI update",
+                                        content={"events": []}))
+        self.skip_render = True
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):

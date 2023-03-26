@@ -36,11 +36,7 @@ class RecordingStateManager:
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
             if message.type == "Start recording session":
-                # TODO: Tell GUI event broker to start recording and playback (need to know how audio is going to work
-                #  to do this)
-                tab_file = message.content["tab_file"]
-                self.current_tab = Tab(tab_file)
-                self.start_time = time()
+                self.current_tab = message.content["tab_file"]
                 self.playback_started = False
                 self.outgoing_queue.put(Message(target="ConfigurationStateManager",
                                                 source="RecordingStateManager",
@@ -61,6 +57,7 @@ class RecordingStateManager:
                                                 content=None))
             elif message.type == "Recording fall time":
                 self.recording_fall_time = message.content
+                self.start_time = time() + self.recording_fall_time
                 to_draw = self.get_string_lines() + self.get_fret_lines()
                 self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                 source="RecordingStateManager",
@@ -73,11 +70,13 @@ class RecordingStateManager:
                                                     source="RecordingStateManager",
                                                     message_type="Send recording",
                                                     content=self.current_tab))
+                    self.now_time = None
+                    self.fading_chords = []
+                    self.last_render_time = None
                     pass
                 else:
                     self.now_time = time() - self.start_time
-                    fading_chords = self.get_fading_chords()
-                    if not self.playback_started and not len(fading_chords) == 0:
+                    if not self.playback_started and not len(self.current_tab.get_next_chords(self.now_time)) == len(self.current_tab.get_next_chords(0)):
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
                                                         message_type="Start playback",
@@ -135,20 +134,23 @@ class RecordingStateManager:
                        if ii[1] < self.now_time + self.recording_fall_time]
         res = []
         for ii in next_chords:
-            remaining_fall_time = ii[1] - self.now_time
-            y_offset = (95 - (25 * self.recording_vertical_scale)) - ((90 - (25 * self.recording_vertical_scale)) *
-                                                                      remaining_fall_time / self.recording_fall_time)
-            for jj in range(6):
-                res.append(StringLine(95, y_offset + jj * 5 * self.recording_vertical_scale))
-            for string_number in range(len(ii[0].play_string)):
-                if ii[0].play_string[string_number]:
-                    fret_number = ii[0].string_fret[string_number]
-                    fret_offset = 0.0
-                    for kk in range(fret_number):
-                        fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
-                    fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
-                    res.append(FretMark(fret_offset, y_offset + (5 - string_number) * 5 *
-                                        self.recording_vertical_scale))
+            if not (True in [ii[0].play_string[jj] for jj in range(6)]):
+                continue
+            else:
+                remaining_fall_time = ii[1] - self.now_time
+                y_offset = (95 - (25 * self.recording_vertical_scale)) - ((90 - (25 * self.recording_vertical_scale)) *
+                                                                          remaining_fall_time / self.recording_fall_time)
+                for jj in range(6):
+                    res.append(StringLine(95, y_offset + jj * 5 * self.recording_vertical_scale))
+                for string_number in range(len(ii[0].play_string)):
+                    if ii[0].play_string[string_number]:
+                        fret_number = ii[0].string_fret[string_number]
+                        fret_offset = 0.0
+                        for kk in range(fret_number):
+                            fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
+                        fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
+                        res.append(FretMark(fret_offset, y_offset + (5 - string_number) * 5 *
+                                            self.recording_vertical_scale))
         return res
 
     def get_fading_chords(self):
