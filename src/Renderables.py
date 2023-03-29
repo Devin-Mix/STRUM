@@ -1,5 +1,8 @@
 import pygame
-from math import ceil
+from math import floor
+
+corner = pygame.image.load("buttonCorner.png")
+edge = pygame.image.load("buttonEdge.png")
 
 class StringLine:
     def __init__(self, width_percent, y_percent):
@@ -348,7 +351,22 @@ class Button:
                                                       (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
                                                       screen.get_width() * self.width_percent / 100,
                                                       screen.get_height() * self.height_percent / 100)
-        pygame.draw.rect(screen, "white", bounding_box)
+        interior_draw = bounding_box.copy().scale_by(0.9, 0.9)
+        pygame.draw.rect(screen, (255, 217, 146), interior_draw)
+        scaled_corner = pygame.transform.scale(corner, (0.05 * bounding_box.width, 0.05 * bounding_box.height))
+        screen.blit(scaled_corner, (bounding_box.x, bounding_box.y + (0.95 * bounding_box.height) - 1))
+        screen.blit(pygame.transform.flip(scaled_corner, False, True), (bounding_box.x, bounding_box.y))
+        screen.blit(pygame.transform.flip(scaled_corner, True, True), (bounding_box.x + (0.95 * bounding_box.width) - 1,
+                                                                       bounding_box.y))
+        screen.blit(pygame.transform.flip(scaled_corner, True, False), (bounding_box.x + (0.95 * bounding_box.width) - 1,
+                                                                       bounding_box.y + (0.95 * bounding_box.height) - 1))
+        scaled_edge_side = pygame.transform.scale(edge, (0.05 * bounding_box.width, (0.9 * bounding_box.height)))
+        screen.blit(scaled_edge_side, (bounding_box.x, bounding_box.y + (0.05 * bounding_box.height)))
+        screen.blit(pygame.transform.flip(scaled_edge_side, True, False), (bounding_box.x + (0.95 * bounding_box.width) - 1, bounding_box.y + (0.05 * bounding_box.height)))
+        scaled_edge_top = pygame.transform.rotate(pygame.transform.scale(edge, (0.05 * bounding_box.height, 0.9 * bounding_box.width)), -90)
+        screen.blit(scaled_edge_top, (bounding_box.x + (0.05 * bounding_box.width), bounding_box.y))
+        screen.blit(pygame.transform.flip(scaled_edge_top, False, True), (bounding_box.x + (0.05 * bounding_box.width),
+                                                                          bounding_box.y + (0.95 * bounding_box.height) - 1))
         Text(self.x_percent, self.y_percent, self.text_width_percent, self.text_height_percent, self.text, self.font).draw(screen)
         return bounding_box
 
