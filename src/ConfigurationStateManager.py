@@ -22,7 +22,11 @@ class ConfigurationStateManager:
             self.fret_count = 30
             self.recording_fall_time = 1.0
             self.chroma_key = pygame.color.Color(50, 50, 50)
-            self.hue = 39
+            self.hue = 270
+            self.rear_color = pygame.color.Color(0)
+            self.middle_color = pygame.color.Color(0)
+            self.front_color = pygame.color.Color(0)
+            self.update_colors()
             self.outgoing_queue.put(Message(target="GUIEventBroker",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -36,3 +40,8 @@ class ConfigurationStateManager:
                                                 source="ConfigurationStateManager",
                                                 message_type="Config",
                                                 content=self))
+
+    def update_colors(self):
+        self.rear_color.hsva = (self.hue, 45, 100)
+        self.middle_color.hsva = (self.hue, 70, 100)
+        self.front_color.hsva = (self.hue, 100, 100)

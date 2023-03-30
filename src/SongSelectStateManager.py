@@ -69,20 +69,24 @@ class SongSelectStateManager:
                                   self.regular,
                                   self.quit)]
                 if self.current_tab_object is not None:
+                    to_draw.append(BackgroundBox(25,
+                                                 50,
+                                                 45,
+                                                 70))
                     to_draw.append(Text(25,
-                                        2.5 + 10 + 2.5 + 5,
-                                        40,
+                                        25,
+                                        35,
                                         10,
                                         "{}".format(self.current_tab_object.title),
                                         self.header))
                     to_draw.append(Text(25,
-                                        2.5 + 10 + 2.5 + 10 + 2.5 + 2.5,
+                                        35,
                                         40,
                                         5,
                                         "{}".format(self.current_tab_object.artist),
                                         self.italic))
                     to_draw.append(Text(25,
-                                        2.5 + 10 + 2.5 + 10 + 2.5 + 2.5 + 5,
+                                        40,
                                         40,
                                         5,
                                         "{} BPM".format(self.current_tab_object.bpm),

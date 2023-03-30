@@ -1,4 +1,5 @@
 import pygame
+from math import pi
 
 corner = pygame.image.load("buttonCorner.png")
 edge = pygame.image.load("buttonEdge.png")
@@ -15,7 +16,7 @@ class StringLine:
             raise ValueError("y_percent out of bounds for StringLine renderable ({})".format(y_percent))
 
     # Expects a resolution in the format (x_resolution, y_resolution)
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.StringLine.draw() (Expected pygame.surface."
                             "Surface, got {})".format(type(screen)))
@@ -51,7 +52,7 @@ class FretLine:
         else:
             raise ValueError("height_percent out of bounds for FretLine renderable ({})".format(height_percent))
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FretLine.draw() (Expected pygame.surface.Surface,"
                             " got {})".format(type(screen)))
@@ -76,7 +77,7 @@ class FretMark:
         else:
             raise ValueError("height_percent out of bounds for FretMark renderable ({})".format(y_percent))
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FretMark.draw() (Expected pygame.surface.Surface,"
                             " got {})".format(type(screen)))
@@ -109,7 +110,7 @@ class FadingFretMark:
         self.time_to_live = time_to_live
         self.time_now = time_now
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FadingFretMark.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -147,7 +148,7 @@ class LoadBar:
         else:
             raise ValueError("Load percent out of bounts for Renderables.LoadBar ({})".format(load_percent))
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.LoadBar.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -156,7 +157,10 @@ class LoadBar:
             width = (self.width_percent * screen.get_width() / 100.0) * (self.load_percent / 100.0)
             height = self.height_percent * screen.get_height() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
-            pygame.draw.rect(screen, "white", pygame.Rect(x, y, width, height))
+            return BackgroundBox(50 - ((self.width_percent / 2) * (1 - (self.load_percent / 100))),
+                                 self.y_percent,
+                                 self.width_percent * (self.load_percent / 100.0),
+                                 self.height_percent).draw(screen, config)
 
 class Text:
     def __init__(self, x_percent, y_percent, max_width_percent, max_height_percent, text, font, align_center=True):
@@ -194,7 +198,7 @@ class Text:
         else:
             raise TypeError("Invalid font type for Renderables.Text ({})".format(type(font)))
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.Text.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -260,7 +264,7 @@ class AnalysisGraph:
             raise TypeError("Invalid italic font type for Renderables.AnalysisGraph ({})".format(type(italic_font)))
         self.song_length = song_length
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         division_width = self.width_percent / len(self.values)
         main_height = self.height_percent * 0.35
         key_height = self.height_percent - (2.0 * main_height)
@@ -272,7 +276,7 @@ class AnalysisGraph:
                  0.95 * division_width,
                  0.95 * main_height,
                  "{}%".format(round(100 * self.values[ii], 2)),
-                 self.regular_font).draw(screen)
+                 self.regular_font).draw(screen, config)
 
             points.append((screen.get_width() * (50.0 - (self.width_percent / 2) + (ii * division_width)) / 100,
                            screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height) - (main_height * self.values[ii])) / 100))
@@ -316,7 +320,7 @@ class AnalysisGraph:
                          0.5 * timing_mark_width,
                          0.5 * key_height,
                          "{} - {}".format(as_time_string((next_mark_num - 1) * seconds_per_timing_mark), as_time_string(next_mark_num * seconds_per_timing_mark)),
-                         self.regular_font).draw(screen)
+                         self.regular_font).draw(screen, config)
                 next_mark_percent = next_mark_percent + timing_mark_width
                 next_mark_num = next_mark_num + 1
 
@@ -349,28 +353,9 @@ class Button:
             raise TypeError("Invalid font type for Renderables.Button ({})".format(type(font)))
         self.function = function
 
-    def draw(self, screen, config=None):
-        bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
-                                                      (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
-                                                      screen.get_width() * self.width_percent / 100,
-                                                      screen.get_height() * self.height_percent / 100)
-        interior_draw = bounding_box.copy().scale_by(0.9, 0.9)
-        pygame.draw.rect(screen, (255, 217, 146), interior_draw)
-        scaled_corner = pygame.transform.scale(corner, (0.05 * bounding_box.width, 0.05 * bounding_box.height))
-        screen.blit(scaled_corner, (bounding_box.x, bounding_box.y + (0.95 * bounding_box.height) - 1))
-        screen.blit(pygame.transform.flip(scaled_corner, False, True), (bounding_box.x, bounding_box.y))
-        screen.blit(pygame.transform.flip(scaled_corner, True, True), (bounding_box.x + (0.95 * bounding_box.width) - 1,
-                                                                       bounding_box.y))
-        screen.blit(pygame.transform.flip(scaled_corner, True, False), (bounding_box.x + (0.95 * bounding_box.width) - 1,
-                                                                       bounding_box.y + (0.95 * bounding_box.height) - 1))
-        scaled_edge_side = pygame.transform.scale(edge, (0.05 * bounding_box.width, (0.9 * bounding_box.height)))
-        screen.blit(scaled_edge_side, (bounding_box.x, bounding_box.y + (0.05 * bounding_box.height)))
-        screen.blit(pygame.transform.flip(scaled_edge_side, True, False), (bounding_box.x + (0.95 * bounding_box.width) - 1, bounding_box.y + (0.05 * bounding_box.height)))
-        scaled_edge_top = pygame.transform.rotate(pygame.transform.scale(edge, (0.05 * bounding_box.height, 0.9 * bounding_box.width)), -90)
-        screen.blit(scaled_edge_top, (bounding_box.x + (0.05 * bounding_box.width), bounding_box.y))
-        screen.blit(pygame.transform.flip(scaled_edge_top, False, True), (bounding_box.x + (0.05 * bounding_box.width),
-                                                                          bounding_box.y + (0.95 * bounding_box.height) - 1))
-        Text(self.x_percent, self.y_percent, self.text_width_percent, self.text_height_percent, self.text, self.font).draw(screen)
+    def draw(self, screen, config):
+        bounding_box = BackgroundBox(self.x_percent, self.y_percent, self.width_percent, self.height_percent).draw(screen, config)
+        Text(self.x_percent, self.y_percent, self.text_width_percent, self.text_height_percent, self.text, self.font).draw(screen, config)
         return bounding_box
 
 class UpArrowButton:
@@ -389,12 +374,12 @@ class UpArrowButton:
                 "Width plus offset out of bounds for Renderables.UpArrowButton ({})".format(x_percent + width_percent))
         self.function = function
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
                                                       (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
                                                       screen.get_width() * self.width_percent / 100,
                                                       screen.get_height() * self.height_percent / 100)
-        pygame.draw.rect(screen, "white", bounding_box)
+        BackgroundBox(self.x_percent, self.y_percent, self.width_percent, self.height_percent).draw(screen, config)
         pygame.draw.line(screen,
                          "black",
                          ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
@@ -425,12 +410,12 @@ class DownArrowButton:
                 "Width plus offset out of bounds for Renderables.DownArrowButton ({})".format(x_percent + width_percent))
         self.function = function
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
                                                       (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
                                                       screen.get_width() * self.width_percent / 100,
                                                       screen.get_height() * self.height_percent / 100)
-        pygame.draw.rect(screen, "white", bounding_box)
+        BackgroundBox(self.x_percent, self.y_percent, self.width_percent, self.height_percent).draw(screen, config)
         pygame.draw.line(screen,
                          "black",
                          ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
@@ -481,7 +466,7 @@ class FadeInButton:
         else:
             raise ValueError("Time alive exceeds lifespan for Renderables.FadeInButton ({}, {})".format(time_alive, lifespan))
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FadeInButton.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -495,7 +480,7 @@ class FadeInButton:
             current_text_width_percent = self.text_width_percent * self.age_percent
             current_text_height_percent = self.text_height_percent * self.age_percent
             s.set_alpha(round(255 * self.age_percent, pygame.RLEACCEL))
-            bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s)
+            bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s, config)
             screen.blit(s, (0, 0))
             return bounding_box
 
@@ -535,7 +520,7 @@ class FadeOutButton:
         else:
             raise ValueError("Time alive exceeds lifespan for Renderables.FadeOutButton ({}, {})".format(time_alive, lifespan))
 
-    def draw(self, screen, config=None):
+    def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FadeOutButton.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -549,9 +534,141 @@ class FadeOutButton:
             current_text_width_percent = self.text_width_percent * (1 - self.age_percent)
             current_text_height_percent = self.text_height_percent * (1 - self.age_percent)
             s.set_alpha(round(255 * (1 - self.age_percent)), pygame.RLEACCEL)
-            bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s)
+            bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s, config)
             screen.blit(s, (0, 0))
             return bounding_box
+
+class BackgroundBox:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, edge_scale=0.1):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.BackgroundBox ({})".format(
+                    y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.BackgroundBox ({})".format(
+                    x_percent + width_percent))
+        self.edge_scale = edge_scale
+    def draw(self, screen, config):
+        bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
+                                   (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
+                                   screen.get_width() * self.width_percent / 100,
+                                   screen.get_height() * self.height_percent / 100)
+        edge_width_x = round(bounding_box.width * self.edge_scale)
+        edge_width_y = round(bounding_box.height * self.edge_scale)
+        colors = (config.front_color, config.middle_color, config.rear_color)
+        scales = (1.0, 2.0 / 3.0, 1.0 / 3.0)
+        for ii in range(3):
+            pygame.draw.ellipse(screen,
+                                colors[ii],
+                                pygame.rect.Rect(bounding_box.x + edge_width_x - (scales[ii] * edge_width_x),
+                                                 bounding_box.y + edge_width_y - (scales[ii] * edge_width_y),
+                                                 2.0 * edge_width_x * scales[ii],
+                                                 2.0 * edge_width_y * scales[ii]))
+            pygame.draw.ellipse(screen,
+                                colors[ii],
+                                pygame.rect.Rect(bounding_box.x + edge_width_x - (scales[ii] * edge_width_x),
+                                                 bounding_box.y + bounding_box.height - edge_width_y - (scales[ii] * edge_width_y),
+                                                 2.0 * edge_width_x * scales[ii],
+                                                 2.0 * edge_width_y * scales[ii]))
+            pygame.draw.ellipse(screen,
+                                colors[ii],
+                                pygame.rect.Rect(bounding_box.x + bounding_box.width - edge_width_x - (scales[ii] * edge_width_x),
+                                                 bounding_box.y + edge_width_y - (scales[ii] * edge_width_y),
+                                                 2.0 * edge_width_x * scales[ii],
+                                                 2.0 * edge_width_y * scales[ii]))
+            pygame.draw.ellipse(screen,
+                                colors[ii],
+                                pygame.rect.Rect(bounding_box.x + bounding_box.width - edge_width_x - (scales[ii] * edge_width_x),
+                                                 bounding_box.y + bounding_box.height - edge_width_y - (scales[ii] * edge_width_y),
+                                                 2.0 * edge_width_x * scales[ii],
+                                                 2.0 * edge_width_y * scales[ii]))
+            pygame.draw.rect(screen, colors[ii], pygame.Rect(bounding_box.x + edge_width_x,
+                                                             bounding_box.y + edge_width_y - (edge_width_y * scales[ii]),
+                                                             bounding_box.width - (2 * edge_width_x),
+                                                             bounding_box.height - (
+                                                                         2 * (edge_width_y - (edge_width_y * scales[ii])))))
+            pygame.draw.rect(screen, colors[ii], pygame.Rect(bounding_box.x + edge_width_x - (edge_width_x * scales[ii]),
+                                                             bounding_box.y + edge_width_y,
+                                                             bounding_box.width - (
+                                                                         2 * (edge_width_x - (edge_width_x * scales[ii]))),
+                                                             bounding_box.height - (2 * edge_width_y)))
+        pygame.draw.arc(screen,
+                        "black",
+                        pygame.rect.Rect(bounding_box.x,
+                                         bounding_box.y,
+                                         edge_width_x * 2,
+                                         edge_width_y * 2),
+                        pi / 2,
+                        pi)
+        pygame.draw.arc(screen,
+                        "black",
+                        pygame.rect.Rect(bounding_box.x + bounding_box.width - (2 * edge_width_x),
+                                         bounding_box.y,
+                                         edge_width_x * 2,
+                                         edge_width_y * 2),
+                        0,
+                        pi / 2)
+        pygame.draw.arc(screen,
+                        "black",
+                        pygame.rect.Rect(bounding_box.x + bounding_box.width - (2 * edge_width_x),
+                                         bounding_box.y + bounding_box.height - (2 * edge_width_y),
+                                         edge_width_x * 2,
+                                         edge_width_y * 2),
+                        3 * pi / 2,
+                        2 * pi)
+        pygame.draw.arc(screen,
+                        "black",
+                        pygame.rect.Rect(bounding_box.x,
+                                         bounding_box.y + bounding_box.height - (2 * edge_width_y),
+                                         edge_width_x * 2,
+                                         edge_width_y * 2),
+                        pi,
+                        3 * pi / 2)
+        pygame.draw.line(screen,
+                         "black",
+                         (bounding_box.x + edge_width_x, bounding_box.y),
+                         (bounding_box.x + bounding_box.width - edge_width_x, bounding_box.y))
+        pygame.draw.line(screen,
+                         "black",
+                         (bounding_box.x + edge_width_x, bounding_box.y + bounding_box.height),
+                         (bounding_box.x + bounding_box.width - edge_width_x, bounding_box.y + bounding_box.height))
+        pygame.draw.line(screen,
+                         "black",
+                         (bounding_box.x, bounding_box.y + edge_width_y),
+                         (bounding_box.x, bounding_box.y + bounding_box.height - edge_width_y))
+        pygame.draw.line(screen,
+                         "black",
+                         (bounding_box.x + bounding_box.width, bounding_box.y + edge_width_y),
+                         (bounding_box.x + bounding_box.width, bounding_box.y + bounding_box.height - edge_width_y))
+
+        # scaled_corner = pygame.transform.scale(corner, (0.05 * bounding_box.width, 0.05 * bounding_box.height))
+        # screen.blit(scaled_corner, (bounding_box.x, bounding_box.y + (0.95 * bounding_box.height) - 1))
+        # screen.blit(pygame.transform.flip(scaled_corner, False, True), (bounding_box.x, bounding_box.y))
+        # screen.blit(pygame.transform.flip(scaled_corner, True, True), (bounding_box.x + (0.95 * bounding_box.width) - 1,
+        #                                                                bounding_box.y))
+        # screen.blit(pygame.transform.flip(scaled_corner, True, False),
+        #             (bounding_box.x + (0.95 * bounding_box.width) - 1,
+        #              bounding_box.y + (0.95 * bounding_box.height) - 1))
+        # scaled_edge_side = pygame.transform.scale(edge, (0.05 * bounding_box.width, (0.9 * bounding_box.height)))
+        # screen.blit(scaled_edge_side, (bounding_box.x, bounding_box.y + (0.05 * bounding_box.height)))
+        # screen.blit(pygame.transform.flip(scaled_edge_side, True, False),
+        #             (bounding_box.x + (0.95 * bounding_box.width) - 1, bounding_box.y + (0.05 * bounding_box.height)))
+        # scaled_edge_top = pygame.transform.rotate(
+        #     pygame.transform.scale(edge, (0.05 * bounding_box.height, 0.9 * bounding_box.width)), -90)
+        # screen.blit(scaled_edge_top, (bounding_box.x + (0.05 * bounding_box.width), bounding_box.y))
+        # screen.blit(pygame.transform.flip(scaled_edge_top, False, True), (bounding_box.x + (0.05 * bounding_box.width),
+        #                                                                   bounding_box.y + (
+        #                                                                               0.95 * bounding_box.height) - 1))
+        #interior_draw = bounding_box.copy().scale_by(0.9, 0.9)
+        #pygame.draw.rect(screen, config.rear_color, interior_draw)
+        return bounding_box
 
 def as_time_string(seconds):
     minutes = round((seconds - (seconds % 60)) / 60)
@@ -559,4 +676,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, Button, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, StringLine, Text, UpArrowButton]
+available = [AnalysisGraph, BackgroundBox, Button, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, StringLine, Text, UpArrowButton]

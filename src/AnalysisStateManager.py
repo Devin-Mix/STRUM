@@ -78,7 +78,7 @@ class AnalysisStateManager:
                 self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                 source="AnalysisStateManager",
                                                 message_type="render",
-                                                content=[LoadBar(45.0, 95.0, 10.0, self.load_percent)]))
+                                                content=[LoadBar(50, 95.0, 10.0, self.load_percent)]))
 
             if message.type == "Get GUI update":
                 self.skip_render = False
@@ -112,20 +112,21 @@ class AnalysisStateManager:
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="AnalysisStateManager",
                                                         message_type="render",
-                                                        content=[LoadBar(45.0, 95.0, 10.0, self.load_percent),
+                                                        content=[LoadBar(50.0, 95.0, 10.0, self.load_percent),
                                                                  Text(50.0, 50.0, 95.0, 10.0, "Analysing... {}%".format(round(self.load_percent, 1)), self.header_font)]))
                     else:
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="AnalysisStateManager",
                                                         message_type="render",
-                                                        content=[Text(50.0, 7.5, 95, 10, "Analysis Results", self.header_font),
-                                                                 Text(50.0, 15.0, 95.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.italic_font),
-                                                                 Text(50.0, 22.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.italic_font),
-                                                                 Text(50.0, 30.0, 95.0, 5.0, "Dynamic Accuracy:", self.regular_font),
-                                                                 AnalysisGraph(42.5, 95.0, 25, self.dynamics_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
-                                                                 Text(50.0, 60.0, 95.0, 5.0, "Pitch / Tempo Accuracy:",
+                                                        content=[BackgroundBox(50, 43.75, 95, 82.5, 4.625 / 95),
+                                                                 Text(50.0, 10, 85.0, 10, "Analysis Results", self.header_font),
+                                                                 Text(50.0, 20.0, 85.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.italic_font),
+                                                                 Text(50.0, 27.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.italic_font),
+                                                                 Text(50.0, 35.0, 85.0, 5.0, "Dynamic Accuracy:", self.regular_font),
+                                                                 AnalysisGraph(47.5, 85.0, 15, self.dynamics_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
+                                                                 Text(50.0, 60, 95.0, 5.0, "Pitch / Tempo Accuracy:",
                                                                       self.regular_font),
-                                                                 AnalysisGraph(72.5, 95.0, 25, self.accuracy_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
+                                                                 AnalysisGraph(72.5, 85.0, 15, self.accuracy_scores[self.current_num_divisions], self.regular_font, self.italic_font, self.current_tab.length),
                                                                  Button(25.625, 92.5, 46.25, 10, "Save Recording", 46.25, 7.5, self.regular_font, self.save_recording),
                                                                  Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.regular_font, self.return_to_menu)]))
                 self.skip_render = None
@@ -147,7 +148,6 @@ class AnalysisStateManager:
             file.writeframes(self.recording_data_to_save.tobytes())
 
     def return_to_menu(self):
-        print("Returning to menu")
         self.outgoing_queue.put(Message(target="SongSelectStateManager",
                                         source="AnalysisStateManager",
                                         message_type="Get GUI update",

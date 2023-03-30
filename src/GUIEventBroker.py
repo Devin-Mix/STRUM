@@ -208,17 +208,17 @@ class GUIEventBroker:
         self.playback_frames = pa_data_type_to_np(self.playback_format)(signal_1).tobytes()
 
     def draw_background(self):
-        self.screen.fill((255, 217, 146))
+        self.screen.fill(self.config.rear_color)
         now_time = time() - self.gui_start_time
         x_vals = np.arange(0 + now_time, (2 * np.pi) + now_time, 2 * np.pi / self.screen.get_width())
         y_vals = (np.sin(x_vals) * self.screen.get_height() * 0.03) + (self.screen.get_height() * 0.35)
         points = np.stack([(x_vals - now_time) * (self.screen.get_width() / (2 * np.pi)), y_vals]).T
         points = np.append(points, [[self.screen.get_width() - 1, self.screen.get_height() - 1],
                             [0, self.screen.get_height() - 1]], 0)
-        pygame.draw.polygon(self.screen, (255, 192, 76), points)
+        pygame.draw.polygon(self.screen, self.config.middle_color, points)
         x_vals = np.arange(0 + (now_time * 6), (4 * np.pi) + (now_time * 6), 4 * np.pi / self.screen.get_width())
         y_vals = (np.sin(x_vals) * self.screen.get_height() * 0.03) + (self.screen.get_height() * 0.45)
         points = np.stack([(x_vals - (now_time * 6)) * (self.screen.get_width() / (4 * np.pi)), y_vals]).T
         points = np.append(points, [[self.screen.get_width() - 1, self.screen.get_height() - 1],
                             [0, self.screen.get_height() - 1]], 0)
-        pygame.draw.polygon(self.screen, (255, 166, 0), points)
+        pygame.draw.polygon(self.screen, self.config.front_color, points)
