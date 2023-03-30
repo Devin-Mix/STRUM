@@ -25,8 +25,6 @@ class GUIEventBroker:
 
             # TODO: Replace with configuration from either a file or another state manager
             # A default set of config values could potentially be used in lieu of "real" values as well
-            self.config = {"resolution": (640, 480),
-                           "background color": "grey"}
             self.current_source = None
             self.last_frame_time = time()
             self.this_frame_time = self.last_frame_time
@@ -56,15 +54,19 @@ class GUIEventBroker:
             self.recording_start_time = None
             self.playback_start_time = None
             self.gui_start_time = time()
-
-            pygame.init()
-            self.screen = pygame.display.set_mode(self.config["resolution"], pygame.RESIZABLE)
-            pygame.display.set_caption("S.T.R.U.M.")
+            self.config = None
+            self.screen = None
 
     def handle(self):
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
-            if message.type == "render":
+            if message.type == "Config":
+                self.config = message.content
+            elif message.type == "render":
+                if self.screen is None:
+                    pygame.init()
+                    self.screen = pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
+                    pygame.display.set_caption("S.T.R.U.M.")
                 self.current_source = message.source
                 self.draw_background()
                 interactables = []
@@ -74,7 +76,7 @@ class GUIEventBroker:
                     if not type(render_object) in Renderables.available:
                         raise TypeError("Invalid render object type (got {})".format(type(render_object)))
                     else:
-                        interactable_to_add = render_object.draw(self.screen)
+                        interactable_to_add = render_object.draw(self.screen, self.config)
                         if interactable_to_add is not None:
                             # Using a tuple here makes the pygame.rect.Rect returned hashable
                             interactables.append((interactable_to_add, render_object))

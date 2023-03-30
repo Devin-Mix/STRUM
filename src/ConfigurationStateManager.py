@@ -1,3 +1,4 @@
+import pygame
 from Message import Message
 from queue import Queue
 
@@ -20,27 +21,18 @@ class ConfigurationStateManager:
             self.recording_vertical_scale = 0.5
             self.fret_count = 30
             self.recording_fall_time = 1.0
+            self.chroma_key = pygame.color.Color(50, 50, 50)
+            self.hue = 39
+            self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                            source="ConfigurationStateManager",
+                                            message_type="Config",
+                                            content=self))
 
     def handle(self):
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
-            if message.type == "Get resolution":
+            if message.type == "Get config":
                 self.outgoing_queue.put(Message(target=message.source,
                                                 source="ConfigurationStateManager",
-                                                message_type="Resolution",
-                                                content=self.resolution))
-            elif message.type == "Get recording vertical scale":
-                self.outgoing_queue.put(Message(target=message.source,
-                                                source="ConfigurationStateManager",
-                                                message_type="Recording vertical scale",
-                                                content=self.recording_vertical_scale))
-            elif message.type == "Get fret count":
-                self.outgoing_queue.put(Message(target=message.source,
-                                                source="ConfigurationStateManager",
-                                                message_type="Fret count",
-                                                content=self.fret_count))
-            elif message.type == "Get recording fall time":
-                self.outgoing_queue.put(Message(target=message.source,
-                                                source="ConfigurationStateManager",
-                                                message_type="Recording fall time",
-                                                content=self.recording_fall_time))
+                                                message_type="Config",
+                                                content=self))

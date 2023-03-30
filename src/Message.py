@@ -8,17 +8,12 @@ process_class_keys = ["AnalysisStateManager", "ConfigurationStateManager", "GUIE
 class Message:
     def __init__(self, target, source, message_type, content):
         # Defines types of messages to be exchanged
-        self.valid_types = ["Fret count",
-                            "Get fret count",
+        self.valid_types = ["Config",
+                            "Fret count",
+                            "Get config",
                             "Get GUI update",
-                            "Get recording fall time",
-                            "Get recording vertical scale",
-                            "Get resolution",
                             "Quit",
-                            "Recording fall time",
-                            "Recording vertical scale",
                             "render",
-                            "Resolution",
                             "Send recording",
                             "Start analysis",
                             "Start playback",

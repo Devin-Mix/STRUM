@@ -1,4 +1,3 @@
-import pygame.freetype
 from pygame import freetype
 
 freetype.init()

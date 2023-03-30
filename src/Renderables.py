@@ -1,5 +1,4 @@
 import pygame
-from math import floor
 
 corner = pygame.image.load("buttonCorner.png")
 edge = pygame.image.load("buttonEdge.png")
@@ -16,7 +15,7 @@ class StringLine:
             raise ValueError("y_percent out of bounds for StringLine renderable ({})".format(y_percent))
 
     # Expects a resolution in the format (x_resolution, y_resolution)
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.StringLine.draw() (Expected pygame.surface."
                             "Surface, got {})".format(type(screen)))
@@ -26,8 +25,8 @@ class StringLine:
             y = screen.get_height() * self.y_percent / 100
             if (self.y_percent - 5.0 / 50) > 1.0:
                 s = pygame.Surface((screen.get_width(), screen.get_height()))
-                s.fill("green")
-                s.set_colorkey("green", pygame.RLEACCEL)
+                s.fill(config.chroma_key)
+                s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
                 s.set_alpha(round(255 * min(1.0, (self.y_percent - 5.0) / 50)), pygame.RLEACCEL)
                 pygame.draw.line(s,
                                  "white",
@@ -52,7 +51,7 @@ class FretLine:
         else:
             raise ValueError("height_percent out of bounds for FretLine renderable ({})".format(height_percent))
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FretLine.draw() (Expected pygame.surface.Surface,"
                             " got {})".format(type(screen)))
@@ -77,7 +76,7 @@ class FretMark:
         else:
             raise ValueError("height_percent out of bounds for FretMark renderable ({})".format(y_percent))
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FretMark.draw() (Expected pygame.surface.Surface,"
                             " got {})".format(type(screen)))
@@ -85,8 +84,8 @@ class FretMark:
             x = self.x_percent * screen.get_width() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
             s = pygame.Surface((screen.get_width(), screen.get_height()))
-            s.fill("green")
-            s.set_colorkey("green", pygame.RLEACCEL)
+            s.fill(config.chroma_key)
+            s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
             s.set_alpha(round(255 * min(1.0, (self.y_percent - 5.0) / 90.0)), pygame.RLEACCEL)
             pygame.draw.circle(s,
                                "white",
@@ -110,7 +109,7 @@ class FadingFretMark:
         self.time_to_live = time_to_live
         self.time_now = time_now
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FadingFretMark.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -148,7 +147,7 @@ class LoadBar:
         else:
             raise ValueError("Load percent out of bounts for Renderables.LoadBar ({})".format(load_percent))
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.LoadBar.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -195,7 +194,7 @@ class Text:
         else:
             raise TypeError("Invalid font type for Renderables.Text ({})".format(type(font)))
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.Text.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
@@ -261,7 +260,7 @@ class AnalysisGraph:
             raise TypeError("Invalid italic font type for Renderables.AnalysisGraph ({})".format(type(italic_font)))
         self.song_length = song_length
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         division_width = self.width_percent / len(self.values)
         main_height = self.height_percent * 0.35
         key_height = self.height_percent - (2.0 * main_height)
@@ -350,7 +349,7 @@ class Button:
             raise TypeError("Invalid font type for Renderables.Button ({})".format(type(font)))
         self.function = function
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
                                                       (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
                                                       screen.get_width() * self.width_percent / 100,
@@ -390,7 +389,7 @@ class UpArrowButton:
                 "Width plus offset out of bounds for Renderables.UpArrowButton ({})".format(x_percent + width_percent))
         self.function = function
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
                                                       (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
                                                       screen.get_width() * self.width_percent / 100,
@@ -426,7 +425,7 @@ class DownArrowButton:
                 "Width plus offset out of bounds for Renderables.DownArrowButton ({})".format(x_percent + width_percent))
         self.function = function
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
                                                       (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
                                                       screen.get_width() * self.width_percent / 100,
@@ -482,14 +481,14 @@ class FadeInButton:
         else:
             raise ValueError("Time alive exceeds lifespan for Renderables.FadeInButton ({}, {})".format(time_alive, lifespan))
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FadeInButton.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
         else:
             s = pygame.Surface((screen.get_width(), screen.get_height()))
-            s.fill("green")
-            s.set_colorkey("green", pygame.RLEACCEL)
+            s.fill(config.chroma_key)
+            s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
             current_x_percent = self.x_percent + ((self.width_percent / 2) * (1 - self.age_percent))
             current_width_percent = self.width_percent * self.age_percent
             current_height_percent = self.height_percent * self.age_percent
@@ -536,14 +535,14 @@ class FadeOutButton:
         else:
             raise ValueError("Time alive exceeds lifespan for Renderables.FadeOutButton ({}, {})".format(time_alive, lifespan))
 
-    def draw(self, screen):
+    def draw(self, screen, config=None):
         if not type(screen) == pygame.surface.Surface:
             raise TypeError("Unexpected argument type for Renderables.FadeOutButton.draw() (Expected "
                             "pygame.surface.Surface, got {})".format(type(screen)))
         else:
             s = pygame.Surface((screen.get_width(), screen.get_height()))
-            s.fill("green")
-            s.set_colorkey("green", pygame.RLEACCEL)
+            s.fill(config.chroma_key)
+            s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
             current_x_percent = self.x_percent + ((self.width_percent / 2) * self.age_percent)
             current_width_percent = self.width_percent * (1 - self.age_percent)
             current_height_percent = self.height_percent * (1 - self.age_percent)
