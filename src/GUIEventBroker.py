@@ -95,7 +95,7 @@ class GUIEventBroker:
                     self.frame_lengths.pop(0)
                 self.average_frame_time = sum(self.frame_lengths) / len(self.frame_lengths)
                 self.last_frame_time = self.this_frame_time
-            elif message.type == "Start playback":
+            elif message.type == "Prime playback":
                 self.playback_file_name = message.content["song_file"]
                 self.play_song = message.content["play_song"]
                 self.play_tone = message.content["play_tone"]
@@ -124,16 +124,22 @@ class GUIEventBroker:
                                               channels=self.playback_num_channels,
                                               rate=self.playback_framerate,
                                               output=True,
-                                              stream_callback=self.playback_callback)
+                                              stream_callback=self.playback_callback,
+                                              start=False)
                 self.playback_file.close()
-            elif message.type == "Start recording":
+            elif message.type == "Start playback":
+                self.out_stream.start_stream()
+            elif message.type == "Prime recording":
                 # Recording should only start after playback has begun in order to use playback parameters
                 self.in_stream = self.p.open(channels=2,
                                              input=True,
                                              stream_callback=self.recording_callback,
                                              rate=self.playback_framerate,
-                                             format=self.playback_format)
+                                             format=self.playback_format,
+                                             start=False)
                 self.input_latency = self.in_stream.get_input_latency()
+            elif message.type == "Start recording":
+                self.in_stream.start_stream()
             elif message.type == "Update playback":
                 play_to_time = message.content
                 self.play_to_pos = floor(play_to_time / self.playback_frame_duration) * self.playback_frame_num_bytes

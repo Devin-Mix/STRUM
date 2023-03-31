@@ -12,6 +12,8 @@ class Message:
                             "Fret count",
                             "Get config",
                             "Get GUI update",
+                            "Prime playback",
+                            "Prime recording",
                             "Quit",
                             "render",
                             "Send recording",

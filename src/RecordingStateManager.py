@@ -49,6 +49,17 @@ class RecordingStateManager:
                 to_draw = self.get_string_lines() + self.get_fret_lines()
                 self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                 source="RecordingStateManager",
+                                                message_type="Prime playback",
+                                                content={"song_file": self.current_tab.song_file,
+                                                         "play_song": False,
+                                                         "play_tone": True,
+                                                         "tab_object": self.current_tab}))
+                self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                source="RecordingStateManager",
+                                                message_type="Prime recording",
+                                                content=None))
+                self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                source="RecordingStateManager",
                                                 message_type="render",
                                                 content=to_draw))
             elif message.type == "Get GUI update":
@@ -68,10 +79,7 @@ class RecordingStateManager:
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
                                                         message_type="Start playback",
-                                                        content={"song_file": self.current_tab.song_file,
-                                                                 "play_song": False,
-                                                                 "play_tone": True,
-                                                                 "tab_object": self.current_tab}))
+                                                        content=None))
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
                                                         message_type="Start recording",
