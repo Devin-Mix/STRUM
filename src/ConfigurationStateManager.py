@@ -1,4 +1,5 @@
 import pygame
+from Fonts import *
 from Message import Message
 from queue import Queue
 
@@ -27,7 +28,19 @@ class ConfigurationStateManager:
             self.middle_color = pygame.color.Color(0)
             self.front_color = pygame.color.Color(0)
             self.update_colors()
+            self.intro_start_time = 1.0
+            self.intro_length = 1.0
+            self.intro_fade_time = 1.0
+            self.header = header
+            self.italic = italic
+            self.regular = regular
+            self.transition_length = 1.0
+            self.logo = pygame.image.load("logo.svg")
             self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                            source="ConfigurationStateManager",
+                                            message_type="Config",
+                                            content=self))
+            self.outgoing_queue.put(Message(target="TitleScreenStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
                                             content=self))

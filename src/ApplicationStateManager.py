@@ -3,6 +3,7 @@ from ConfigurationStateManager import ConfigurationStateManager
 from GUIEventBroker import GUIEventBroker
 from RecordingStateManager import RecordingStateManager
 from SongSelectStateManager import SongSelectStateManager
+from TitleScreenStateManager import TitleScreenStateManager
 from Message import Message
 from pygame import QUIT
 from queue import Queue
@@ -13,7 +14,8 @@ process_classes = {"AnalysisStateManager": AnalysisStateManager,
                    "ConfigurationStateManager": ConfigurationStateManager,
                    "GUIEventBroker": GUIEventBroker,
                    "RecordingStateManager": RecordingStateManager,
-                   "SongSelectStateManager": SongSelectStateManager}
+                   "SongSelectStateManager": SongSelectStateManager,
+                   "TitleScreenStateManager": TitleScreenStateManager}
 
 
 # Main function of the application state manager
@@ -41,7 +43,7 @@ def main():
 
     # TODO: A message should be queued here for the title screen state manager in order to start the application's
     #  interaction process. For now, this can be used for debugging.
-    incoming_process_queues[GUIEventBroker].put(Message(target="SongSelectStateManager",
+    incoming_process_queues[GUIEventBroker].put(Message(target="TitleScreenStateManager",
                                                         source="GUIEventBroker",  # A little lying never hurt
                                                         message_type="Get GUI update",
                                                         content={"events": []}))

@@ -45,7 +45,6 @@ class RecordingStateManager:
                 self.current_tab = message.content["tab_file"]
                 self.playback_started = False
                 self.final_fret_offset = self.get_final_fret_offset()
-                self.start_time = time() + self.config.recording_fall_time
                 to_draw = self.get_string_lines() + self.get_fret_lines()
                 self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                 source="RecordingStateManager",
@@ -70,10 +69,13 @@ class RecordingStateManager:
                                                     message_type="Send recording",
                                                     content=self.current_tab))
                     self.now_time = None
+                    self.start_time = None
                     self.fading_chords = []
                     self.last_render_time = None
                     pass
                 else:
+                    if self.start_time is None:
+                        self.start_time = time() + self.config.recording_fall_time
                     self.now_time = time() - self.start_time
                     if not self.playback_started and not len(self.current_tab.get_next_chords(self.now_time)) == len(self.current_tab.get_next_chords(0)):
                         self.outgoing_queue.put(Message(target="GUIEventBroker",

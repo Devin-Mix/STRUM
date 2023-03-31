@@ -53,7 +53,7 @@ class SongSelectStateManager:
             message = self.incoming_queue.get()
             if message.type == "Get GUI update":
                 self.skip_render = False
-                if not message.content["events"] == []:
+                if message.content is not None and not message.content["events"] == []:
                     for event in message.content["events"]:
                         if event.type == pygame.MOUSEBUTTONUP:
                             for interactable in message.content["interactables"]:
@@ -63,11 +63,11 @@ class SongSelectStateManager:
                                   2.5 + 5,
                                   20,
                                   10,
-                                  "Exit",
+                                  "Back",
                                   20,
                                   7.5,
                                   self.regular,
-                                  self.quit)]
+                                  self.back)]
                 if self.current_tab_object is not None:
                     to_draw.append(BackgroundBox(25,
                                                  50,
@@ -198,10 +198,10 @@ class SongSelectStateManager:
                                                     message_type="render",
                                                     content=to_draw))
 
-    def quit(self):
+    def back(self):
         self.outgoing_queue.put(Message(source="SongSelectStateManager",
-                                        target="GUIEventBroker",
-                                        message_type="Quit",
+                                        target="TitleScreenStateManager",
+                                        message_type="Get GUI update",
                                         content=None))
         self.skip_render = True
 

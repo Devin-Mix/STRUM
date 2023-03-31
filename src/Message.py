@@ -1,7 +1,7 @@
 # Should contain the names of the classes of all processes to be launched as strings
 # This is essentially a duplicated version of ApplicationStateManager.process_classes.keys(), but is included to prevent
 # a circular dependency issue.
-process_class_keys = ["AnalysisStateManager", "ConfigurationStateManager", "GUIEventBroker", "RecordingStateManager", "SongSelectStateManager"]
+process_class_keys = ["AnalysisStateManager", "ConfigurationStateManager", "GUIEventBroker", "RecordingStateManager", "SongSelectStateManager", "TitleScreenStateManager"]
 
 
 # Defines messages to be exchanged between processes

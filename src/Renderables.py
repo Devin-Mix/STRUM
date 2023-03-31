@@ -163,7 +163,7 @@ class LoadBar:
                                  self.height_percent).draw(screen, config)
 
 class Text:
-    def __init__(self, x_percent, y_percent, max_width_percent, max_height_percent, text, font, align_center=True):
+    def __init__(self, x_percent, y_percent, max_width_percent, max_height_percent, text, font, align_center=True, color=None):
         if 0.0 <= x_percent <= 100.0:
             if (align_center and (
                     x_percent - (max_width_percent / 2.0) >= 0.0 and x_percent + (max_width_percent / 2.0) <= 100.0)) \
@@ -197,6 +197,7 @@ class Text:
             self.font = font
         else:
             raise TypeError("Invalid font type for Renderables.Text ({})".format(type(font)))
+        self.color = color
 
     def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
@@ -229,14 +230,14 @@ class Text:
                     self.font.render_to(screen,
                                         (x - (width / 2.0), y - (height / 2.0)),
                                         self.text,
-                                        fgcolor="black",
+                                        fgcolor=self.color,
                                         size=size,
                                         style=pygame.freetype.STYLE_NORMAL)
                 else:
                     self.font.render_to(screen,
                                         (x, y),
                                         self.text,
-                                        fgcolor="black",
+                                        fgcolor=self.color,
                                         size=size,
                                         style=pygame.freetype.STYLE_NORMAL)
             else:
@@ -647,28 +648,69 @@ class BackgroundBox:
                          "black",
                          (bounding_box.x + bounding_box.width, bounding_box.y + edge_width_y),
                          (bounding_box.x + bounding_box.width, bounding_box.y + bounding_box.height - edge_width_y))
-
-        # scaled_corner = pygame.transform.scale(corner, (0.05 * bounding_box.width, 0.05 * bounding_box.height))
-        # screen.blit(scaled_corner, (bounding_box.x, bounding_box.y + (0.95 * bounding_box.height) - 1))
-        # screen.blit(pygame.transform.flip(scaled_corner, False, True), (bounding_box.x, bounding_box.y))
-        # screen.blit(pygame.transform.flip(scaled_corner, True, True), (bounding_box.x + (0.95 * bounding_box.width) - 1,
-        #                                                                bounding_box.y))
-        # screen.blit(pygame.transform.flip(scaled_corner, True, False),
-        #             (bounding_box.x + (0.95 * bounding_box.width) - 1,
-        #              bounding_box.y + (0.95 * bounding_box.height) - 1))
-        # scaled_edge_side = pygame.transform.scale(edge, (0.05 * bounding_box.width, (0.9 * bounding_box.height)))
-        # screen.blit(scaled_edge_side, (bounding_box.x, bounding_box.y + (0.05 * bounding_box.height)))
-        # screen.blit(pygame.transform.flip(scaled_edge_side, True, False),
-        #             (bounding_box.x + (0.95 * bounding_box.width) - 1, bounding_box.y + (0.05 * bounding_box.height)))
-        # scaled_edge_top = pygame.transform.rotate(
-        #     pygame.transform.scale(edge, (0.05 * bounding_box.height, 0.9 * bounding_box.width)), -90)
-        # screen.blit(scaled_edge_top, (bounding_box.x + (0.05 * bounding_box.width), bounding_box.y))
-        # screen.blit(pygame.transform.flip(scaled_edge_top, False, True), (bounding_box.x + (0.05 * bounding_box.width),
-        #                                                                   bounding_box.y + (
-        #                                                                               0.95 * bounding_box.height) - 1))
-        #interior_draw = bounding_box.copy().scale_by(0.9, 0.9)
-        #pygame.draw.rect(screen, config.rear_color, interior_draw)
         return bounding_box
+
+class Blackout:
+    def __init__(self, age=None, lifespan=None, fade_out=True):
+        self.age = age
+        self.lifespan = lifespan
+        self.fade_out = fade_out
+    def draw(self, screen, config):
+        if self.age is not None and self.lifespan is not None:
+            s = pygame.Surface((screen.get_width(), screen.get_height()))
+            s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
+            if self.fade_out:
+                s.set_alpha(255 - round(255 * self.age / self.lifespan), pygame.RLEACCEL)
+            else:
+                s.set_alpha(round(255 * self.age / self.lifespan), pygame.RLEACCEL)
+            s.fill("black")
+            screen.blit(s, (0, 0))
+        else:
+            screen.fill("black")
+
+class TitleText:
+    def __init__(self, fade_percent):
+        if 0 <= fade_percent <= 1:
+            self.fade_percent = fade_percent
+        else:
+            raise ValueError("fade_percent out of bounds for Renderables.TitleText ({})".format(fade_percent))
+    def draw(self, screen, config):
+        s = pygame.Surface((screen.get_width(), screen.get_height()))
+        s.fill(config.chroma_key)
+        s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
+        s.set_alpha(round(255 * self.fade_percent), pygame.RLEACCEL)
+        Text(50, 45, 100, 10, "Team S.T.R.U.M.", config.header, color="white").draw(s, config)
+        Text(50, 52.5, 100, 5, "presents", config.italic, color="white").draw(s, config)
+        screen.blit(s, (0, 0))
+
+class Logo:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, rotational_angle):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.Logo ({})".format(
+                    y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.Logo ({})".format(
+                    x_percent + width_percent))
+        self.rotational_angle = rotational_angle
+    def draw(self, screen, config):
+        if (self.width_percent / self.height_percent) > (config.logo.get_width() / config.logo.get_height()):
+            scaler = (self.height_percent * screen.get_height()) / (100 * config.logo.get_height())
+        else:
+            scaler = (self.width_percent * screen.get_width()) / (100 * config.logo.get_width())
+        scaled_logo = pygame.transform.rotozoom(config.logo, self.rotational_angle, scaler)
+        x_px = (self.x_percent * screen.get_width() / 100) - (scaled_logo.get_width() / 2)
+        y_px = (self.y_percent * screen.get_height() / 100) - (scaled_logo.get_height() / 2)
+        screen.blit(scaled_logo, (x_px, y_px))
+
+
 
 def as_time_string(seconds):
     minutes = round((seconds - (seconds % 60)) / 60)
@@ -676,4 +718,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, BackgroundBox, Button, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, StringLine, Text, UpArrowButton]
+available = [AnalysisGraph, BackgroundBox, Blackout, Button, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, StringLine, Text, TitleText, UpArrowButton]
