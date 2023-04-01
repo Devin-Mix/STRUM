@@ -1,6 +1,3 @@
-import pygame
-
-from Fonts import *
 from Message import Message
 from os import scandir
 from queue import Queue
@@ -22,9 +19,6 @@ class SongSelectStateManager:
             self.outgoing_queue = outgoing_queue
         self.scroll_time = 0.125
         self.tab_names = []
-        self.header = header
-        self.regular = regular
-        self.italic = italic
         self.skip_render = None
         self.song_list_index = 0
         self.scrolling = False
@@ -47,11 +41,14 @@ class SongSelectStateManager:
                                  self.select_tab_five]
         self.current_tab_object = None
         self.leaving_tab_object = None
+        self.config = None
 
     def handle(self):
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
-            if message.type == "Get GUI update":
+            if message.type == "Config":
+                self.config = message.content
+            elif message.type == "Get GUI update":
                 self.skip_render = False
                 if message.content is not None and not message.content["events"] == []:
                     for event in message.content["events"]:
@@ -66,7 +63,7 @@ class SongSelectStateManager:
                                   "Back",
                                   20,
                                   7.5,
-                                  self.regular,
+                                  self.config.regular,
                                   self.back)]
                 if self.current_tab_object is not None:
                     to_draw.append(BackgroundBox(25,
@@ -78,19 +75,19 @@ class SongSelectStateManager:
                                         35,
                                         10,
                                         "{}".format(self.current_tab_object.title),
-                                        self.header))
+                                        self.config.header))
                     to_draw.append(Text(25,
                                         35,
                                         40,
                                         5,
                                         "{}".format(self.current_tab_object.artist),
-                                        self.italic))
+                                        self.config.italic))
                     to_draw.append(Text(25,
                                         40,
                                         40,
                                         5,
                                         "{} BPM".format(self.current_tab_object.bpm),
-                                        self.italic))
+                                        self.config.italic))
                     to_draw.append(Button(25,
                                           100 - 2.5 - 5,
                                           45,
@@ -98,7 +95,7 @@ class SongSelectStateManager:
                                           "Start",
                                           40,
                                           7.5,
-                                          self.regular,
+                                          self.config.regular,
                                           self.start))
                 to_draw.append(UpArrowButton(100 - 2.5 - (45 / 2),
                                              18.75,
@@ -190,7 +187,7 @@ class SongSelectStateManager:
                                               self.tab_objects[ii].title,
                                               40,
                                               7.5,
-                                              self.italic,
+                                              self.config.italic,
                                               self.button_functions[ii]))
                 if not self.skip_render:
                     self.outgoing_queue.put(Message(source="SongSelectStateManager",

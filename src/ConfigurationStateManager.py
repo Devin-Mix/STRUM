@@ -37,7 +37,15 @@ class ConfigurationStateManager:
             self.transition_length = 1.0
             self.logo = pygame.image.load("logo.svg")
             self.square_tone = True
+            self.outgoing_queue.put(Message(target="AnalysisStateManager",
+                                            source="ConfigurationStateManager",
+                                            message_type="Config",
+                                            content=self))
             self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                            source="ConfigurationStateManager",
+                                            message_type="Config",
+                                            content=self))
+            self.outgoing_queue.put(Message(target="SongSelectStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
                                             content=self))

@@ -5,7 +5,6 @@ from RecordingStateManager import RecordingStateManager
 from SongSelectStateManager import SongSelectStateManager
 from TitleScreenStateManager import TitleScreenStateManager
 from Message import Message
-from pygame import QUIT
 from queue import Queue
 
 # Should contain the classes of all processes to be launched

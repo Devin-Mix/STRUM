@@ -1,10 +1,7 @@
-from Fonts import *
 from math import pi, sin
 from Message import Message
-from os import scandir
 from queue import Queue
 from Renderables import *
-from Tab import Tab
 from time import time
 
 
