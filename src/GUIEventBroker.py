@@ -108,7 +108,7 @@ class GUIEventBroker:
                 self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
                 self.playback_num_channels = self.playback_file.getnchannels()
                 self.tone_wave = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
-                                                               self.playback_num_channels)
+                                                               self.config, self.playback_num_channels)
                 if not self.play_song and self.play_tone:
                     self.playback_frames = self.tone_wave
                 elif self.play_song and self.play_tone:

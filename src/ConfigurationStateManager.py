@@ -36,6 +36,7 @@ class ConfigurationStateManager:
             self.regular = regular
             self.transition_length = 1.0
             self.logo = pygame.image.load("logo.svg")
+            self.square_tone = True
             self.outgoing_queue.put(Message(target="GUIEventBroker",
                                             source="ConfigurationStateManager",
                                             message_type="Config",

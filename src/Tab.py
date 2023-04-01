@@ -81,7 +81,7 @@ class Tab:
         target_midi_number = default_midi_numbers[string_number] + self.tuning[string_number] + fret_number
         return 440 * pow(2, (target_midi_number - 69) / 12)
 
-    def get_tone_wave(self, sample_rate, pyaudio_data_type, num_channels=2):
+    def get_tone_wave(self, sample_rate, pyaudio_data_type, config, num_channels=2):
         output_wave = None
         last_output_chunk_num_samples = None
         output_chunk_count = 0
@@ -98,11 +98,21 @@ class Tab:
                     # https://stackoverflow.com/questions/48043004/how-do-i-generate-a-sine-wave-using-python
                     samples = np.arange(chord_len * sample_rate) / sample_rate
                     last_output_chunk_num_samples = np.size(samples)
-                    if output_chunk is None:
-                        output_chunk = np.sin(2 * np.pi * string_frequency * samples) / num_active_strings
+                    if config.square_tone:
+                        new_chunk = np.sin(2 * np.pi * string_frequency * samples)
+                        new_chunk[new_chunk > 0] = 1.0
+                        new_chunk[new_chunk < 0] = -1.0
+                        new_chunk = new_chunk / num_active_strings
+                        if output_chunk is None:
+                            output_chunk = new_chunk
+                        else:
+                            output_chunk + new_chunk
                     else:
-                        output_chunk = output_chunk + \
-                                       (np.sin(2 * np.pi * string_frequency * samples) / num_active_strings)
+                        if output_chunk is None:
+                            output_chunk = np.sin(2 * np.pi * string_frequency * samples) / num_active_strings
+                        else:
+                            output_chunk = output_chunk + \
+                                           (np.sin(2 * np.pi * string_frequency * samples) / num_active_strings)
                 else:
                     continue
 
