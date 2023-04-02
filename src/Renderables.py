@@ -4,6 +4,10 @@ from math import pi
 corner = pygame.image.load("buttonCorner.png")
 edge = pygame.image.load("buttonEdge.png")
 
+
+def no_function():
+    return
+
 class StringLine:
     def __init__(self, width_percent, y_percent):
         if 0.0 <= width_percent <= 100.0:
@@ -540,7 +544,7 @@ class FadeOutButton:
             return bounding_box
 
 class BackgroundBox:
-    def __init__(self, x_percent, y_percent, width_percent, height_percent, edge_scale=0.1):
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, edge_scale=0.1, function=no_function):
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
@@ -556,6 +560,7 @@ class BackgroundBox:
                 "Width plus offset out of bounds for Renderables.BackgroundBox ({})".format(
                     x_percent + width_percent))
         self.edge_scale = edge_scale
+        self.function = function
     def draw(self, screen, config):
         bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
                                    (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
@@ -710,6 +715,36 @@ class Logo:
         y_px = (self.y_percent * screen.get_height() / 100) - (scaled_logo.get_height() / 2)
         screen.blit(scaled_logo, (x_px, y_px))
 
+class CheckBox:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, function, value_set):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.CheckBox ({})".format(y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.CheckBox ({})".format(x_percent + width_percent))
+        if type(value_set) == bool:
+            self.value_set = value_set
+        else:
+            raise TypeError("Invalid type for Renderables.CheckBox.set ({})".format(type(set)))
+        self.function = function
+
+    def draw(self, screen, config):
+        bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
+                                   (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
+                                   screen.get_width() * self.width_percent / 100,
+                                   screen.get_height() * self.height_percent / 100)
+        pygame.draw.rect(screen, "black", bounding_box, width=1)
+        if self.value_set:
+            pygame.draw.rect(screen, "black", bounding_box)
+        return bounding_box
+
 
 
 def as_time_string(seconds):
@@ -718,4 +753,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, BackgroundBox, Blackout, Button, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, StringLine, Text, TitleText, UpArrowButton]
+available = [AnalysisGraph, BackgroundBox, Blackout, Button, CheckBox, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, StringLine, Text, TitleText, UpArrowButton]

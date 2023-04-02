@@ -97,6 +97,12 @@ class SongSelectStateManager:
                                           7.5,
                                           self.config.regular,
                                           self.start))
+                    to_draw.append(CheckBox(25,
+                                            55,
+                                            10,
+                                            10,
+                                            self.toggle_square_tone,
+                                            self.config.square_tone))
                 to_draw.append(UpArrowButton(100 - 2.5 - (45 / 2),
                                              18.75,
                                              45,
@@ -120,7 +126,7 @@ class SongSelectStateManager:
                                                      self.leaving_tab_object.title,
                                                      40,
                                                      7.5,
-                                                     self.italic,
+                                                     self.config.italic,
                                                      self.button_functions[0],
                                                      time_now - self.last_scroll_start,
                                                      self.scroll_time))
@@ -131,7 +137,7 @@ class SongSelectStateManager:
                                                     self.tab_objects[-1].title,
                                                     40,
                                                     7.5,
-                                                    self.italic,
+                                                    self.config.italic,
                                                     self.button_functions[-1],
                                                     time_now - self.last_scroll_start,
                                                     self.scroll_time))
@@ -143,7 +149,7 @@ class SongSelectStateManager:
                                                   self.tab_objects[ii].title,
                                                   40,
                                                   7.5,
-                                                  self.italic,
+                                                  self.config.italic,
                                                   self.button_functions[ii]))
                     else:
                         to_draw.append(FadeInButton(100 - 2.5 - (45 / 2),
@@ -153,7 +159,7 @@ class SongSelectStateManager:
                                                     self.tab_objects[0].title,
                                                     40,
                                                     7.5,
-                                                    self.italic,
+                                                    self.config.italic,
                                                     self.button_functions[0],
                                                     time_now - self.last_scroll_start,
                                                     self.scroll_time))
@@ -164,7 +170,7 @@ class SongSelectStateManager:
                                                      self.leaving_tab_object.title,
                                                      40,
                                                      7.5,
-                                                     self.italic,
+                                                     self.config.italic,
                                                      self.button_functions[-1],
                                                      time_now - self.last_scroll_start,
                                                      self.scroll_time))
@@ -176,7 +182,7 @@ class SongSelectStateManager:
                                                   self.tab_objects[ii + 1].title,
                                                   40,
                                                   7.5,
-                                                  self.italic,
+                                                  self.config.italic,
                                                   self.button_functions[ii]))
                 else:
                     for ii in range(4):
@@ -247,3 +253,6 @@ class SongSelectStateManager:
                                         message_type="Start recording session",
                                         content={"tab_file": self.current_tab_object}))
         self.skip_render = True
+
+    def toggle_square_tone(self):
+        self.config.square_tone = not self.config.square_tone
