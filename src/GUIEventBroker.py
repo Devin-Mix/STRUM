@@ -40,8 +40,6 @@ class GUIEventBroker:
             self.playback_frame_num_bytes = None
             self.play_to_pos = None
             self.playback_format = None
-            self.play_tone = None
-            self.play_song = None
             self.tab_object = None
             self.playback_num_channels = None
             self.playback_framerate = None
@@ -97,8 +95,6 @@ class GUIEventBroker:
                 self.last_frame_time = self.this_frame_time
             elif message.type == "Prime playback":
                 self.playback_file_name = message.content["song_file"]
-                self.play_song = message.content["play_song"]
-                self.play_tone = message.content["play_tone"]
                 self.tab_object = message.content["tab_object"]
                 self.playback_file = wave.open(self.playback_file_name, "rb")
                 self.playback_frames = self.playback_file.readframes(self.playback_file.getnframes())
@@ -109,11 +105,11 @@ class GUIEventBroker:
                 self.playback_num_channels = self.playback_file.getnchannels()
                 self.tone_wave = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
                                                                self.config, self.playback_num_channels)
-                if not self.play_song and self.play_tone:
+                if not self.config.play_song and self.config.play_tone:
                     self.playback_frames = self.tone_wave
-                elif self.play_song and self.play_tone:
+                elif self.config.play_song and self.config.play_tone:
                     self.mix_tone(0.5)
-                elif not self.play_song and not self.play_tone:
+                elif not self.config.play_song and not self.config.play_tone:
                     self.playback_frames = bytes()
 
                 self.playback_pos = 0

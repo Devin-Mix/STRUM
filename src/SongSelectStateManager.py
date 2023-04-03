@@ -97,12 +97,49 @@ class SongSelectStateManager:
                                           7.5,
                                           self.config.regular,
                                           self.start))
+                    to_draw.append(Text(20,
+                                        47.5,
+                                        25,
+                                        5,
+                                        "Play studio track:",
+                                        self.config.regular))
+                    to_draw.append(CheckBox(35,
+                                            47.5,
+                                            5,
+                                            5,
+                                            self.toggle_song,
+                                            self.config.play_song))
+                    if self.config.play_tone:
+                        if self.config.square_tone:
+                            tone_style = "Square"
+                        else:
+                            tone_style = "Sine"
+                    else:
+                        tone_style = "Off"
+                    to_draw.append(Text(25,
+                                        55,
+                                        40,
+                                        5,
+                                        "Tone wave style: {}".format(tone_style),
+                                        self.config.regular))
+                    to_draw.append(CheckBox(15,
+                                            60,
+                                            5,
+                                            5,
+                                            self.tone_wave_off,
+                                            not self.config.play_tone))
                     to_draw.append(CheckBox(25,
-                                            55,
-                                            10,
-                                            10,
-                                            self.toggle_square_tone,
-                                            self.config.square_tone))
+                                            60,
+                                            5,
+                                            5,
+                                            self.sine_tone_on,
+                                            (not self.config.square_tone) and self.config.play_tone))
+                    to_draw.append(CheckBox(35,
+                                            60,
+                                            5,
+                                            5,
+                                            self.square_tone_on,
+                                            self.config.square_tone and self.config.play_tone))
                 to_draw.append(UpArrowButton(100 - 2.5 - (45 / 2),
                                              18.75,
                                              45,
@@ -254,5 +291,16 @@ class SongSelectStateManager:
                                         content={"tab_file": self.current_tab_object}))
         self.skip_render = True
 
-    def toggle_square_tone(self):
-        self.config.square_tone = not self.config.square_tone
+    def square_tone_on(self):
+        self.config.square_tone = True
+        self.config.play_tone = True
+
+    def sine_tone_on(self):
+        self.config.square_tone = False
+        self.config.play_tone = True
+
+    def toggle_song(self):
+        self.config.play_song = not self.config.play_song
+
+    def tone_wave_off(self):
+        self.config.play_tone = False

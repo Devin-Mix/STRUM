@@ -100,13 +100,14 @@ class Tab:
                     last_output_chunk_num_samples = np.size(samples)
                     if config.square_tone:
                         new_chunk = np.sin(2 * np.pi * string_frequency * samples)
-                        new_chunk[new_chunk > 0] = 1.0
+                        new_chunk[new_chunk >= 0] = 1.0
                         new_chunk[new_chunk < 0] = -1.0
-                        new_chunk = new_chunk / num_active_strings
+                        # Dividing by 1.41 here for RMS correction
+                        new_chunk = new_chunk / (num_active_strings * 1.41)
                         if output_chunk is None:
                             output_chunk = new_chunk
                         else:
-                            output_chunk + new_chunk
+                            output_chunk = output_chunk + new_chunk
                     else:
                         if output_chunk is None:
                             output_chunk = np.sin(2 * np.pi * string_frequency * samples) / num_active_strings

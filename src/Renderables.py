@@ -736,13 +736,15 @@ class CheckBox:
         self.function = function
 
     def draw(self, screen, config):
-        bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
-                                   (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
-                                   screen.get_width() * self.width_percent / 100,
-                                   screen.get_height() * self.height_percent / 100)
-        pygame.draw.rect(screen, "black", bounding_box, width=1)
+        rect_side_length = min(self.width_percent * screen.get_width() / 100, self.height_percent * screen.get_height() / 100)
+        bounding_box = pygame.Rect((self.x_percent * screen.get_width() / 100) - (rect_side_length / 2),
+                                   (self.y_percent * screen.get_height() / 100) - (rect_side_length / 2),
+                                   rect_side_length, rect_side_length)
+        pygame.draw.ellipse(screen, config.front_color, bounding_box)
+        pygame.draw.ellipse(screen, config.middle_color, bounding_box.scale_by(0.9, 0.9))
+        pygame.draw.ellipse(screen, config.rear_color, bounding_box.scale_by(0.8, 0.8))
         if self.value_set:
-            pygame.draw.rect(screen, "black", bounding_box)
+            pygame.draw.ellipse(screen, "black", bounding_box.scale_by(0.7, 0.7))
         return bounding_box
 
 
