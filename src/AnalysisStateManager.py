@@ -120,7 +120,7 @@ class AnalysisStateManager:
                                                                  Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.config.regular, self.return_to_menu)]))
                 self.skip_render = False
 
-    def save_recording(self, event):
+    def save_recording(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             datetime_info = datetime.now()
             filename = "../exports/{}-{}-{}_{}-{}-{}-{}.wav".format(datetime_info.year,
@@ -136,7 +136,7 @@ class AnalysisStateManager:
                 file.setframerate(self.framerate)
                 file.writeframes(self.recording_data_to_save.tobytes())
 
-    def return_to_menu(self, event):
+    def return_to_menu(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.outgoing_queue.put(Message(target="SongSelectStateManager",
                                             source="AnalysisStateManager",

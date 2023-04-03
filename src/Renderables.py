@@ -5,7 +5,7 @@ corner = pygame.image.load("buttonCorner.png")
 edge = pygame.image.load("buttonEdge.png")
 
 
-def no_function(event):
+def no_function(event, renderable):
     return
 
 class StringLine:
@@ -151,6 +151,7 @@ class LoadBar:
             self.load_percent = load_percent
         else:
             raise ValueError("Load percent out of bounts for Renderables.LoadBar ({})".format(load_percent))
+        self.function = no_function
 
     def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
@@ -758,6 +759,42 @@ class CheckBox:
             pygame.draw.ellipse(screen, "black", self.bounding_box.scale_by(0.7, 0.7))
         return self
 
+class SlideBar:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, function, cursor_percent):
+        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
+            self.y_percent = y_percent
+            self.height_percent = height_percent
+        else:
+            raise ValueError(
+                "Height plus offset out of bounds for Renderables.SlideBar ({})".format(y_percent + height_percent))
+        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
+            self.x_percent = x_percent
+            self.width_percent = width_percent
+        else:
+            raise ValueError(
+                "Width plus offset out of bounds for Renderables.SlideBar ({})".format(x_percent + width_percent))
+        if 0.0 <= cursor_percent <= 100.0:
+            self.cursor_percent = cursor_percent
+        else:
+            raise ValueError(
+                "cursor_percent out of bounds for Renderables.SlideBar ({})".format(cursor_percent))
+        self.function = function
+        self.bounding_box = None
+        self.start_x = None
+        self.end_x = None
+
+    def draw(self, screen, config):
+        cursor_radius = self.height_percent * screen.get_height() / 200
+        self.start_x = ((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100) + cursor_radius
+        y = self.y_percent * screen.get_height() / 100
+        self.end_x = ((self.x_percent + (self.width_percent / 2)) * screen.get_width() / 100) + cursor_radius
+        pygame.draw.line(screen, "black", (self.start_x, y), (self.end_x, y))
+        cursor_x = (self.start_x + ((self.cursor_percent * self.width_percent / 100) * screen.get_width() / 100))
+        self.bounding_box = pygame.draw.circle(screen, config.front_color, (cursor_x, y), cursor_radius)
+        pygame.draw.circle(screen, config.middle_color, (cursor_x, y), cursor_radius * 0.9)
+        pygame.draw.circle(screen, config.rear_color, (cursor_x, y), cursor_radius * 0.8)
+        return self
+
 
 def as_time_string(seconds):
     minutes = round((seconds - (seconds % 60)) / 60)
@@ -765,4 +802,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, BackgroundBox, Blackout, Button, CheckBox, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, StringLine, Text, TitleText, UpArrowButton]
+available = [AnalysisGraph, BackgroundBox, Blackout, Button, CheckBox, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, SlideBar, StringLine, Text, TitleText, UpArrowButton]

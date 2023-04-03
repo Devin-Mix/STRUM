@@ -86,7 +86,7 @@ class GUIEventBroker:
                     elif event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
                         for interactable in interactables:
                             if interactable[0].bounding_box.collidepoint(event.pos[0], event.pos[1]):
-                                interactable[1].function(event)
+                                interactable[1].function(event, interactable[1])
                 self.outgoing_queue.put(Message(target=self.current_source,
                                                 source="GUIEventBroker",
                                                 message_type="Get GUI update",

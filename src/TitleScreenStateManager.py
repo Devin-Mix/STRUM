@@ -58,7 +58,7 @@ class TitleScreenStateManager:
                                                     content=to_draw))
                 self.skip_render = False
 
-    def launch_config(self, event):
+    def launch_config(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.outgoing_queue.put(Message(target="ConfigurationStateManager",
                                             source="TitleScreenStateManager",
@@ -66,14 +66,14 @@ class TitleScreenStateManager:
                                             content=None))
             self.skip_render = True
 
-    def launch_song_select(self, event):
+    def launch_song_select(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.outgoing_queue.put(Message(source="TitleScreenStateManager",
                                             target="SongSelectStateManager",
                                             message_type="Get GUI update",
                                             content=None))
             self.skip_render = True
-    def skip_intro(self, event):
+    def skip_intro(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             if self.doing_intro is None or self.doing_intro or self.fade_done is None or not self.fade_done:
                  self.doing_intro = False

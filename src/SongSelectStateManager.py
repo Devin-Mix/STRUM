@@ -232,7 +232,7 @@ class SongSelectStateManager:
                                                     content=to_draw))
                 self.skip_render = False
 
-    def back(self, event):
+    def back(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.outgoing_queue.put(Message(source="SongSelectStateManager",
                                             target="TitleScreenStateManager",
@@ -240,7 +240,7 @@ class SongSelectStateManager:
                                             content=None))
             self.skip_render = True
 
-    def scroll_down(self, event):
+    def scroll_down(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             if not self.scrolling:
                 self.song_list_index -= 1
@@ -253,7 +253,7 @@ class SongSelectStateManager:
                 self.tab_objects[1:] = self.tab_objects[0:3]
                 self.tab_objects[0] = Tab(self.tab_names[self.song_list_index])
 
-    def scroll_up(self, event):
+    def scroll_up(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             if not self.scrolling:
                 self.song_list_index += 1
@@ -266,27 +266,27 @@ class SongSelectStateManager:
                 self.tab_objects = self.tab_objects[1:]
                 self.tab_objects.append(Tab(self.tab_names[self.song_list_index]))
 
-    def select_tab_one(self, event):
+    def select_tab_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.current_tab_object = self.tab_objects[0]
 
-    def select_tab_two(self, event):
+    def select_tab_two(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.current_tab_object = self.tab_objects[1]
 
-    def select_tab_three(self, event):
+    def select_tab_three(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.current_tab_object = self.tab_objects[2]
 
-    def select_tab_four(self, event):
+    def select_tab_four(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.current_tab_object = self.tab_objects[3]
 
-    def select_tab_five(self, event):
+    def select_tab_five(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.current_tab_object = self.tab_objects[4]
 
-    def start(self, event):
+    def start(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.outgoing_queue.put(Message(source="SongSelectStateManager",
                                             target="RecordingStateManager",
@@ -294,20 +294,20 @@ class SongSelectStateManager:
                                             content={"tab_file": self.current_tab_object}))
             self.skip_render = True
 
-    def square_tone_on(self, event):
+    def square_tone_on(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.config.square_tone = True
             self.config.play_tone = True
 
-    def sine_tone_on(self, event):
+    def sine_tone_on(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.config.square_tone = False
             self.config.play_tone = True
 
-    def toggle_song(self, event):
+    def toggle_song(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.config.play_song = not self.config.play_song
 
-    def tone_wave_off(self, event):
+    def tone_wave_off(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.config.play_tone = False

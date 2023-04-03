@@ -81,7 +81,19 @@ class ConfigurationStateManager:
                                       20,
                                       7.5,
                                       self.regular,
-                                      self.back)]
+                                      self.back),
+                               Text(12.5,
+                                    22.5,
+                                    10,
+                                    5,
+                                    "UI Color:",
+                                    self.regular),
+                               SlideBar(55,
+                                        22.5,
+                                        70,
+                                        5,
+                                        self.adjust_hue,
+                                        self.hue / 3.60)]
                     self.outgoing_queue.put(Message(source="ConfigurationStateManager",
                                                     target="GUIEventBroker",
                                                     message_type="render",
@@ -93,10 +105,19 @@ class ConfigurationStateManager:
         self.middle_color.hsva = (self.hue, 70, 100)
         self.front_color.hsva = (self.hue, 100, 100)
 
-    def back(self, event):
+    def back(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.outgoing_queue.put(Message(source="SongSelectStateManager",
                                             target="TitleScreenStateManager",
                                             message_type="Get GUI update",
                                             content=None))
             self.skip_render = True
+
+    def adjust_hue(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            self.hue = 360 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x)
+            if self.hue < 0:
+                self.hue = 0
+            elif self.hue > 360:
+                self.hue = 360
+            self.update_colors()
