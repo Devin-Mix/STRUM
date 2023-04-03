@@ -231,6 +231,7 @@ class Text:
                         size = 1
                         break
                 height = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).height
+                self.font.fgcolor = pygame.color.Color(config.text_color, config.text_color, config.text_color)
                 if self.align_center:
                     self.font.render_to(screen,
                                         (x - (width / 2.0), y - (height / 2.0)),
@@ -394,26 +395,26 @@ class ArrowButton:
         BackgroundBox(self.x_percent, self.y_percent, self.width_percent, self.height_percent).draw(screen, config)
         if self.direction == 0:
             pygame.draw.line(screen,
-                             "black",
+                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
                              ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
                               (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
                              (self.x_percent * screen.get_width() / 100,
                               (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
             pygame.draw.line(screen,
-                             "black",
+                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
                              ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
                               (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
                              (self.x_percent * screen.get_width() / 100,
                               (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
         elif self.direction == 2:
             pygame.draw.line(screen,
-                             "black",
+                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
                              ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
                               (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
                              (self.x_percent * screen.get_width() / 100,
                               (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
             pygame.draw.line(screen,
-                             "black",
+                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
                              ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
                               (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
                              (self.x_percent * screen.get_width() / 100,
@@ -594,7 +595,7 @@ class BackgroundBox:
                                                                          2 * (edge_width_x - (edge_width_x * scales[ii]))),
                                                              self.bounding_box.height - (2 * edge_width_y)))
         pygame.draw.arc(screen,
-                        "black",
+                        pygame.color.Color(config.text_color, config.text_color, config.text_color),
                         pygame.rect.Rect(self.bounding_box.x,
                                          self.bounding_box.y,
                                          edge_width_x * 2,
@@ -602,7 +603,7 @@ class BackgroundBox:
                         pi / 2,
                         pi)
         pygame.draw.arc(screen,
-                        "black",
+                        pygame.color.Color(config.text_color, config.text_color, config.text_color),
                         pygame.rect.Rect(self.bounding_box.x + self.bounding_box.width - (2 * edge_width_x),
                                          self.bounding_box.y,
                                          edge_width_x * 2,
@@ -610,7 +611,7 @@ class BackgroundBox:
                         0,
                         pi / 2)
         pygame.draw.arc(screen,
-                        "black",
+                        pygame.color.Color(config.text_color, config.text_color, config.text_color),
                         pygame.rect.Rect(self.bounding_box.x + self.bounding_box.width - (2 * edge_width_x),
                                          self.bounding_box.y + self.bounding_box.height - (2 * edge_width_y),
                                          edge_width_x * 2,
@@ -618,7 +619,7 @@ class BackgroundBox:
                         3 * pi / 2,
                         2 * pi)
         pygame.draw.arc(screen,
-                        "black",
+                        pygame.color.Color(config.text_color, config.text_color, config.text_color),
                         pygame.rect.Rect(self.bounding_box.x,
                                          self.bounding_box.y + self.bounding_box.height - (2 * edge_width_y),
                                          edge_width_x * 2,
@@ -626,19 +627,19 @@ class BackgroundBox:
                         pi,
                         3 * pi / 2)
         pygame.draw.line(screen,
-                         "black",
+                         pygame.color.Color(config.text_color, config.text_color, config.text_color),
                          (self.bounding_box.x + edge_width_x, self.bounding_box.y),
                          (self.bounding_box.x + self.bounding_box.width - edge_width_x, self.bounding_box.y))
         pygame.draw.line(screen,
-                         "black",
+                         pygame.color.Color(config.text_color, config.text_color, config.text_color),
                          (self.bounding_box.x + edge_width_x, self.bounding_box.y + self.bounding_box.height),
                          (self.bounding_box.x + self.bounding_box.width - edge_width_x, self.bounding_box.y + self.bounding_box.height))
         pygame.draw.line(screen,
-                         "black",
+                         pygame.color.Color(config.text_color, config.text_color, config.text_color),
                          (self.bounding_box.x, self.bounding_box.y + edge_width_y),
                          (self.bounding_box.x, self.bounding_box.y + self.bounding_box.height - edge_width_y))
         pygame.draw.line(screen,
-                         "black",
+                         pygame.color.Color(config.text_color, config.text_color, config.text_color),
                          (self.bounding_box.x + self.bounding_box.width, self.bounding_box.y + edge_width_y),
                          (self.bounding_box.x + self.bounding_box.width, self.bounding_box.y + self.bounding_box.height - edge_width_y))
         return self
@@ -659,10 +660,10 @@ class Blackout:
                 s.set_alpha(255 - round(255 * self.age / self.lifespan), pygame.RLEACCEL)
             else:
                 s.set_alpha(round(255 * self.age / self.lifespan), pygame.RLEACCEL)
-            s.fill("black")
+            s.fill(pygame.color.Color(config.text_color, config.text_color, config.text_color))
             screen.blit(s, (0, 0))
         else:
-            screen.fill("black")
+            screen.fill(pygame.color.Color(config.text_color, config.text_color, config.text_color))
         return self
 
 class TitleText:
@@ -703,6 +704,9 @@ class Logo:
         else:
             scaler = (self.width_percent * screen.get_width()) / (100 * config.logo.get_width())
         scaled_logo = pygame.transform.rotozoom(config.logo, self.rotational_angle, scaler)
+        scaled_logo = pygame.mask.from_surface(scaled_logo)\
+            .to_surface(setcolor=pygame.color.Color(config.text_color, config.text_color, config.text_color),
+                        unsetcolor=None)
         x_px = (self.x_percent * screen.get_width() / 100) - (scaled_logo.get_width() / 2)
         y_px = (self.y_percent * screen.get_height() / 100) - (scaled_logo.get_height() / 2)
         screen.blit(scaled_logo, (x_px, y_px))
@@ -737,7 +741,7 @@ class CheckBox:
         pygame.draw.ellipse(screen, config.middle_color, self.bounding_box.scale_by(0.9, 0.9))
         pygame.draw.ellipse(screen, config.rear_color, self.bounding_box.scale_by(0.8, 0.8))
         if self.value_set:
-            pygame.draw.ellipse(screen, "black", self.bounding_box.scale_by(0.7, 0.7))
+            pygame.draw.ellipse(screen, pygame.color.Color(config.text_color, config.text_color, config.text_color), self.bounding_box.scale_by(0.7, 0.7))
         return self
 
 class SlideBar:
@@ -769,7 +773,7 @@ class SlideBar:
         self.start_x = ((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100) + cursor_radius
         y = self.y_percent * screen.get_height() / 100
         self.end_x = ((self.x_percent + (self.width_percent / 2)) * screen.get_width() / 100) + cursor_radius
-        pygame.draw.line(screen, "black", (self.start_x, y), (self.end_x, y))
+        pygame.draw.line(screen, pygame.color.Color(config.text_color, config.text_color, config.text_color), (self.start_x, y), (self.end_x, y))
         cursor_x = (self.start_x + ((self.cursor_percent * self.width_percent / 100) * screen.get_width() / 100))
         self.bounding_box = pygame.draw.circle(screen, config.front_color, (cursor_x, y), cursor_radius)
         pygame.draw.circle(screen, config.middle_color, (cursor_x, y), cursor_radius * 0.9)

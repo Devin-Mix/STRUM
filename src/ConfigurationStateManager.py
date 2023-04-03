@@ -31,6 +31,7 @@ class ConfigurationStateManager:
             self.rear_color_saturation = 45
             self.middle_color_saturation = 70
             self.update_colors()
+            self.text_color = 0
             self.intro_start_time = 1.0
             self.intro_length = 1.0
             self.intro_fade_time = 1.0
@@ -156,6 +157,30 @@ class ConfigurationStateManager:
                                            5,
                                            self.add_rear_saturation_one,
                                            1),
+                               Text(12.5,
+                                    45,
+                                    10,
+                                    5,
+                                    "Text / Borders color: {}".format(self.text_color),
+                                    self.regular),
+                               SlideBar(55,
+                                        45,
+                                        55,
+                                        5,
+                                        self.adjust_text_color,
+                                        100 * self.text_color / 255),
+                               ArrowButton(23.75,
+                                           45,
+                                           5,
+                                           5,
+                                           self.subtract_text_color_one,
+                                           3),
+                               ArrowButton(90,
+                                           45,
+                                           5,
+                                           5,
+                                           self.add_text_color_one,
+                                           1)
                                ]
                     self.outgoing_queue.put(Message(source="ConfigurationStateManager",
                                                     target="GUIEventBroker",
@@ -230,4 +255,22 @@ class ConfigurationStateManager:
                 self.rear_color_saturation = 0
             elif self.rear_color_saturation > 100:
                 self.rear_color_saturation = 100
+            self.update_colors()
+
+    def adjust_text_color(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            self.text_color = round(255 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
+            if self.text_color < 0:
+                self.text_color = 0
+            elif self.text_color > 255:
+                self.text_color = 255
+
+    def subtract_text_color_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.text_color = max(self.text_color - 1, 0)
+            self.update_colors()
+
+    def add_text_color_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.text_color = min(self.text_color + 1, 255)
             self.update_colors()
