@@ -116,7 +116,7 @@ class Tab:
                 else:
                     continue
 
-            if output_wave is not None:
+            if output_wave is not None and not config.square_tone:
                 mix_chunk = None
                 count_samples_to_mix = floor(-last_output_chunk_num_samples / 4)
                 for i in range(6):
