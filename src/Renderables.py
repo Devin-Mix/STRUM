@@ -365,8 +365,8 @@ class Button:
         Text(self.x_percent, self.y_percent, self.text_width_percent, self.text_height_percent, self.text, self.font).draw(screen, config)
         return self
 
-class UpArrowButton:
-    def __init__(self, x_percent, y_percent, width_percent, height_percent, function):
+class ArrowButton:
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, function, direction=0):
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
@@ -381,6 +381,10 @@ class UpArrowButton:
                 "Width plus offset out of bounds for Renderables.UpArrowButton ({})".format(x_percent + width_percent))
         self.function = function
         self.bounding_box = None
+        if type(direction) == int and 0 <= direction <= 3:
+            self.direction = direction
+        else:
+            raise ValueError("Invalid direction for Renderables.ArrowButton ({})".format(direction))
 
     def draw(self, screen, config):
         self.bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
@@ -388,55 +392,32 @@ class UpArrowButton:
                                                       screen.get_width() * self.width_percent / 100,
                                                       screen.get_height() * self.height_percent / 100)
         BackgroundBox(self.x_percent, self.y_percent, self.width_percent, self.height_percent).draw(screen, config)
-        pygame.draw.line(screen,
-                         "black",
-                         ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                         (self.x_percent * screen.get_width() / 100,
-                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
-        pygame.draw.line(screen,
-                         "black",
-                         ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                         (self.x_percent * screen.get_width() / 100,
-                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
-        return self
-
-class DownArrowButton:
-    def __init__(self, x_percent, y_percent, width_percent, height_percent, function):
-        if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
-            self.y_percent = y_percent
-            self.height_percent = height_percent
-        else:
-            raise ValueError(
-                "Height plus offset out of bounds for Renderables.DownArrowButton ({})".format(y_percent + height_percent))
-        if 0.0 <= x_percent - (width_percent / 2) and x_percent + (width_percent / 2) <= 100.0:
-            self.x_percent = x_percent
-            self.width_percent = width_percent
-        else:
-            raise ValueError(
-                "Width plus offset out of bounds for Renderables.DownArrowButton ({})".format(x_percent + width_percent))
-        self.function = function
-        self.bounding_box = None
-
-    def draw(self, screen, config):
-        self.bounding_box = pygame.Rect((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100,
-                                                      (self.y_percent - (self.height_percent / 2)) * screen.get_height() / 100,
-                                                      screen.get_width() * self.width_percent / 100,
-                                                      screen.get_height() * self.height_percent / 100)
-        BackgroundBox(self.x_percent, self.y_percent, self.width_percent, self.height_percent).draw(screen, config)
-        pygame.draw.line(screen,
-                         "black",
-                         ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                         (self.x_percent * screen.get_width() / 100,
-                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
-        pygame.draw.line(screen,
-                         "black",
-                         ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                          (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                         (self.x_percent * screen.get_width() / 100,
-                          (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+        if self.direction == 0:
+            pygame.draw.line(screen,
+                             "black",
+                             ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                             (self.x_percent * screen.get_width() / 100,
+                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+            pygame.draw.line(screen,
+                             "black",
+                             ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                             (self.x_percent * screen.get_width() / 100,
+                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+        elif self.direction == 2:
+            pygame.draw.line(screen,
+                             "black",
+                             ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                             (self.x_percent * screen.get_width() / 100,
+                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+            pygame.draw.line(screen,
+                             "black",
+                             ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
+                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
+                             (self.x_percent * screen.get_width() / 100,
+                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
         return self
 
 class FadeInButton:
@@ -802,4 +783,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, BackgroundBox, Blackout, Button, CheckBox, DownArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, SlideBar, StringLine, Text, TitleText, UpArrowButton]
+available = [AnalysisGraph, BackgroundBox, Blackout, Button, CheckBox, ArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, SlideBar, StringLine, Text, TitleText]

@@ -133,16 +133,18 @@ class SongSelectStateManager:
                                             5,
                                             self.square_tone_on,
                                             self.config.square_tone and self.config.play_tone))
-                to_draw.append(UpArrowButton(100 - 2.5 - (45 / 2),
-                                             18.75,
-                                             45,
-                                             10,
-                                             self.scroll_up))
-                to_draw.append(DownArrowButton(100 - 2.5 - (45 / 2),
-                                               100 - 18.75,
-                                               45,
-                                               10,
-                                               self.scroll_down))
+                to_draw.append(ArrowButton(100 - 2.5 - (45 / 2),
+                                           18.75,
+                                           45,
+                                           10,
+                                           self.scroll_up,
+                                           0))
+                to_draw.append(ArrowButton(100 - 2.5 - (45 / 2),
+                                           100 - 18.75,
+                                           45,
+                                           10,
+                                           self.scroll_down,
+                                           2))
                 time_now = time()
                 if self.scrolling and time_now - self.last_scroll_start > self.scroll_time:
                     self.scrolling = False
