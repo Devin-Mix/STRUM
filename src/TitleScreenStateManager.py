@@ -38,7 +38,7 @@ class TitleScreenStateManager:
                                 self.fade_done = True
                             for interactable in message.content["interactables"]:
                                 if interactable[0].collidepoint(event.pos[0], event.pos[1]):
-                                    interactable[1].function()
+                                    interactable[1].function(event)
                 if not self.skip_render:
                     if self.doing_intro is None:
                         self.doing_intro = True
@@ -67,12 +67,18 @@ class TitleScreenStateManager:
                                                     message_type="render",
                                                     content=to_draw))
 
-    def launch_config(self):
-        print("Opened config")
+    def launch_config(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.outgoing_queue.put(Message(target="ConfigurationStateManager",
+                                            source="TitleScreenStateManager",
+                                            message_type="Get GUI update",
+                                            content=None))
+            self.skip_render = True
 
-    def launch_song_select(self):
-        self.outgoing_queue.put(Message(source="TitleScreenStateManager",
-                                        target="SongSelectStateManager",
-                                        message_type="Get GUI update",
-                                        content=None))
-        self.skip_render = True
+    def launch_song_select(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.outgoing_queue.put(Message(source="TitleScreenStateManager",
+                                            target="SongSelectStateManager",
+                                            message_type="Get GUI update",
+                                            content=None))
+            self.skip_render = True

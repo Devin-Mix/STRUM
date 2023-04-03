@@ -83,7 +83,7 @@ class AnalysisStateManager:
                         if event.type == pygame.MOUSEBUTTONUP:
                             for interactable in message.content["interactables"]:
                                 if interactable[0].collidepoint(event.pos[0], event.pos[1]):
-                                    interactable[1].function()
+                                    interactable[1].function(event)
                 if not self.skip_render:
                     if self.analysing:
                         low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
@@ -127,28 +127,29 @@ class AnalysisStateManager:
                                                                  Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.config.regular, self.return_to_menu)]))
                 self.skip_render = None
 
-    def save_recording(self):
-        print("Saving recording")
-        datetime_info = datetime.now()
-        filename = "../exports/{}-{}-{}_{}-{}-{}-{}.wav".format(datetime_info.year,
-                                                                datetime_info.month,
-                                                                datetime_info.day,
-                                                                datetime_info.hour,
-                                                                datetime_info.minute,
-                                                                datetime_info.second,
-                                                                datetime_info.microsecond)
-        with wave.open(filename, "wb") as file:
-            file.setnchannels(2)
-            file.setsampwidth(np.dtype(self.original_sample_format).itemsize)
-            file.setframerate(self.framerate)
-            file.writeframes(self.recording_data_to_save.tobytes())
+    def save_recording(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            datetime_info = datetime.now()
+            filename = "../exports/{}-{}-{}_{}-{}-{}-{}.wav".format(datetime_info.year,
+                                                                    datetime_info.month,
+                                                                    datetime_info.day,
+                                                                    datetime_info.hour,
+                                                                    datetime_info.minute,
+                                                                    datetime_info.second,
+                                                                    datetime_info.microsecond)
+            with wave.open(filename, "wb") as file:
+                file.setnchannels(2)
+                file.setsampwidth(np.dtype(self.original_sample_format).itemsize)
+                file.setframerate(self.framerate)
+                file.writeframes(self.recording_data_to_save.tobytes())
 
-    def return_to_menu(self):
-        self.outgoing_queue.put(Message(target="SongSelectStateManager",
-                                        source="AnalysisStateManager",
-                                        message_type="Get GUI update",
-                                        content={"events": []}))
-        self.skip_render = True
+    def return_to_menu(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.outgoing_queue.put(Message(target="SongSelectStateManager",
+                                            source="AnalysisStateManager",
+                                            message_type="Get GUI update",
+                                            content={"events": []}))
+            self.skip_render = True
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):

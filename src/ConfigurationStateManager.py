@@ -2,6 +2,7 @@ import pygame
 from Fonts import *
 from Message import Message
 from queue import Queue
+from Renderables import *
 
 
 class ConfigurationStateManager:
@@ -39,6 +40,7 @@ class ConfigurationStateManager:
             self.square_tone = False
             self.play_song = True
             self.play_tone = True
+            self.skip_render = None
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -64,8 +66,43 @@ class ConfigurationStateManager:
                                                 source="ConfigurationStateManager",
                                                 message_type="Config",
                                                 content=self))
+            elif message.type == "Get GUI update":
+                self.skip_render = False
+                if message.content is not None and not message.content["events"] == []:
+                    for event in message.content["events"]:
+                        if event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
+                            for interactable in message.content["interactables"]:
+                                if interactable[0].collidepoint(event.pos[0], event.pos[1]):
+                                    interactable[1].function(event)
+                if not self.skip_render:
+                    to_draw = [BackgroundBox(50,
+                                             56.25,
+                                             95,
+                                             82.5,
+                                             4.625 / 95),
+                               Button(2.5 + 10,
+                                      2.5 + 5,
+                                      20,
+                                      10,
+                                      "Back",
+                                      20,
+                                      7.5,
+                                      self.regular,
+                                      self.back)]
+                    self.outgoing_queue.put(Message(source="ConfigurationStateManager",
+                                                    target="GUIEventBroker",
+                                                    message_type="render",
+                                                    content=to_draw))
 
     def update_colors(self):
         self.rear_color.hsva = (self.hue, 45, 100)
         self.middle_color.hsva = (self.hue, 70, 100)
         self.front_color.hsva = (self.hue, 100, 100)
+
+    def back(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.outgoing_queue.put(Message(source="SongSelectStateManager",
+                                            target="TitleScreenStateManager",
+                                            message_type="Get GUI update",
+                                            content=None))
+            self.skip_render = True

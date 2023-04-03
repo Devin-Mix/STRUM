@@ -5,7 +5,7 @@ corner = pygame.image.load("buttonCorner.png")
 edge = pygame.image.load("buttonEdge.png")
 
 
-def no_function():
+def no_function(event):
     return
 
 class StringLine:
