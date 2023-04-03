@@ -78,6 +78,23 @@ class GUIEventBroker:
                         if interactable_to_add is not None:
                             # Using a tuple here makes the pygame.rect.Rect returned hashable
                             interactables.append((interactable_to_add, render_object))
+
+                # Super basic antialiasing of the resulting surface via blurring of internal pixels
+                # Commented out because the performance hit is huge for HD rendering and the result didn't look great
+                # pixels = pygame.surfarray.pixels3d(self.screen).astype(np.uint16)
+                # new_pixels = np.ndarray(pixels.shape)
+                # new_pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :] = \
+                #     (pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :] +
+                #      pixels[0:(pixels.shape[0] - 2), 1:(pixels.shape[1] - 1), :] +
+                #      pixels[1:(pixels.shape[0] - 1), 0:(pixels.shape[1] - 2), :] +
+                #      pixels[0:(pixels.shape[0] - 2), 0:(pixels.shape[1] - 2), :] +
+                #      pixels[2:(pixels.shape[0]), 1:(pixels.shape[1] - 1), :] +
+                #      pixels[2:(pixels.shape[0]), 0:(pixels.shape[1] - 2), :] +
+                #      pixels[2:(pixels.shape[0]), 2:(pixels.shape[1]), :] +
+                #      pixels[1:(pixels.shape[0] - 1), 2:(pixels.shape[1]), :] +
+                #      pixels[0:(pixels.shape[0] - 2), 2:(pixels.shape[1]), :]) / 9
+                # pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :] = new_pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :]
+                # pygame.surfarray.blit_array(self.screen, pixels)
                 pygame.display.flip()
                 events = pygame.event.get()
                 for event in events:
