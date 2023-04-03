@@ -29,23 +29,13 @@ class TitleScreenStateManager:
             if message.type == "Config":
                 self.config = message.content
             elif message.type == "Get GUI update":
-                self.skip_render = False
-                if message.content is not None and not message.content["events"] == []:
-                    for event in message.content["events"]:
-                        if event.type == pygame.MOUSEBUTTONUP:
-                            if self.doing_intro is None or self.doing_intro or self.fade_done is None or not self.fade_done:
-                                self.doing_intro = False
-                                self.fade_done = True
-                            for interactable in message.content["interactables"]:
-                                if interactable[0].collidepoint(event.pos[0], event.pos[1]):
-                                    interactable[1].function(event)
                 if not self.skip_render:
                     if self.doing_intro is None:
                         self.doing_intro = True
                         self.intro_start_time = time()
                     now_time = time() - self.intro_start_time
                     if self.doing_intro:
-                        to_draw = [Blackout()]
+                        to_draw = [Blackout(function=self.skip_intro)]
                         if self.config.intro_start_time <= now_time < self.config.intro_start_time + self.config.intro_length:
                             to_draw.append(TitleText(1))
                         elif self.config.intro_start_time + self.config.intro_length <= now_time < self.config.intro_start_time + self.config.intro_length + self.config.intro_fade_time:
@@ -66,6 +56,7 @@ class TitleScreenStateManager:
                                                     target="GUIEventBroker",
                                                     message_type="render",
                                                     content=to_draw))
+                self.skip_render = False
 
     def launch_config(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
@@ -82,3 +73,8 @@ class TitleScreenStateManager:
                                             message_type="Get GUI update",
                                             content=None))
             self.skip_render = True
+    def skip_intro(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            if self.doing_intro is None or self.doing_intro or self.fade_done is None or not self.fade_done:
+                 self.doing_intro = False
+                 self.fade_done = True

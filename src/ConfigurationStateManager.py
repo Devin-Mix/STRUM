@@ -67,13 +67,6 @@ class ConfigurationStateManager:
                                                 message_type="Config",
                                                 content=self))
             elif message.type == "Get GUI update":
-                self.skip_render = False
-                if message.content is not None and not message.content["events"] == []:
-                    for event in message.content["events"]:
-                        if event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
-                            for interactable in message.content["interactables"]:
-                                if interactable[0].collidepoint(event.pos[0], event.pos[1]):
-                                    interactable[1].function(event)
                 if not self.skip_render:
                     to_draw = [BackgroundBox(50,
                                              56.25,
@@ -93,6 +86,7 @@ class ConfigurationStateManager:
                                                     target="GUIEventBroker",
                                                     message_type="render",
                                                     content=to_draw))
+                self.skip_render = False
 
     def update_colors(self):
         self.rear_color.hsva = (self.hue, 45, 100)

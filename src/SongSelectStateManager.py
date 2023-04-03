@@ -49,13 +49,6 @@ class SongSelectStateManager:
             if message.type == "Config":
                 self.config = message.content
             elif message.type == "Get GUI update":
-                self.skip_render = False
-                if message.content is not None and not message.content["events"] == []:
-                    for event in message.content["events"]:
-                        if event.type == pygame.MOUSEBUTTONUP:
-                            for interactable in message.content["interactables"]:
-                                if interactable[0].collidepoint(event.pos[0], event.pos[1]):
-                                    interactable[1].function(event)
                 to_draw = [Button(2.5 + 10,
                                   2.5 + 5,
                                   20,
@@ -237,6 +230,7 @@ class SongSelectStateManager:
                                                     target="GUIEventBroker",
                                                     message_type="render",
                                                     content=to_draw))
+                self.skip_render = False
 
     def back(self, event):
         if event.type == pygame.MOUSEBUTTONUP:

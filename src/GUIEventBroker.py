@@ -83,10 +83,14 @@ class GUIEventBroker:
                 for event in events:
                     if event.type == pygame.QUIT:
                         self.quit()
+                    elif event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
+                        for interactable in interactables:
+                            if interactable[0].bounding_box.collidepoint(event.pos[0], event.pos[1]):
+                                interactable[1].function(event)
                 self.outgoing_queue.put(Message(target=self.current_source,
                                                 source="GUIEventBroker",
                                                 message_type="Get GUI update",
-                                                content={"events":events, "interactables": interactables}))
+                                                content=None))
                 self.this_frame_time = time()
                 self.frame_lengths.append(self.this_frame_time - self.last_frame_time)
                 if len(self.frame_lengths) > 50:

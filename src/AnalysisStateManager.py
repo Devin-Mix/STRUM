@@ -77,13 +77,6 @@ class AnalysisStateManager:
                                                 content=[LoadBar(50, 95.0, 10.0, self.load_percent)]))
 
             if message.type == "Get GUI update":
-                self.skip_render = False
-                if not message.content["events"] == []:
-                    for event in message.content["events"]:
-                        if event.type == pygame.MOUSEBUTTONUP:
-                            for interactable in message.content["interactables"]:
-                                if interactable[0].collidepoint(event.pos[0], event.pos[1]):
-                                    interactable[1].function(event)
                 if not self.skip_render:
                     if self.analysing:
                         low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
@@ -125,7 +118,7 @@ class AnalysisStateManager:
                                                                  AnalysisGraph(72.5, 85.0, 15, self.accuracy_scores[self.current_num_divisions], self.config.regular, self.config.italic, self.current_tab.length),
                                                                  Button(25.625, 92.5, 46.25, 10, "Save Recording", 46.25, 7.5, self.config.regular, self.save_recording),
                                                                  Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.config.regular, self.return_to_menu)]))
-                self.skip_render = None
+                self.skip_render = False
 
     def save_recording(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
