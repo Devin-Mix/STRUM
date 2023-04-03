@@ -53,7 +53,7 @@ class GUIEventBroker:
             self.playback_start_time = None
             self.gui_start_time = time()
             self.config = None
-            self.screen = None
+            self.display = None
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -61,11 +61,16 @@ class GUIEventBroker:
             if message.type == "Config":
                 self.config = message.content
             elif message.type == "render":
-                if self.screen is None:
+                if self.display is None:
                     pygame.init()
-                    self.screen = pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
+                    self.display = pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
                     pygame.display.set_caption("S.T.R.U.M.")
                 self.current_source = message.source
+                if self.config.antialias:
+                    self.screen = pygame.surface.Surface((self.display.get_width() * self.config.antialiasing_scale,
+                                                          self.display.get_height() * self.config.antialiasing_scale))
+                else:
+                    self.screen = self.display
                 self.draw_background()
                 interactables = []
                 # GUI event broker expects a list of Renderable objects in message content
@@ -76,8 +81,17 @@ class GUIEventBroker:
                     else:
                         interactable_to_add = render_object.draw(self.screen, self.config)
                         if interactable_to_add is not None:
+                            if self.config.antialias:
+                                interactable_to_add.bounding_box.x = interactable_to_add.bounding_box.x / self.config.antialiasing_scale
+                                interactable_to_add.bounding_box.y = interactable_to_add.bounding_box.y / self.config.antialiasing_scale
+                                interactable_to_add.bounding_box.width = interactable_to_add.bounding_box.width / self.config.antialiasing_scale
+                                interactable_to_add.bounding_box.height = interactable_to_add.bounding_box.height / self.config.antialiasing_scale
                             # Using a tuple here makes the pygame.rect.Rect returned hashable
                             interactables.append((interactable_to_add, render_object))
+                if self.config.antialias:
+                    pygame.transform.smoothscale(self.screen, (self.display.get_width(), self.display.get_height()), self.display)
+                else:
+                    self.display.blit(self.screen, (0, 0))
 
                 # Super basic antialiasing of the resulting surface via blurring of internal pixels
                 # Commented out because the performance hit is huge for HD rendering and the result didn't look great

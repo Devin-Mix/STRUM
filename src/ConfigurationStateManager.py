@@ -43,6 +43,8 @@ class ConfigurationStateManager:
             self.square_tone = False
             self.play_song = True
             self.play_tone = True
+            self.antialiasing_scale = 2
+            self.antialias = True
             self.skip_render = None
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
