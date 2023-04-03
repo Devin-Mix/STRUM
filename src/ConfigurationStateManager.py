@@ -28,6 +28,8 @@ class ConfigurationStateManager:
             self.rear_color = pygame.color.Color(0)
             self.middle_color = pygame.color.Color(0)
             self.front_color = pygame.color.Color(0)
+            self.rear_color_saturation = 45
+            self.middle_color_saturation = 70
             self.update_colors()
             self.intro_start_time = 1.0
             self.intro_length = 1.0
@@ -105,7 +107,56 @@ class ConfigurationStateManager:
                                            5,
                                            5,
                                            self.add_hue_one,
-                                           1)]
+                                           1),
+                               Text(12.5,
+                                    30,
+                                    10,
+                                    5,
+                                    "Middle saturation: {}".format(self.middle_color_saturation),
+                                    self.regular),
+                               SlideBar(55,
+                                        30,
+                                        55,
+                                        5,
+                                        self.adjust_middle_saturation,
+                                        self.middle_color_saturation),
+                               ArrowButton(23.75,
+                                           30,
+                                           5,
+                                           5,
+                                           self.subtract_middle_saturation_one,
+                                           3),
+                               ArrowButton(90,
+                                           30,
+                                           5,
+                                           5,
+                                           self.add_middle_saturation_one,
+                                           1),
+                               Text(12.5,
+                                    37.5,
+                                    10,
+                                    5,
+                                    "Rear saturation: {}".format(self.rear_color_saturation),
+                                    self.regular),
+                               SlideBar(55,
+                                        37.5,
+                                        55,
+                                        5,
+                                        self.adjust_rear_saturation,
+                                        self.rear_color_saturation),
+                               ArrowButton(23.75,
+                                           37.5,
+                                           5,
+                                           5,
+                                           self.subtract_rear_saturation_one,
+                                           3),
+                               ArrowButton(90,
+                                           37.5,
+                                           5,
+                                           5,
+                                           self.add_rear_saturation_one,
+                                           1),
+                               ]
                     self.outgoing_queue.put(Message(source="ConfigurationStateManager",
                                                     target="GUIEventBroker",
                                                     message_type="render",
@@ -113,8 +164,8 @@ class ConfigurationStateManager:
                 self.skip_render = False
 
     def update_colors(self):
-        self.rear_color.hsva = (self.hue, 45, 100)
-        self.middle_color.hsva = (self.hue, 70, 100)
+        self.rear_color.hsva = (self.hue, self.rear_color_saturation, 100)
+        self.middle_color.hsva = (self.hue, self.middle_color_saturation, 100)
         self.front_color.hsva = (self.hue, 100, 100)
 
     def back(self, event, renderable):
@@ -141,4 +192,42 @@ class ConfigurationStateManager:
     def add_hue_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.hue = min(self.hue + 1, 360)
+            self.update_colors()
+
+    def adjust_middle_saturation(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            self.middle_color_saturation = round(100 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
+            if self.middle_color_saturation < 0:
+                self.middle_color_saturation = 0
+            elif self.middle_color_saturation > 100:
+                self.middle_color_saturation = 100
+            self.update_colors()
+
+    def subtract_middle_saturation_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.middle_color_saturation = max(self.middle_color_saturation - 1, 0)
+            self.update_colors()
+
+    def add_middle_saturation_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.middle_color_saturation = min(self.middle_color_saturation + 1, 100)
+            self.update_colors()
+
+    def subtract_rear_saturation_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.rear_color_saturation = max(self.rear_color_saturation - 1, 0)
+            self.update_colors()
+
+    def add_rear_saturation_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.rear_color_saturation = min(self.rear_color_saturation + 1, 100)
+            self.update_colors()
+
+    def adjust_rear_saturation(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            self.rear_color_saturation = round(100 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
+            if self.rear_color_saturation < 0:
+                self.rear_color_saturation = 0
+            elif self.rear_color_saturation > 100:
+                self.rear_color_saturation = 100
             self.update_colors()
