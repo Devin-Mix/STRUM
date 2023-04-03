@@ -86,14 +86,26 @@ class ConfigurationStateManager:
                                     22.5,
                                     10,
                                     5,
-                                    "UI Color:",
+                                    "UI Color: {}".format(self.hue),
                                     self.regular),
                                SlideBar(55,
                                         22.5,
-                                        70,
+                                        55,
                                         5,
                                         self.adjust_hue,
-                                        self.hue / 3.60)]
+                                        self.hue / 3.60),
+                               ArrowButton(23.75,
+                                           22.5,
+                                           5,
+                                           5,
+                                           self.subtract_hue_one,
+                                           3),
+                               ArrowButton(90,
+                                           22.5,
+                                           5,
+                                           5,
+                                           self.add_hue_one,
+                                           1)]
                     self.outgoing_queue.put(Message(source="ConfigurationStateManager",
                                                     target="GUIEventBroker",
                                                     message_type="render",
@@ -115,9 +127,18 @@ class ConfigurationStateManager:
 
     def adjust_hue(self, event, renderable):
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
-            self.hue = 360 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x)
+            self.hue = round(360 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
             if self.hue < 0:
                 self.hue = 0
             elif self.hue > 360:
                 self.hue = 360
+            self.update_colors()
+    def subtract_hue_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.hue = max(self.hue - 1, 0)
+            self.update_colors()
+
+    def add_hue_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.hue = min(self.hue + 1, 360)
             self.update_colors()
