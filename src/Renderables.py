@@ -28,22 +28,39 @@ class StringLine:
             start_x = ((100.0 - self.width_percent) / 200) * screen.get_width()
             end_x = screen.get_width() - start_x
             y = screen.get_height() * self.y_percent / 100
-            if (self.y_percent - 5.0 / 50) > 1.0:
-                s = pygame.Surface((screen.get_width(), screen.get_height()))
-                s.fill(config.chroma_key)
-                s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
-                s.set_alpha(round(255 * min(1.0, (self.y_percent - 5.0) / 50)), pygame.RLEACCEL)
-                pygame.draw.line(s,
-                                 "white",
-                                 (start_x, y),
-                                 (end_x, y))
-                screen.blit(s, (0, 0))
-            else:
-                pygame.draw.line(screen,
-                                 "white",
-                                 (start_x, y),
-                                 (end_x, y))
+            pygame.draw.line(screen,
+                             "black",
+                             (start_x, y),
+                             (end_x, y))
 
+
+class FallingChord:
+    def __init__(self, chord, now_time, config, final_fret_offset):
+        remaining_fall_time = chord[1] - now_time
+        self.y_offset = (95 - (25 * config.recording_vertical_scale)) - (
+                    (90 - (25 * config.recording_vertical_scale)) *
+                    remaining_fall_time / config.recording_fall_time)
+        self.to_draw = []
+        for jj in range(6):
+            self.to_draw.append(StringLine(95, self.y_offset + jj * 5 * config.recording_vertical_scale))
+        for string_number in range(len(chord[0].play_string)):
+            if chord[0].play_string[string_number]:
+                fret_number = chord[0].string_fret[string_number]
+                fret_offset = 0.0
+                for kk in range(fret_number):
+                    fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
+                fret_offset = 2.5 + (95 * fret_offset / final_fret_offset)
+                self.to_draw.append(FretMark(fret_offset, self.y_offset + (5 - string_number) * 5 *
+                                    config.recording_vertical_scale))
+
+    def draw(self, screen, config):
+        s = pygame.Surface((screen.get_width(), screen.get_height()))
+        s.fill(config.chroma_key)
+        s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
+        s.set_alpha(round(255 * min(1, (self.y_offset - 5.0) / 50)), pygame.RLEACCEL)
+        for ii in self.to_draw:
+            ii.draw(s, config)
+        screen.blit(s, (0, 0))
 
 class FretLine:
     def __init__(self, x_percent, height_percent):
@@ -88,15 +105,10 @@ class FretMark:
         else:
             x = self.x_percent * screen.get_width() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
-            s = pygame.Surface((screen.get_width(), screen.get_height()))
-            s.fill(config.chroma_key)
-            s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
-            s.set_alpha(round(255 * min(1.0, (self.y_percent - 5.0) / 90.0)), pygame.RLEACCEL)
-            pygame.draw.circle(s,
+            pygame.draw.circle(screen,
                                "white",
                                (x, y),
                                0.01 * max(screen.get_width(), screen.get_height()))
-            screen.blit(s, (0, 0))
 
 
 class FadingFretMark:
@@ -787,4 +799,4 @@ def as_time_string(seconds):
     return "{}:{}".format(minutes, seconds)
 
 # Add available classes here for indexing by other modules
-available = [AnalysisGraph, BackgroundBox, Blackout, Button, CheckBox, ArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FretLine, FretMark, LoadBar, Logo, SlideBar, StringLine, Text, TitleText]
+available = [AnalysisGraph, BackgroundBox, Blackout, Button, CheckBox, ArrowButton, FadingFretMark, FadeInButton, FadeOutButton, FallingChord, FretLine, FretMark, LoadBar, Logo, SlideBar, StringLine, Text, TitleText]

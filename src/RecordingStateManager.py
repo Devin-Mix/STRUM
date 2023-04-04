@@ -126,24 +126,10 @@ class RecordingStateManager:
                        if ii[1] < self.now_time + self.config.recording_fall_time]
         res = []
         for ii in next_chords:
-            #TODO: Instead of having each individual StringLine and FretMark handle its own alpha, maybe create a new surface containing all of them and blit the alpha once? This could greatly reduce the number of draws requiring alpha math.
             if not (True in [ii[0].play_string[jj] for jj in range(6)]):
                 continue
             else:
-                remaining_fall_time = ii[1] - self.now_time
-                y_offset = (95 - (25 * self.config.recording_vertical_scale)) - ((90 - (25 * self.config.recording_vertical_scale)) *
-                                                                          remaining_fall_time / self.config.recording_fall_time)
-                for jj in range(6):
-                    res.append(StringLine(95, y_offset + jj * 5 * self.config.recording_vertical_scale))
-                for string_number in range(len(ii[0].play_string)):
-                    if ii[0].play_string[string_number]:
-                        fret_number = ii[0].string_fret[string_number]
-                        fret_offset = 0.0
-                        for kk in range(fret_number):
-                            fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
-                        fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
-                        res.append(FretMark(fret_offset, y_offset + (5 - string_number) * 5 *
-                                            self.config.recording_vertical_scale))
+                res.append(FallingChord(ii, self.now_time, self.config, self.final_fret_offset))
         return res
 
     def get_fading_chords(self):
