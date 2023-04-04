@@ -50,7 +50,9 @@ class ConfigurationStateManager:
             self.use_antialiasing = False
             self.antialiasing_scale = 1
             self.use_smooth_downscaling = True
+            self.fullscreen = False
             self.skip_render = None
+            self.fullscreen_resolution = None
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -293,6 +295,20 @@ class ConfigurationStateManager:
                                      self.toggle_smooth_downscaling,
                                      self.use_smooth_downscaling)
                             ]
+                    to_draw = to_draw + [
+                        Text(13.75,
+                             67.5,
+                             15,
+                             5,
+                             "Fullscreen:",
+                             self.regular),
+                        CheckBox(25,
+                                 67.5,
+                                 5,
+                                 5,
+                                 self.toggle_fullscreen,
+                                 self.fullscreen)
+                    ]
                     self.outgoing_queue.put(Message(source="ConfigurationStateManager",
                                                     target="GUIEventBroker",
                                                     message_type="render",
@@ -427,3 +443,11 @@ class ConfigurationStateManager:
         if event.type == pygame.MOUSEBUTTONUP:
             self.antialiasing_scale = int(self.antialiasing_scale * 2)
             self.use_antialiasing = True
+
+    def toggle_fullscreen(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.fullscreen = not self.fullscreen
+            self.outgoing_queue.put(Message(source="ConfigurationStateManager",
+                                            target="GUIEventBroker",
+                                            message_type="Toggle fullscreen",
+                                            content=None))

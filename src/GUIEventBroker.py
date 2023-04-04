@@ -63,7 +63,10 @@ class GUIEventBroker:
             elif message.type == "render":
                 if self.display is None:
                     pygame.init()
-                    self.display = pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
+                    if self.config.fullscreen:
+                        self.display = pygame.display.set_mode(self.config.resolution, pygame.FULLSCREEN)
+                    else:
+                        self.display = pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
                     pygame.display.set_caption("S.T.R.U.M.")
                 self.current_source = message.source
                 self.screen = pygame.surface.Surface((self.display.get_width() * self.config.resolution_scale * self.config.antialiasing_scale,
@@ -225,6 +228,12 @@ class GUIEventBroker:
                 self.recording_data = None
                 self.recording_start_time = None
                 self.playback_start_time = None
+            elif message.type == "Toggle fullscreen":
+                print(pygame.display.get_desktop_sizes())
+                if self.config.fullscreen:
+                    pygame.display.set_mode((pygame.display.get_desktop_sizes()[0][0], pygame.display.get_desktop_sizes()[0][1]), pygame.FULLSCREEN)
+                else:
+                    pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
             elif message.type == "Quit":
                 self.quit()
 
@@ -282,4 +291,7 @@ class GUIEventBroker:
         pygame.draw.polygon(self.screen, self.config.front_color, points)
 
     def update_resolution(self):
-        self.config.resolution = (self.display.get_width(), self.display.get_height())
+        if self.config.fullscreen:
+            self.config.fullscreen_resolution = (self.display.get_width(), self.display.get_height())
+        else:
+            self.config.resolution = (self.display.get_width(), self.display.get_height())

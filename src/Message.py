@@ -21,6 +21,7 @@ class Message:
                             "Start playback",
                             "Start recording",
                             "Start recording session",
+                            "Toggle fullscreen",
                             "Update playback"]
 
         # Type checking ensures that every message has a type
