@@ -43,8 +43,13 @@ class ConfigurationStateManager:
             self.square_tone = False
             self.play_song = True
             self.play_tone = True
-            self.antialiasing_scale = 2
-            self.antialias = True
+            self.resolution_scale = 1
+            self.do_resolution_scaling = False
+            self.use_scale2x = False
+            self.use_bilinear_filtering = True
+            self.use_antialiasing = False
+            self.antialiasing_scale = 1
+            self.use_smooth_downscaling = True
             self.skip_render = None
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
@@ -73,6 +78,14 @@ class ConfigurationStateManager:
                                                 content=self))
             elif message.type == "Get GUI update":
                 if not self.skip_render:
+                    if self.resolution_scale < 1:
+                        resolution_scale_text = "1/{}x".format(int(1 / self.resolution_scale))
+                    else:
+                        resolution_scale_text = "Native"
+                    if self.antialiasing_scale > 1:
+                        antialiasing_scale_text = "{}x".format(self.antialiasing_scale)
+                    else:
+                        antialiasing_scale_text = "Off"
                     to_draw = [BackgroundBox(50,
                                              56.25,
                                              95,
@@ -182,8 +195,104 @@ class ConfigurationStateManager:
                                            5,
                                            5,
                                            self.add_text_color_one,
-                                           1)
+                                           1),
+                               Text(13.75,
+                                    52.5,
+                                    15,
+                                    5,
+                                    "Internal resolution:",
+                                    self.regular),
+                               ArrowButton(25,
+                                           52.5,
+                                           5,
+                                           5,
+                                           self.half_resolution_scale,
+                                           3),
+                               Text(35,
+                                    52.5,
+                                    10,
+                                    5,
+                                    resolution_scale_text,
+                                    self.regular),
+                               ArrowButton(45,
+                                           52.5,
+                                           5,
+                                           5,
+                                           self.double_resolution_scale,
+                                           3),
+                               Text(13.75,
+                                    60,
+                                    15,
+                                    5,
+                                    "Antialiasing:",
+                                    self.regular),
+                               ArrowButton(25,
+                                           60,
+                                           5,
+                                           5,
+                                           self.half_antialiasing_scale,
+                                           3),
+                               Text(35,
+                                    60,
+                                    10,
+                                    5,
+                                    antialiasing_scale_text,
+                                    self.regular),
+                               ArrowButton(45,
+                                           60,
+                                           5,
+                                           5,
+                                           self.double_antialiasing_scale,
+                                           3)
                                ]
+                    if self.resolution_scale < 1:
+                        if self.use_scale2x:
+                            smooth_scaling_text = "Scale2x"
+                        elif self.use_bilinear_filtering:
+                            smooth_scaling_text = "Bilinear filtering"
+                        else:
+                            smooth_scaling_text = "Off"
+                        to_draw = to_draw + [
+                            Text(60,
+                                 52.5,
+                                 20,
+                                 5,
+                                 "Smooth upscaling: {}".format(smooth_scaling_text),
+                                 self.regular),
+                            CheckBox(75,
+                                     52.5,
+                                     5,
+                                     5,
+                                     self.smooth_upscaling_off,
+                                     not (self.use_scale2x or self.use_bilinear_filtering)),
+                            CheckBox(82.5,
+                                     52.5,
+                                     5,
+                                     5,
+                                     self.bilinear_filtering_on,
+                                     self.use_bilinear_filtering),
+                            CheckBox(90,
+                                     52.5,
+                                     5,
+                                     5,
+                                     self.scale2x_on,
+                                     self.use_scale2x)
+                        ]
+                    if self.use_antialiasing:
+                        to_draw = to_draw + [
+                            Text(60,
+                                 60,
+                                 20,
+                                 5,
+                                 "Smooth downscaling:",
+                                 self.regular),
+                            CheckBox(75,
+                                     60,
+                                     5,
+                                     5,
+                                     self.toggle_smooth_downscaling,
+                                     self.use_smooth_downscaling)
+                            ]
                     self.outgoing_queue.put(Message(source="ConfigurationStateManager",
                                                     target="GUIEventBroker",
                                                     message_type="render",
@@ -205,7 +314,7 @@ class ConfigurationStateManager:
 
     def adjust_hue(self, event, renderable):
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
-            self.hue = round(360 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
+            self.hue = round(360 * ((event.pos[0] * self.resolution_scale * self.antialiasing_scale) - renderable.start_x) / (renderable.end_x - renderable.start_x))
             if self.hue < 0:
                 self.hue = 0
             elif self.hue > 360:
@@ -223,7 +332,7 @@ class ConfigurationStateManager:
 
     def adjust_middle_saturation(self, event, renderable):
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
-            self.middle_color_saturation = round(100 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
+            self.middle_color_saturation = round(100 * ((event.pos[0] * self.resolution_scale * self.antialiasing_scale) - renderable.start_x) / (renderable.end_x - renderable.start_x))
             if self.middle_color_saturation < 0:
                 self.middle_color_saturation = 0
             elif self.middle_color_saturation > 100:
@@ -252,7 +361,7 @@ class ConfigurationStateManager:
 
     def adjust_rear_saturation(self, event, renderable):
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
-            self.rear_color_saturation = round(100 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
+            self.rear_color_saturation = round(100 * ((event.pos[0] * self.resolution_scale * self.antialiasing_scale) - renderable.start_x) / (renderable.end_x - renderable.start_x))
             if self.rear_color_saturation < 0:
                 self.rear_color_saturation = 0
             elif self.rear_color_saturation > 100:
@@ -261,7 +370,7 @@ class ConfigurationStateManager:
 
     def adjust_text_color(self, event, renderable):
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
-            self.text_color = round(255 * (event.pos[0] - renderable.start_x) / (renderable.end_x - renderable.start_x))
+            self.text_color = round(255 * ((event.pos[0] * self.resolution_scale * self.antialiasing_scale) - renderable.start_x) / (renderable.end_x - renderable.start_x))
             if self.text_color < 0:
                 self.text_color = 0
             elif self.text_color > 255:
@@ -276,3 +385,45 @@ class ConfigurationStateManager:
         if event.type == pygame.MOUSEBUTTONUP:
             self.text_color = min(self.text_color + 1, 255)
             self.update_colors()
+
+    def half_resolution_scale(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.resolution_scale = self.resolution_scale / 2
+            if self.resolution_scale >= 1:
+                self.resolution_scale = int(self.resolution_scale)
+            self.do_resolution_scaling = not (self.resolution_scale == 1)
+
+    def double_resolution_scale(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.resolution_scale = min(self.resolution_scale * 2, 1)
+            self.do_resolution_scaling = not (self.resolution_scale == 1)
+
+    def scale2x_on(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.use_scale2x = True
+            self.use_bilinear_filtering = False
+
+    def smooth_upscaling_off(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.use_scale2x = False
+            self.use_bilinear_filtering = False
+
+    def bilinear_filtering_on(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.use_bilinear_filtering = True
+            self.use_scale2x = False
+
+    def toggle_smooth_downscaling(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.use_smooth_downscaling = not self.use_smooth_downscaling
+
+    def half_antialiasing_scale(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.antialiasing_scale = max(int(self.antialiasing_scale / 2), 1)
+            if self.antialiasing_scale == 1:
+                self.use_antialiasing = False
+
+    def double_antialiasing_scale(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.antialiasing_scale = int(self.antialiasing_scale * 2)
+            self.use_antialiasing = True
