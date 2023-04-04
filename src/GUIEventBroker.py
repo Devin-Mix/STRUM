@@ -229,7 +229,6 @@ class GUIEventBroker:
                 self.recording_start_time = None
                 self.playback_start_time = None
             elif message.type == "Toggle fullscreen":
-                print(pygame.display.get_desktop_sizes())
                 if self.config.fullscreen:
                     pygame.display.set_mode((pygame.display.get_desktop_sizes()[0][0], pygame.display.get_desktop_sizes()[0][1]), pygame.FULLSCREEN)
                 else:
