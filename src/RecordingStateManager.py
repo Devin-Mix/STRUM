@@ -126,6 +126,7 @@ class RecordingStateManager:
                        if ii[1] < self.now_time + self.config.recording_fall_time]
         res = []
         for ii in next_chords:
+            #TODO: Instead of having each individual StringLine and FretMark handle its own alpha, maybe create a new surface containing all of them and blit the alpha once? This could greatly reduce the number of draws requiring alpha math.
             if not (True in [ii[0].play_string[jj] for jj in range(6)]):
                 continue
             else:
