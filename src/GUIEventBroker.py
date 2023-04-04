@@ -85,9 +85,14 @@ class GUIEventBroker:
                             # Using a tuple here makes the pygame.rect.Rect returned hashable
                             interactables.append((interactable_to_add, render_object))
                 if self.config.use_antialiasing:
-                    self.screen = pygame.transform.smoothscale(self.screen,
-                                                 (self.display.get_width() * self.config.resolution_scale,
-                                                  self.display.get_height() * self.config.resolution_scale))
+                    if self.config.use_smooth_downscaling:
+                        self.screen = pygame.transform.smoothscale(self.screen,
+                                                                   (self.display.get_width() * self.config.resolution_scale,
+                                                                    self.display.get_height() * self.config.resolution_scale))
+                    else:
+                        self.screen = pygame.transform.scale(self.screen,
+                                                             (self.display.get_width() * self.config.resolution_scale,
+                                                              self.display.get_height() * self.config.resolution_scale))
                 if self.config.resolution_scale < 1:
                     if self.config.use_scale2x:
                         while self.screen.get_width() < self.display.get_width():
