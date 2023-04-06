@@ -58,6 +58,7 @@ class ConfigurationStateManager:
             self.doing_fade_in = False
             self.doing_fade_out = False
             self.fade_in_start_time = None
+            self.current_page = 0
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -112,6 +113,15 @@ class ConfigurationStateManager:
                                       7.5,
                                       self.regular,
                                       self.back),
+                               Button(65,
+                                      7.5,
+                                      20,
+                                      10,
+                                      "Display",
+                                      20,
+                                      7.5,
+                                      self.regular,
+                                      self.show_display_page),
                                Button(100 - 12.5,
                                       7.5,
                                       20,
@@ -120,7 +130,9 @@ class ConfigurationStateManager:
                                       20,
                                       7.5,
                                       self.regular,
-                                      no_function),
+                                      self.show_guitar_page)]
+                    if self.current_page == 0:
+                        to_draw = to_draw + [
                                Text(12.5,
                                     22.5,
                                     10,
@@ -265,69 +277,75 @@ class ConfigurationStateManager:
                                            5,
                                            self.double_antialiasing_scale,
                                            3)
-                               ]
-                    if self.resolution_scale < 1:
-                        if self.use_scale2x:
-                            smooth_scaling_text = "Scale2x"
-                        elif self.use_bilinear_filtering:
-                            smooth_scaling_text = "Bilinear filtering"
-                        else:
-                            smooth_scaling_text = "Off"
-                        to_draw = to_draw + [
-                            Text(60,
-                                 52.5,
-                                 20,
-                                 5,
-                                 "Smooth upscaling: {}".format(smooth_scaling_text),
-                                 self.regular),
-                            CheckBox(75,
+                           ]
+                        if self.resolution_scale < 1:
+                            if self.use_scale2x:
+                                smooth_scaling_text = "Scale2x"
+                            elif self.use_bilinear_filtering:
+                                smooth_scaling_text = "Bilinear filtering"
+                            else:
+                                smooth_scaling_text = "Off"
+                            # noinspection PyTypeChecker
+                            to_draw = to_draw + [
+                                Text(60,
                                      52.5,
+                                     20,
                                      5,
-                                     5,
-                                     self.smooth_upscaling_off,
-                                     not (self.use_scale2x or self.use_bilinear_filtering)),
-                            CheckBox(82.5,
-                                     52.5,
-                                     5,
-                                     5,
-                                     self.bilinear_filtering_on,
-                                     self.use_bilinear_filtering),
-                            CheckBox(90,
-                                     52.5,
-                                     5,
-                                     5,
-                                     self.scale2x_on,
-                                     self.use_scale2x)
-                        ]
-                    if self.use_antialiasing:
-                        to_draw = to_draw + [
-                            Text(60,
-                                 60,
-                                 20,
-                                 5,
-                                 "Smooth downscaling:",
-                                 self.regular),
-                            CheckBox(75,
-                                     60,
-                                     5,
-                                     5,
-                                     self.toggle_smooth_downscaling,
-                                     self.use_smooth_downscaling)
+                                     "Smooth upscaling: {}".format(smooth_scaling_text),
+                                     self.regular),
+                                CheckBox(75,
+                                         52.5,
+                                         5,
+                                         5,
+                                         self.smooth_upscaling_off,
+                                         not (self.use_scale2x or self.use_bilinear_filtering)),
+                                CheckBox(82.5,
+                                         52.5,
+                                         5,
+                                         5,
+                                         self.bilinear_filtering_on,
+                                         self.use_bilinear_filtering),
+                                CheckBox(90,
+                                         52.5,
+                                         5,
+                                         5,
+                                         self.scale2x_on,
+                                         self.use_scale2x)
                             ]
-                    to_draw = to_draw + [
-                        Text(13.75,
-                             67.5,
-                             15,
-                             5,
-                             "Fullscreen:",
-                             self.regular),
-                        CheckBox(25,
+                        if self.use_antialiasing:
+                            # noinspection PyTypeChecker
+                            to_draw = to_draw + [
+                                Text(60,
+                                     60,
+                                     20,
+                                     5,
+                                     "Smooth downscaling:",
+                                     self.regular),
+                                CheckBox(75,
+                                         60,
+                                         5,
+                                         5,
+                                         self.toggle_smooth_downscaling,
+                                         self.use_smooth_downscaling)
+                                ]
+                        # noinspection PyTypeChecker
+                        to_draw = to_draw + [
+                            Text(13.75,
                                  67.5,
+                                 15,
                                  5,
-                                 5,
-                                 self.toggle_fullscreen,
-                                 self.fullscreen)
-                    ]
+                                 "Fullscreen:",
+                                 self.regular),
+                            CheckBox(25,
+                                     67.5,
+                                     5,
+                                     5,
+                                     self.toggle_fullscreen,
+                                     self.fullscreen)
+                        ]
+                    # TODO: Add guitar UI elements here: Guitar tuning, self.fret_count, self.recording_fall_time, self.recroding_vertical_scale
+                    if self.current_page == 1:
+                        pass
                     if self.doing_fade_out:
                         if self.now_time - self.fade_out_start_time >= self.fade_length:
                             self.outgoing_queue.put(Message(source="SongSelectStateManager",
@@ -365,6 +383,14 @@ class ConfigurationStateManager:
         if event.type == pygame.MOUSEBUTTONUP:
             self.doing_fade_out = True
             self.fade_out_start_time = self.now_time
+
+    def show_display_page(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.current_page = 0
+
+    def show_guitar_page(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.current_page = 1
 
     def adjust_hue(self, event, renderable):
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
