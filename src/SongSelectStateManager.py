@@ -42,7 +42,9 @@ class SongSelectStateManager:
         self.current_tab_object = None
         self.leaving_tab_object = None
         self.config = None
-        self.launch_recording = None
+        self.launch_recording = False
+        self.launch_title_screen = False
+        self.first_session_render = True
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -147,6 +149,10 @@ class SongSelectStateManager:
                                            self.scroll_down,
                                            2))
                 self.now_time = time()
+                if self.first_session_render:
+                    self.doing_fade_in = True
+                    self.fade_in_start_time = self.now_time
+                    self.first_session_render = False
                 if self.scrolling and self.now_time - self.last_scroll_start > self.scroll_time:
                     self.scrolling = False
                     self.leaving_tab_object = None
@@ -228,19 +234,32 @@ class SongSelectStateManager:
                                               7.5,
                                               self.config.italic,
                                               self.button_functions[ii]))
-                if self.launch_recording:
+                if self.launch_recording or self.launch_title_screen:
                     if self.now_time >= self.fade_out_start_time + self.config.intro_fade_time:
                         if self.launch_recording:
                             self.outgoing_queue.put(Message(source="SongSelectStateManager",
                                                             target="RecordingStateManager",
                                                             message_type="Start recording session",
                                                             content={"tab_file": self.current_tab_object}))
-                        elif self.
+                        elif self.launch_title_screen:
+                            self.outgoing_queue.put(Message(source="SongSelectStateManager",
+                                                            target="TitleScreenStateManager",
+                                                            message_type="Get GUI update",
+                                                            content=None))
                         self.skip_render = True
                         self.launch_recording = False
+                        self.launch_title_screen = False
+                        self.first_session_render = True
                     else:
                         to_draw.append(
                             Blackout((self.now_time - self.fade_out_start_time), self.config.intro_fade_time, False))
+                        for ii in range(len(to_draw)):
+                            to_draw[ii].function = no_function
+                if self.doing_fade_in:
+                    if self.now_time - self.fade_in_start_time >= self.config.intro_fade_time:
+                        self.doing_fade_in = False
+                    else:
+                        to_draw.append(Blackout((self.now_time - self.fade_in_start_time), self.config.intro_fade_time))
                         for ii in range(len(to_draw)):
                             to_draw[ii].function = no_function
                 if not self.skip_render:
@@ -252,11 +271,8 @@ class SongSelectStateManager:
 
     def back(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
-            self.outgoing_queue.put(Message(source="SongSelectStateManager",
-                                            target="TitleScreenStateManager",
-                                            message_type="Get GUI update",
-                                            content=None))
-            self.skip_render = True
+            self.launch_title_screen = True
+            self.fade_out_start_time = self.now_time
 
     def scroll_down(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
