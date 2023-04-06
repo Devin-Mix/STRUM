@@ -55,14 +55,22 @@ class TitleScreenStateManager:
                         to_draw.append(Blackout(self.now_time - self.intro_end_time, self.config.transition_length))
                     elif not self.fade_in_done:
                         self.fade_in_done = True
-                    if self.launching_config:
+                    if self.launching_config or self.launching_song_select:
                         if self.now_time >= self.fade_out_start_time + self.config.intro_fade_time:
-                            self.outgoing_queue.put(Message(target="ConfigurationStateManager",
-                                                            source="TitleScreenStateManager",
-                                                            message_type="Get GUI update",
-                                                            content=None))
+                            if self.launching_config:
+                                self.outgoing_queue.put(Message(target="ConfigurationStateManager",
+                                                                source="TitleScreenStateManager",
+                                                                message_type="Get GUI update",
+                                                                content=None))
+                            else:
+                                self.outgoing_queue.put(Message(source="TitleScreenStateManager",
+                                                                target="SongSelectStateManager",
+                                                                message_type="Get GUI update",
+                                                                content=None))
+                                self.skip_render = True
                             self.skip_render = True
                             self.launching_config = False
+                            self.launching_song_select = False
                         else:
                             to_draw.append(Blackout((self.now_time - self.fade_out_start_time), self.config.intro_fade_time, False))
                             for ii in range(len(to_draw)):
@@ -81,11 +89,8 @@ class TitleScreenStateManager:
 
     def launch_song_select(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
-            self.outgoing_queue.put(Message(source="TitleScreenStateManager",
-                                            target="SongSelectStateManager",
-                                            message_type="Get GUI update",
-                                            content=None))
-            self.skip_render = True
+            self.launching_song_select = True
+            self.fade_out_start_time = self.now_time
     def skip_intro(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             if self.doing_intro is None or self.doing_intro or self.fade_in_done is None or not self.fade_in_done:
