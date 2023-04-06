@@ -30,6 +30,8 @@ class RecordingStateManager:
             self.first_session_render = True
             self.doing_fade_in = False
             self.fade_in_start_time = None
+            self.doing_fade_out = False
+            self.fade_out_start_time = None
             self.outgoing_queue.put(Message(target="ConfigurationStateManager",
                                             source="RecordingStateManager",
                                             message_type="Get config",
@@ -65,18 +67,19 @@ class RecordingStateManager:
                     self.fade_in_start_time = self.now_time
                     self.doing_fade_in = True
                     self.first_session_render = False
-                if not self.doing_fade_in:
+                if not self.doing_fade_in and not self.doing_fade_out:
                     if self.now_time is not None and self.now_time >= self.current_tab.get_next_chords(0.0)[-1][1] + \
                             self.current_tab.get_next_chords(0.0)[-1][2]:
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
-                                                        message_type="Send recording",
+                                                        message_type="End recording",
                                                         content=self.current_tab))
                         self.now_time = None
                         self.start_time = None
                         self.fading_chords = []
                         self.last_render_time = None
-                        pass
+                        self.doing_fade_out = True
+                        self.fade_out_start_time = time()
                     else:
                         if self.start_time is None:
                             self.start_time = time() + self.config.recording_fall_time
@@ -109,21 +112,42 @@ class RecordingStateManager:
                                                         content=to_draw))
 
                     self.last_render_time = self.now_time
-                else:
+                elif self.doing_fade_in:
                     self.now_time = time()
+                    to_draw = to_draw + [Text(2.5, 2.5, 95, 10.0, self.current_tab.title, self.config.header, align_center=False),
+                                              Text(2.5, 12.5, 95, 5.0, self.current_tab.artist, self.config.italic, align_center=False)]
+                    to_draw.append(Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
+                    for ii in range(len(to_draw)):
+                        to_draw[ii].function = no_function
                     if self.now_time - self.fade_in_start_time >= self.config.fade_length:
                         self.doing_fade_in = False
                         self.now_time = None
-                    else:
-                        to_draw = to_draw + [Text(2.5, 2.5, 95, 10.0, self.current_tab.title, self.config.header, align_center=False),
-                                                  Text(2.5, 12.5, 95, 5.0, self.current_tab.artist, self.config.italic, align_center=False)]
-                        to_draw.append(Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
-                        for ii in range(len(to_draw)):
-                            to_draw[ii].function = no_function
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
                                                     message_type="render",
                                                     content=to_draw))
+                elif self.doing_fade_out:
+                    self.now_time = time()
+                    to_draw = to_draw + [
+                        Text(2.5, 2.5, 95, 10.0, self.current_tab.title, self.config.header, align_center=False),
+                        Text(2.5, 12.5, 95, 5.0, self.current_tab.artist, self.config.italic, align_center=False)]
+                    to_draw.append(Blackout(self.now_time - self.fade_out_start_time, self.config.fade_length, False))
+                    for ii in range(len(to_draw)):
+                        to_draw[ii].function = no_function
+                    if self.now_time - self.fade_out_start_time >= self.config.fade_length:
+                        self.doing_fade_out = False
+                        self.now_time = None
+                        self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                        source="RecordingStateManager",
+                                                        message_type="Send recording",
+                                                        content=self.current_tab))
+                    else:
+                        self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                        source="RecordingStateManager",
+                                                        message_type="render",
+                                                        content=to_draw))
+
+
 
     def get_string_lines(self):
         res = []

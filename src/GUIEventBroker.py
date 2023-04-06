@@ -47,7 +47,7 @@ class GUIEventBroker:
             self.in_stream = None
             self.recording_data = None
             self.out_stream_done = None
-            self.sending_recording = None
+            self.ending_recording = None
             self.input_latency = None
             self.recording_start_time = None
             self.playback_start_time = None
@@ -174,7 +174,7 @@ class GUIEventBroker:
                 self.playback_pos = 0
                 self.play_to_pos = 0
                 self.out_stream_done = False
-                self.sending_recording = False
+                self.ending_recording = False
                 self.out_stream = self.p.open(format=self.playback_format,
                                               channels=self.playback_num_channels,
                                               rate=self.playback_framerate,
@@ -203,15 +203,20 @@ class GUIEventBroker:
                 if abs(positional_lag) > 8000:
                     self.playback_pos = self.play_to_pos
                     # print("Resync ({})".format(positional_lag))
-            elif message.type == "Send recording":
-                self.sending_recording = True
+            elif message.type == "End recording":
+                self.ending_recording = True
                 while not self.out_stream_done:
                     pass
-                self.sending_recording = None
+                self.ending_recording = None
                 self.out_stream.close()
                 self.out_stream = None
                 self.in_stream.close()
                 self.in_stream = None
+                self.outgoing_queue.put(Message(target=self.current_source,
+                                                source="GUIEventBroker",
+                                                message_type="Get GUI update",
+                                                content=None))
+            elif message.type == "Send recording":
                 self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                                 source="GUIEventBroker",
                                                 message_type="Start analysis",
@@ -239,7 +244,7 @@ class GUIEventBroker:
     def playback_callback(self, in_data, frame_count,  time_info, status):
         if self.playback_start_time is None:
             self.playback_start_time = time()
-        if self.sending_recording:
+        if self.ending_recording:
             self.out_stream_done = True
             return bytes(), pyaudio.paComplete
         bytes_count = frame_count * self.playback_frame_num_bytes

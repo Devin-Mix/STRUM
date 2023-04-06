@@ -320,7 +320,7 @@ class ConfigurationStateManager:
                                  self.fullscreen)
                     ]
                     if self.doing_fade_out:
-                        if self.now_time - self.fade_out_start_time > self.fade_length:
+                        if self.now_time - self.fade_out_start_time >= self.fade_length:
                             self.outgoing_queue.put(Message(source="SongSelectStateManager",
                                                             target="TitleScreenStateManager",
                                                             message_type="Get GUI update",

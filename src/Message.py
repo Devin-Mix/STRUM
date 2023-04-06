@@ -9,6 +9,7 @@ class Message:
     def __init__(self, target, source, message_type, content):
         # Defines types of messages to be exchanged
         self.valid_types = ["Config",
+                            "End recording",
                             "Fret count",
                             "Get config",
                             "Get GUI update",
