@@ -59,6 +59,7 @@ class ConfigurationStateManager:
             self.doing_fade_out = False
             self.fade_in_start_time = None
             self.current_page = 0
+            self.user_tuning = [0, 0, 0, 0, 0, 0]
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -469,6 +470,14 @@ class ConfigurationStateManager:
                 self.text_color = 0
             elif self.text_color > 255:
                 self.text_color = 255
+
+    def adjust_recording_vertical_scale(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            self.recording_vertical_scale = round(0.1 + (0.9 * ((event.pos[0] * self.resolution_scale * self.antialiasing_scale) - renderable.start_x) / (renderable.end_x - renderable.start_x)), 2)
+            if self.recording_vertical_scale < 0.1:
+                self.recording_vertical_scale = 0.1
+            elif self.recording_vertical_scale > 1.0:
+                self.recording_vertical_scale = 1.0
 
     def subtract_text_color_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
