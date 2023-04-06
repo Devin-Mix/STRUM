@@ -1,4 +1,4 @@
-from math import pi, sin
+from math import sin
 from Message import Message
 from queue import Queue
 from Renderables import *
@@ -26,6 +26,8 @@ class TitleScreenStateManager:
             self.fade_out_start_time = None
             self.skip_render = None
             self.now_time = None
+            self.first_session_render = False
+            self.doing_fade_in = False
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -37,6 +39,10 @@ class TitleScreenStateManager:
                     self.doing_intro = True
                     self.intro_start_time = time()
                 self.now_time = time() - self.intro_start_time
+                if self.first_session_render:
+                    self.doing_fade_in = True
+                    self.fade_in_start_time = self.now_time
+                    self.first_session_render = False
                 if self.doing_intro:
                     to_draw = [Blackout(function=self.skip_intro)]
                     if self.config.intro_start_time <= self.now_time < self.config.intro_start_time + self.config.intro_length:
@@ -71,8 +77,17 @@ class TitleScreenStateManager:
                             self.skip_render = True
                             self.launching_config = False
                             self.launching_song_select = False
+                            self.first_session_render = True
                         else:
                             to_draw.append(Blackout((self.now_time - self.fade_out_start_time), self.config.intro_fade_time, False))
+                            for ii in range(len(to_draw)):
+                                to_draw[ii].function = no_function
+                    if self.doing_fade_in:
+                        if self.now_time - self.fade_in_start_time >= self.config.intro_fade_time:
+                            self.doing_fade_in = False
+                        else:
+                            to_draw.append(
+                                Blackout((self.now_time - self.fade_in_start_time), self.config.intro_fade_time))
                             for ii in range(len(to_draw)):
                                 to_draw[ii].function = no_function
                 if not self.skip_render:
