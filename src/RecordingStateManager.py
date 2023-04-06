@@ -80,23 +80,23 @@ class RecordingStateManager:
                     self.doing_fade_in = True
                     self.first_session_render = False
                 if not self.doing_fade_in and not self.doing_fade_out:
-                    if self.now_time is not None and self.now_time >= self.current_tab.get_next_chords(0.0)[-1][1] + \
-                            self.current_tab.get_next_chords(0.0)[-1][2]:
+                    if self.now_time is not None and self.now_time >= (1 / self.config.playback_speed_scale) * (self.current_tab.get_next_chords(0.0, self.config)[-1][1] + \
+                            self.current_tab.get_next_chords(0.0, self.config)[-1][2]):
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
                                                         message_type="End recording",
                                                         content=self.current_tab))
+                        self.fade_out_start_time = self.now_time
                         self.now_time = None
                         self.start_time = None
                         self.fading_chords = []
                         self.last_render_time = None
                         self.doing_fade_out = True
-                        self.fade_out_start_time = time()
                     else:
                         if self.start_time is None:
                             self.start_time = time() + self.config.recording_fall_time
                         self.now_time = time() - self.start_time
-                        if not self.playback_started and not len(self.current_tab.get_next_chords(self.now_time)) == len(self.current_tab.get_next_chords(0)):
+                        if not self.playback_started and not len(self.current_tab.get_next_chords(self.now_time, self.config)) == len(self.current_tab.get_next_chords(0.0, self.config)):
                             self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                             source="RecordingStateManager",
                                                             message_type="Start playback",
@@ -185,21 +185,21 @@ class RecordingStateManager:
         return res
 
     def get_falling_chords(self):
-        next_chords = [ii for ii in self.current_tab.get_next_chords(self.now_time)
-                       if ii[1] < self.now_time + self.config.recording_fall_time]
+        next_chords = [ii for ii in self.current_tab.get_next_chords(self.now_time, self.config)
+                       if ii[1] < (self.now_time * self.config.playback_speed_scale) + self.config.recording_fall_time]
         res = []
         for ii in next_chords:
             if not (True in [ii[0].play_string[jj] for jj in range(6)]):
                 continue
             else:
-                res.append(FallingChord(ii, self.now_time, self.config, self.final_fret_offset))
+                res.append(FallingChord(ii, (self.now_time * self.config.playback_speed_scale), self.config, self.final_fret_offset))
         return res
 
     def get_fading_chords(self):
         res = []
         if self.last_render_time is not None:
-            last_chords = self.current_tab.get_next_chords(self.last_render_time)
-            now_chords = self.current_tab.get_next_chords(self.now_time)
+            last_chords = self.current_tab.get_next_chords(self.last_render_time, self.config)
+            now_chords = self.current_tab.get_next_chords(self.now_time, self.config)
             if len(now_chords) > 0 and now_chords[0] in last_chords:
                 fade_chords = last_chords[:last_chords.index(now_chords[0])]
             else:
@@ -215,5 +215,5 @@ class RecordingStateManager:
                         fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
                         res.append(FadingFretMark(fret_offset,
                                                   y_offset + (5 - string_number) * 5 * self.config.recording_vertical_scale,
-                                                  fade_chord[1], fade_chord[2], self.now_time))
+                                                  fade_chord[1] * (1 / self.config.playback_speed_scale), fade_chord[2] * (1 / self.config.playback_speed_scale), self.now_time * self.config.playback_speed_scale))
         return res

@@ -73,8 +73,8 @@ class Tab:
                     scan_time = scan_time + chord_len_sec
         self.length = scan_time
 
-    def get_next_chords(self, current_time):
-        return [i for i in self.chords if i[1] >= current_time]
+    def get_next_chords(self, current_time, config):
+        return [i for i in self.chords if i[1] >= current_time * config.playback_speed_scale]
 
     def midi_number_to_frequency(self, string_number, fret_number):
         default_midi_numbers = [40, 45, 50, 55, 59, 64]
@@ -96,7 +96,7 @@ class Tab:
                     string_frequency = self.midi_number_to_frequency(i, chord.string_fret[i])
                     # Big credit to
                     # https://stackoverflow.com/questions/48043004/how-do-i-generate-a-sine-wave-using-python
-                    samples = np.arange(chord_len * sample_rate) / sample_rate
+                    samples = np.arange(chord_len * sample_rate * (1 / config.playback_speed_scale)) / sample_rate
                     last_output_chunk_num_samples = np.size(samples)
                     if config.square_tone:
                         new_chunk = np.sin(2 * np.pi * string_frequency * samples)
@@ -134,18 +134,18 @@ class Tab:
                     else:
                         continue
                 output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * \
-                    np.arange(1, 0, 1 / count_samples_to_mix)
+                    np.linspace(1, 0, abs(count_samples_to_mix))
                 if mix_chunk is not None:
-                    mix_chunk = mix_chunk * np.arange(0, 1, abs(1 / count_samples_to_mix))
+                    mix_chunk = mix_chunk * np.linspace(0, 1, abs(count_samples_to_mix))
                     output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] + mix_chunk
                 last_output_chunk_num_samples = np.size(samples)
             else:
                 last_output_chunk_num_samples = np.size(samples)
 
             if output_chunk is None and output_wave is None:
-                output_wave = np.zeros(floor(chord_len * sample_rate))
+                output_wave = np.zeros(floor(chord_len * sample_rate * (1 / config.playback_speed_scale)))
             elif output_chunk is None and output_wave is not None:
-                output_wave = np.concatenate([output_wave, np.zeros(floor(chord_len * sample_rate))])
+                output_wave = np.concatenate([output_wave, np.zeros(floor(chord_len * sample_rate * (1 / config.playback_speed_scale)))])
             elif output_chunk is not None and output_wave is None:
                 output_wave = output_chunk
             else:

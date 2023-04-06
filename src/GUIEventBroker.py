@@ -1,10 +1,11 @@
+import numpy as np
 import pyaudio
 import pygame
 import Renderables
 import wave
+from librosa.effects import time_stretch
 from math import floor
 from Message import Message
-import numpy as np
 from queue import Queue
 from Tab import pa_data_type_to_np
 from time import time
@@ -162,6 +163,7 @@ class GUIEventBroker:
                 self.playback_format = self.p.get_format_from_width(self.playback_file.getsampwidth())
                 self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
                 self.playback_num_channels = self.playback_file.getnchannels()
+                self.stretch_playback_file()
                 self.tone_wave = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
                                                                self.config, self.playback_num_channels)
                 if not self.config.play_song and self.config.play_tone:
@@ -275,7 +277,10 @@ class GUIEventBroker:
     def mix_tone(self, song_volume):
         signal_1 = np.frombuffer(self.playback_frames, pa_data_type_to_np(self.playback_format)).copy()
         signal_2 = np.frombuffer(self.tone_wave, pa_data_type_to_np(self.playback_format))
-        signal_1[:np.size(signal_2)] = (signal_1[:np.size(signal_2)] * song_volume) + (signal_2 * (1 - song_volume))
+        if np.size(signal_2) < np.size(signal_1):
+            signal_1[:np.size(signal_2)] = (signal_1[:np.size(signal_2)] * song_volume) + (signal_2 * (1 - song_volume))
+        else:
+            signal_1[:] = (signal_1[:] * song_volume) + (signal_2[:np.size(signal_1)] * (1 - song_volume))
         self.playback_frames = pa_data_type_to_np(self.playback_format)(signal_1).tobytes()
 
     def draw_background(self):
@@ -299,3 +304,14 @@ class GUIEventBroker:
             self.config.fullscreen_resolution = (self.display.get_width(), self.display.get_height())
         else:
             self.config.resolution = (self.display.get_width(), self.display.get_height())
+
+    def stretch_playback_file(self):
+        frames_as_np = np.frombuffer(self.playback_frames, pa_data_type_to_np(self.playback_format)).copy()
+        max_amp = np.max(np.abs(frames_as_np))
+        normalized_frames = frames_as_np / max_amp
+        to_stretch = normalized_frames.astype(float)
+        to_stretch_two_channel = np.stack([to_stretch[0::2], to_stretch[1::2]])
+        new_frames_two_channel = time_stretch(to_stretch_two_channel,
+                                              rate=self.config.playback_speed_scale)
+        stretched = new_frames_two_channel.flatten("F") * max_amp
+        self.playback_frames = pa_data_type_to_np(self.playback_format)(stretched).tobytes()
