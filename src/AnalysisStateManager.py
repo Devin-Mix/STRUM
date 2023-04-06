@@ -6,6 +6,7 @@ from Message import Message
 from queue import Queue
 from Renderables import *
 from scipy.fft import rfft, rfftfreq
+from time import time
 
 class AnalysisStateManager:
     def __init__(self, incoming_queue, outgoing_queue):
@@ -35,6 +36,12 @@ class AnalysisStateManager:
             self.current_tab = None
             self.skip_render = None
             self.config = None
+            self.first_session_render = True
+            self.doing_fade_in = False
+            self.now_time = None
+            self.fade_in_start_time = None
+            self.doing_fade_out = False
+            self.fade_out_start_time = None
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -42,6 +49,11 @@ class AnalysisStateManager:
             if message.type == "Config":
                 self.config = message.content
             elif message.type == "Start analysis":
+                self.now_time = time()
+                if self.first_session_render:
+                    self.first_session_render = False
+                    self.doing_fade_in = True
+                    self.fade_in_start_time = self.now_time
                 self.analysing = True
                 self.input_latency = message.content["latency"]
                 self.recording_data_bytes = message.content["data"]
@@ -71,53 +83,88 @@ class AnalysisStateManager:
                 self.number_of_ffts_completed = 0
                 self.dynamics_scores = {1: []}
                 self.accuracy_scores = {1: []}
+                to_draw = [LoadBar(50, 95.0, 10.0, self.load_percent)]
+                if self.doing_fade_in:
+                    if self.now_time - self.fade_in_start_time >= self.config.fade_length:
+                        self.doing_fade_in = False
+                    else:
+                        to_draw.append(Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
+                        for ii in range(len(to_draw)):
+                            to_draw[ii].function = no_function
                 self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                 source="AnalysisStateManager",
                                                 message_type="render",
-                                                content=[LoadBar(50, 95.0, 10.0, self.load_percent)]))
+                                                content=to_draw))
 
             if message.type == "Get GUI update":
-                if not self.skip_render:
-                    if self.analysing:
-                        low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
-                        high_index = floor((self.current_division_num + 1) * np.size(self.tone_wave) / self.current_num_divisions)
-                        dynamics_score, accuracy_score = get_scores(low_index, high_index, self.recording_data_normalized, self.tone_wave_normalized, self.framerate)
-                        self.dynamics_scores[self.current_num_divisions].append(dynamics_score)
-                        self.accuracy_scores[self.current_num_divisions].append(accuracy_score)
-                        self.load_percent = min(self.load_percent + (100.0 / self.number_of_ffts), 100.0)
-                        self.current_division_num = self.current_division_num + 1
-                        self.number_of_ffts_completed = self.number_of_ffts_completed + 1
-                        if self.current_division_num == self.current_num_divisions:
-                            self.current_division_num = 0
-                            self.current_num_divisions = self.current_num_divisions + 1
-                            self.dynamics_scores[self.current_num_divisions] = []
-                            self.accuracy_scores[self.current_num_divisions] = []
-                        if self.number_of_ffts == self.number_of_ffts_completed:
-                            self.analysing = False
-                            self.number_of_ffts_completed = None
-                            self.accuracy_scores.pop(self.current_num_divisions)
-                            self.dynamics_scores.pop(self.current_num_divisions)
-                            self.current_num_divisions = self.current_num_divisions - 1
-                        self.outgoing_queue.put(Message(target="GUIEventBroker",
-                                                        source="AnalysisStateManager",
-                                                        message_type="render",
-                                                        content=[LoadBar(50.0, 95.0, 10.0, self.load_percent),
-                                                                 Text(50.0, 50.0, 95.0, 10.0, "Analysing... {}%".format(round(self.load_percent, 1)), self.config.header)]))
+                self.now_time = time()
+                if self.first_session_render:
+                    self.first_session_render = False
+                    self.doing_fade_in = True
+                    self.fade_in_start_time = self.now_time
+                if self.analysing:
+                    low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
+                    high_index = floor((self.current_division_num + 1) * np.size(self.tone_wave) / self.current_num_divisions)
+                    dynamics_score, accuracy_score = get_scores(low_index, high_index, self.recording_data_normalized, self.tone_wave_normalized, self.framerate)
+                    self.dynamics_scores[self.current_num_divisions].append(dynamics_score)
+                    self.accuracy_scores[self.current_num_divisions].append(accuracy_score)
+                    self.load_percent = min(self.load_percent + (100.0 / self.number_of_ffts), 100.0)
+                    self.current_division_num = self.current_division_num + 1
+                    self.number_of_ffts_completed = self.number_of_ffts_completed + 1
+                    if self.current_division_num == self.current_num_divisions:
+                        self.current_division_num = 0
+                        self.current_num_divisions = self.current_num_divisions + 1
+                        self.dynamics_scores[self.current_num_divisions] = []
+                        self.accuracy_scores[self.current_num_divisions] = []
+                    if self.number_of_ffts == self.number_of_ffts_completed:
+                        self.analysing = False
+                        self.number_of_ffts_completed = None
+                        self.accuracy_scores.pop(self.current_num_divisions)
+                        self.dynamics_scores.pop(self.current_num_divisions)
+                        self.current_num_divisions = self.current_num_divisions - 1
+                    to_draw = [LoadBar(50.0, 95.0, 10.0, self.load_percent),
+                               Text(50.0, 50.0, 95.0, 10.0, "Analysing... {}%"
+                                    .format(round(self.load_percent, 1)), self.config.header)]
+                else:
+                    to_draw = [BackgroundBox(50, 43.75, 95, 82.5, 4.625 / 95),
+                               Text(50.0, 10, 85.0, 10, "Analysis Results", self.config.header),
+                               Text(50.0, 20.0, 85.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.config.italic),
+                               Text(50.0, 27.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.config.italic),
+                               Text(50.0, 35.0, 85.0, 5.0, "Dynamic Accuracy:", self.config.regular),
+                               AnalysisGraph(47.5, 85.0, 15, self.dynamics_scores[self.current_num_divisions], self.config.regular, self.config.italic, self.current_tab.length),
+                               Text(50.0, 60, 95.0, 5.0, "Pitch / Tempo Accuracy:",
+                                    self.config.regular),
+                               AnalysisGraph(72.5, 85.0, 15, self.accuracy_scores[self.current_num_divisions], self.config.regular, self.config.italic, self.current_tab.length),
+                               Button(25.625, 92.5, 46.25, 10, "Save Recording", 46.25, 7.5, self.config.regular, self.save_recording),
+                               Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.config.regular, self.return_to_menu)]
+
+                if self.doing_fade_in:
+                    if self.now_time - self.fade_in_start_time >= self.config.fade_length:
+                        self.doing_fade_in = False
                     else:
-                        self.outgoing_queue.put(Message(target="GUIEventBroker",
+                        to_draw.append(
+                            Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
+                        for ii in range(len(to_draw)):
+                            to_draw[ii].function = no_function
+                elif self.doing_fade_out:
+                    if self.now_time - self.fade_out_start_time >= self.config.fade_length:
+                        self.doing_fade_out = False
+                        self.outgoing_queue.put(Message(target="SongSelectStateManager",
                                                         source="AnalysisStateManager",
-                                                        message_type="render",
-                                                        content=[BackgroundBox(50, 43.75, 95, 82.5, 4.625 / 95),
-                                                                 Text(50.0, 10, 85.0, 10, "Analysis Results", self.config.header),
-                                                                 Text(50.0, 20.0, 85.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.config.italic),
-                                                                 Text(50.0, 27.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.config.italic),
-                                                                 Text(50.0, 35.0, 85.0, 5.0, "Dynamic Accuracy:", self.config.regular),
-                                                                 AnalysisGraph(47.5, 85.0, 15, self.dynamics_scores[self.current_num_divisions], self.config.regular, self.config.italic, self.current_tab.length),
-                                                                 Text(50.0, 60, 95.0, 5.0, "Pitch / Tempo Accuracy:",
-                                                                      self.config.regular),
-                                                                 AnalysisGraph(72.5, 85.0, 15, self.accuracy_scores[self.current_num_divisions], self.config.regular, self.config.italic, self.current_tab.length),
-                                                                 Button(25.625, 92.5, 46.25, 10, "Save Recording", 46.25, 7.5, self.config.regular, self.save_recording),
-                                                                 Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.config.regular, self.return_to_menu)]))
+                                                        message_type="Get GUI update",
+                                                        content={"events": []}))
+                        self.first_session_render = True
+                        self.skip_render = True
+                    else:
+                        to_draw.append(
+                            Blackout(self.now_time - self.fade_out_start_time, self.config.fade_length, False))
+                        for ii in range(len(to_draw)):
+                            to_draw[ii].function = no_function
+                if not self.skip_render:
+                    self.outgoing_queue.put(Message(target="GUIEventBroker",
+                                                    source="AnalysisStateManager",
+                                                    message_type="render",
+                                                    content=to_draw))
                 self.skip_render = False
 
     def save_recording(self, event, renderable):
@@ -138,11 +185,8 @@ class AnalysisStateManager:
 
     def return_to_menu(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
-            self.outgoing_queue.put(Message(target="SongSelectStateManager",
-                                            source="AnalysisStateManager",
-                                            message_type="Get GUI update",
-                                            content={"events": []}))
-            self.skip_render = True
+            self.doing_fade_out = True
+            self.fade_out_start_time = self.now_time
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):

@@ -87,7 +87,7 @@ class TitleScreenStateManager:
                             self.doing_fade_in = False
                         else:
                             to_draw.append(
-                                Blackout((self.now_time - self.fade_in_start_time), self.config.fade_length))
+                                Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
                             for ii in range(len(to_draw)):
                                 to_draw[ii].function = no_function
                 if not self.skip_render:

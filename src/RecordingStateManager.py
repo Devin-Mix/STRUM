@@ -137,6 +137,7 @@ class RecordingStateManager:
                     if self.now_time - self.fade_out_start_time >= self.config.fade_length:
                         self.doing_fade_out = False
                         self.now_time = None
+                        self.first_session_render = True
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
                                                         message_type="Send recording",
