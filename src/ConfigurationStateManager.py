@@ -343,9 +343,23 @@ class ConfigurationStateManager:
                                      self.toggle_fullscreen,
                                      self.fullscreen)
                         ]
-                    # TODO: Add guitar UI elements here: Guitar tuning, self.fret_count, self.recording_fall_time, self.recroding_vertical_scale
+                    # TODO: Add guitar UI elements here: Guitar tuning, self.fret_count (slider range 5 frets - 35 frets), self.recording_fall_time (slider range 1 sec - 8 sec)
                     if self.current_page == 1:
-                        pass
+                        # noinspection PyTypeChecker
+                        to_draw = to_draw + [
+                            Text(50,
+                                 30,
+                                 20,
+                                 5,
+                                 "Vertical scale: {}".format(self.recording_vertical_scale),
+                                 self.regular),
+                            SlideBar(55,
+                                     45,
+                                     55,
+                                     5,
+                                     self.adjust_recording_vertical_scale,
+                                     100 * ((self.recording_vertical_scale - 0.1) / 0.9))
+                        ]
                     if self.doing_fade_out:
                         if self.now_time - self.fade_out_start_time >= self.fade_length:
                             self.outgoing_queue.put(Message(source="SongSelectStateManager",
