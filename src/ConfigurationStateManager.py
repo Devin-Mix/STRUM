@@ -3,6 +3,7 @@ from Fonts import *
 from Message import Message
 from queue import Queue
 from Renderables import *
+from time import time
 
 
 class ConfigurationStateManager:
@@ -34,7 +35,7 @@ class ConfigurationStateManager:
             self.text_color = 0
             self.intro_start_time = 1.0
             self.intro_length = 1.0
-            self.intro_fade_time = 1.0
+            self.fade_length = 0.25
             self.header = header
             self.italic = italic
             self.regular = regular
@@ -53,6 +54,10 @@ class ConfigurationStateManager:
             self.fullscreen = False
             self.skip_render = None
             self.fullscreen_resolution = None
+            self.first_session_render = True
+            self.doing_fade_in = False
+            self.doing_fade_out = False
+            self.fade_in_start_time = None
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -80,6 +85,11 @@ class ConfigurationStateManager:
                                                 content=self))
             elif message.type == "Get GUI update":
                 if not self.skip_render:
+                    self.now_time = time()
+                    if self.first_session_render:
+                        self.doing_fade_in = True
+                        self.fade_in_start_time = self.now_time
+                        self.first_session_render = False
                     if self.resolution_scale < 1:
                         resolution_scale_text = "1/{}x".format(int(1 / self.resolution_scale))
                     else:
@@ -309,10 +319,32 @@ class ConfigurationStateManager:
                                  self.toggle_fullscreen,
                                  self.fullscreen)
                     ]
-                    self.outgoing_queue.put(Message(source="ConfigurationStateManager",
-                                                    target="GUIEventBroker",
-                                                    message_type="render",
-                                                    content=to_draw))
+                    if self.doing_fade_out:
+                        if self.now_time - self.fade_out_start_time > self.fade_length:
+                            self.outgoing_queue.put(Message(source="SongSelectStateManager",
+                                                            target="TitleScreenStateManager",
+                                                            message_type="Get GUI update",
+                                                            content=None))
+                            self.skip_render = True
+                            self.first_session_render = True
+                            self.doing_fade_out = False
+                        else:
+                            to_draw.append(Blackout((self.now_time - self.fade_out_start_time), self.fade_length, False))
+                            for ii in range(len(to_draw)):
+                                to_draw[ii].function = no_function
+                    if self.doing_fade_in:
+                        if self.now_time - self.fade_in_start_time >= self.fade_length:
+                            self.doing_fade_in = False
+                        else:
+                            to_draw.append(
+                                Blackout((self.now_time - self.fade_in_start_time), self.fade_length))
+                            for ii in range(len(to_draw)):
+                                to_draw[ii].function = no_function
+                    if not self.skip_render:
+                        self.outgoing_queue.put(Message(source="ConfigurationStateManager",
+                                                        target="GUIEventBroker",
+                                                        message_type="render",
+                                                        content=to_draw))
                 self.skip_render = False
 
     def update_colors(self):
@@ -322,11 +354,8 @@ class ConfigurationStateManager:
 
     def back(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
-            self.outgoing_queue.put(Message(source="SongSelectStateManager",
-                                            target="TitleScreenStateManager",
-                                            message_type="Get GUI update",
-                                            content=None))
-            self.skip_render = True
+            self.doing_fade_out = True
+            self.fade_out_start_time = self.now_time
 
     def adjust_hue(self, event, renderable):
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:

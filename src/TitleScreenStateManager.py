@@ -47,9 +47,9 @@ class TitleScreenStateManager:
                     to_draw = [Blackout(function=self.skip_intro)]
                     if self.config.intro_start_time <= self.now_time < self.config.intro_start_time + self.config.intro_length:
                         to_draw.append(TitleText(1))
-                    elif self.config.intro_start_time + self.config.intro_length <= self.now_time < self.config.intro_start_time + self.config.intro_length + self.config.intro_fade_time:
-                        to_draw.append(TitleText(1 - ((self.now_time - (self.config.intro_start_time + self.config.intro_length)) / self.config.intro_fade_time)))
-                    elif self.config.intro_start_time + self.config.intro_length + self.config.intro_fade_time <= self.now_time:
+                    elif self.config.intro_start_time + self.config.intro_length <= self.now_time < self.config.intro_start_time + self.config.intro_length + self.config.fade_length:
+                        to_draw.append(TitleText(1 - ((self.now_time - (self.config.intro_start_time + self.config.intro_length)) / self.config.fade_length)))
+                    elif self.config.intro_start_time + self.config.intro_length + self.config.fade_length <= self.now_time:
                         self.intro_end_time = self.now_time
                         self.doing_intro = False
                         self.fade_in_done = False
@@ -62,7 +62,7 @@ class TitleScreenStateManager:
                     elif not self.fade_in_done:
                         self.fade_in_done = True
                     if self.launching_config or self.launching_song_select:
-                        if self.now_time >= self.fade_out_start_time + self.config.intro_fade_time:
+                        if self.now_time >= self.fade_out_start_time + self.config.fade_length:
                             if self.launching_config:
                                 self.outgoing_queue.put(Message(target="ConfigurationStateManager",
                                                                 source="TitleScreenStateManager",
@@ -79,15 +79,15 @@ class TitleScreenStateManager:
                             self.launching_song_select = False
                             self.first_session_render = True
                         else:
-                            to_draw.append(Blackout((self.now_time - self.fade_out_start_time), self.config.intro_fade_time, False))
+                            to_draw.append(Blackout((self.now_time - self.fade_out_start_time), self.config.fade_length, False))
                             for ii in range(len(to_draw)):
                                 to_draw[ii].function = no_function
                     if self.doing_fade_in:
-                        if self.now_time - self.fade_in_start_time >= self.config.intro_fade_time:
+                        if self.now_time - self.fade_in_start_time >= self.config.fade_length:
                             self.doing_fade_in = False
                         else:
                             to_draw.append(
-                                Blackout((self.now_time - self.fade_in_start_time), self.config.intro_fade_time))
+                                Blackout((self.now_time - self.fade_in_start_time), self.config.fade_length))
                             for ii in range(len(to_draw)):
                                 to_draw[ii].function = no_function
                 if not self.skip_render:

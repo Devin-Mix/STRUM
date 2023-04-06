@@ -235,7 +235,7 @@ class SongSelectStateManager:
                                               self.config.italic,
                                               self.button_functions[ii]))
                 if self.launch_recording or self.launch_title_screen:
-                    if self.now_time >= self.fade_out_start_time + self.config.intro_fade_time:
+                    if self.now_time >= self.fade_out_start_time + self.config.fade_length:
                         if self.launch_recording:
                             self.outgoing_queue.put(Message(source="SongSelectStateManager",
                                                             target="RecordingStateManager",
@@ -252,14 +252,14 @@ class SongSelectStateManager:
                         self.first_session_render = True
                     else:
                         to_draw.append(
-                            Blackout((self.now_time - self.fade_out_start_time), self.config.intro_fade_time, False))
+                            Blackout((self.now_time - self.fade_out_start_time), self.config.fade_length, False))
                         for ii in range(len(to_draw)):
                             to_draw[ii].function = no_function
                 if self.doing_fade_in:
-                    if self.now_time - self.fade_in_start_time >= self.config.intro_fade_time:
+                    if self.now_time - self.fade_in_start_time >= self.config.fade_length:
                         self.doing_fade_in = False
                     else:
-                        to_draw.append(Blackout((self.now_time - self.fade_in_start_time), self.config.intro_fade_time))
+                        to_draw.append(Blackout((self.now_time - self.fade_in_start_time), self.config.fade_length))
                         for ii in range(len(to_draw)):
                             to_draw[ii].function = no_function
                 if not self.skip_render:
