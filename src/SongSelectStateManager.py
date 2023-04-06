@@ -42,6 +42,7 @@ class SongSelectStateManager:
         self.current_tab_object = None
         self.leaving_tab_object = None
         self.config = None
+        self.launch_recording = None
 
     def handle(self):
         if not self.incoming_queue.empty():
@@ -145,8 +146,8 @@ class SongSelectStateManager:
                                            10,
                                            self.scroll_down,
                                            2))
-                time_now = time()
-                if self.scrolling and time_now - self.last_scroll_start > self.scroll_time:
+                self.now_time = time()
+                if self.scrolling and self.now_time - self.last_scroll_start > self.scroll_time:
                     self.scrolling = False
                     self.leaving_tab_object = None
                 if self.scrolling:
@@ -160,7 +161,7 @@ class SongSelectStateManager:
                                                      7.5,
                                                      self.config.italic,
                                                      self.button_functions[0],
-                                                     time_now - self.last_scroll_start,
+                                                     self.now_time - self.last_scroll_start,
                                                      self.scroll_time))
                         to_draw.append(FadeInButton(100 - 2.5 - (45 / 2),
                                                     100 - 31.25,
@@ -171,11 +172,11 @@ class SongSelectStateManager:
                                                     7.5,
                                                     self.config.italic,
                                                     self.button_functions[-1],
-                                                    time_now - self.last_scroll_start,
+                                                    self.now_time - self.last_scroll_start,
                                                     self.scroll_time))
                         for ii in range(3):
                             to_draw.append(Button(100 - 2.5 - (45 / 2),
-                                                  43.75 + (ii * 12.5) - (12.5 * (time_now - self.last_scroll_start) / self.scroll_time),
+                                                  43.75 + (ii * 12.5) - (12.5 * (self.now_time - self.last_scroll_start) / self.scroll_time),
                                                   45,
                                                   10,
                                                   self.tab_objects[ii].title,
@@ -193,7 +194,7 @@ class SongSelectStateManager:
                                                     7.5,
                                                     self.config.italic,
                                                     self.button_functions[0],
-                                                    time_now - self.last_scroll_start,
+                                                    self.now_time - self.last_scroll_start,
                                                     self.scroll_time))
                         to_draw.append(FadeOutButton(100 - 2.5 - (45 / 2),
                                                      100 - 31.25,
@@ -204,11 +205,11 @@ class SongSelectStateManager:
                                                      7.5,
                                                      self.config.italic,
                                                      self.button_functions[-1],
-                                                     time_now - self.last_scroll_start,
+                                                     self.now_time - self.last_scroll_start,
                                                      self.scroll_time))
                         for ii in range(3):
                             to_draw.append(Button(100 - 2.5 - (45 / 2),
-                                                  31.25 + (ii * 12.5) + (12.5 * (time_now - self.last_scroll_start) / self.scroll_time),
+                                                  31.25 + (ii * 12.5) + (12.5 * (self.now_time - self.last_scroll_start) / self.scroll_time),
                                                   45,
                                                   10,
                                                   self.tab_objects[ii + 1].title,
@@ -227,6 +228,21 @@ class SongSelectStateManager:
                                               7.5,
                                               self.config.italic,
                                               self.button_functions[ii]))
+                if self.launch_recording:
+                    if self.now_time >= self.fade_out_start_time + self.config.intro_fade_time:
+                        if self.launch_recording:
+                            self.outgoing_queue.put(Message(source="SongSelectStateManager",
+                                                            target="RecordingStateManager",
+                                                            message_type="Start recording session",
+                                                            content={"tab_file": self.current_tab_object}))
+                        elif self.
+                        self.skip_render = True
+                        self.launch_recording = False
+                    else:
+                        to_draw.append(
+                            Blackout((self.now_time - self.fade_out_start_time), self.config.intro_fade_time, False))
+                        for ii in range(len(to_draw)):
+                            to_draw[ii].function = no_function
                 if not self.skip_render:
                     self.outgoing_queue.put(Message(source="SongSelectStateManager",
                                                     target="GUIEventBroker",
@@ -290,11 +306,8 @@ class SongSelectStateManager:
 
     def start(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
-            self.outgoing_queue.put(Message(source="SongSelectStateManager",
-                                            target="RecordingStateManager",
-                                            message_type="Start recording session",
-                                            content={"tab_file": self.current_tab_object}))
-            self.skip_render = True
+            self.launch_recording = True
+            self.fade_out_start_time = self.now_time
 
     def square_tone_on(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
