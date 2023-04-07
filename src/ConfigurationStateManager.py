@@ -345,18 +345,42 @@ class ConfigurationStateManager:
                                      self.toggle_fullscreen,
                                      self.fullscreen)
                         ]
-                    # TODO: Add guitar UI elements here: Guitar tuning, self.fret_count (slider range 5 frets - 35 frets), self.recording_fall_time (slider range 1 sec - 8 sec)
+                    # TODO: Add guitar UI elements here: Guitar tuning
                     if self.current_page == 1:
                         # noinspection PyTypeChecker
                         to_draw = to_draw + [
-                            Text(50,
+                            Text(15,
                                  30,
                                  20,
                                  5,
-                                 "Vertical scale: {}".format(self.recording_vertical_scale),
+                                 "Fret Count: {}".format(self.fret_count),
+                                 self.regular),
+                            SlideBar(55,
+                                     30,
+                                     55,
+                                     5,
+                                     self.adjust_fret_count,
+                                     100 * ((self.fret_count - 5) / 30)),
+                            Text(15,
+                                 45,
+                                 20,
+                                 5,
+                                 "Fall Time: {}".format(self.recording_fall_time),
                                  self.regular),
                             SlideBar(55,
                                      45,
+                                     55,
+                                     5,
+                                     self.adjust_recording_fall_time,
+                                     100 * ((self.recording_fall_time - 1.0) / 7.0)),
+                            Text(15,
+                                 60,
+                                 20,
+                                 5,
+                                 "Vertical Scale: {}".format(self.recording_vertical_scale),
+                                 self.regular),
+                            SlideBar(55,
+                                     60,
                                      55,
                                      5,
                                      self.adjust_recording_vertical_scale,
@@ -479,6 +503,22 @@ class ConfigurationStateManager:
                 self.recording_vertical_scale = 0.1
             elif self.recording_vertical_scale > 1.0:
                 self.recording_vertical_scale = 1.0
+
+    def adjust_recording_fall_time(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            self.recording_fall_time = round(1.0 + (7.0 * ((event.pos[0] * self.resolution_scale * self.antialiasing_scale) - renderable.start_x) / (renderable.end_x - renderable.start_x)), 1)
+            if self.recording_fall_time < 1.0:
+                self.recording_fall_time = 1.0
+            elif self.recording_fall_time > 8.0:
+                self.recording_fall_time = 8.0
+
+    def adjust_fret_count(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            self.fret_count = round(5 + (30 * ((event.pos[0] * self.resolution_scale * self.antialiasing_scale) - renderable.start_x) / (renderable.end_x - renderable.start_x)))
+            if self.fret_count < 5:
+                self.fret_count = 5
+            elif self.fret_count > 35:
+                self.fret_count = 35
 
     def subtract_text_color_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
