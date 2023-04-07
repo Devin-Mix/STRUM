@@ -61,6 +61,7 @@ class ConfigurationStateManager:
             self.fade_in_start_time = None
             self.current_page = 0
             self.user_tuning = [0, 0, 0, 0, 0, 0]
+            self.key_select = 0
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -384,7 +385,85 @@ class ConfigurationStateManager:
                                      55,
                                      5,
                                      self.adjust_recording_vertical_scale,
-                                     100 * ((self.recording_vertical_scale - 0.1) / 0.9))
+                                     100 * ((self.recording_vertical_scale - 0.1) / 0.9)),
+                            Text(50,
+                                 80,
+                                 20,
+                                 5,
+                                 "Selected Key: {}".format(self.key_select),
+                                 self.regular),
+                            Text(50,
+                                 85,
+                                 20,
+                                 5,
+                                 "Key Value: {}".format(self.user_tuning[self.key_select]),
+                                 self.regular),
+                            ArrowButton(20,
+                                        70,
+                                        5,
+                                        5,
+                                        self.subtract_selected_key_one,
+                                        1),
+                            ArrowButton(75,
+                                        70,
+                                        5,
+                                        5,
+                                        self.add_selected_key_one,
+                                        1),
+                            Button( 35,
+                                    70,
+                                    5,
+                                    5,
+                                    "E",
+                                    5,
+                                    5,
+                                    self.regular,
+                                    self.change_E_low_key),
+                            Button( 40,
+                                    70,
+                                    5,
+                                    5,
+                                    "A",
+                                    5,
+                                    5,
+                                    self.regular,
+                                    self.change_A_key),
+                            Button( 45,
+                                    70,
+                                    5,
+                                    5,
+                                    "D",
+                                    5,
+                                    5,
+                                    self.regular,
+                                    self.change_D_key),
+                            Button( 50,
+                                    70,
+                                    5,
+                                    5,
+                                    "G",
+                                    5,
+                                    5,
+                                    self.regular,
+                                    self.change_G_key),
+                            Button( 55,
+                                    70,
+                                    5,
+                                    5,
+                                    "B",
+                                    5,
+                                    5,
+                                    self.regular,
+                                    self.change_B_key),
+                            Button( 60,
+                                    70,
+                                    5,
+                                    5,
+                                    "E",
+                                    5,
+                                    5,
+                                    self.regular,
+                                    self.change_E_high_key)
                         ]
                     if self.doing_fade_out:
                         if self.now_time - self.fade_out_start_time >= self.fade_length:
@@ -519,6 +598,38 @@ class ConfigurationStateManager:
                 self.fret_count = 5
             elif self.fret_count > 35:
                 self.fret_count = 35
+
+    def subtract_selected_key_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[self.key_select] = max(self.user_tuning[self.key_select] - 0.5, -3)
+
+    def add_selected_key_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[self.key_select] = min(self.user_tuning[self.key_select] + 0.5, 3)
+
+    def change_E_low_key(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.key_select = 0
+
+    def change_A_key(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.key_select = 1
+
+    def change_D_key(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.key_select = 2
+
+    def change_G_key(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.key_select = 3
+
+    def change_B_key(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.key_select = 4
+
+    def change_E_high_key(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.key_select = 5
 
     def subtract_text_color_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
