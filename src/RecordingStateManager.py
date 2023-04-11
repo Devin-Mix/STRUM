@@ -77,7 +77,7 @@ class RecordingStateManager:
                                                         source="RecordingStateManager",
                                                         message_type="End recording",
                                                         content=self.current_tab))
-                        self.fade_out_start_time = self.now_time
+                        self.fade_out_start_time = time()
                         self.now_time = None
                         self.start_time = None
                         self.fading_chords = []
