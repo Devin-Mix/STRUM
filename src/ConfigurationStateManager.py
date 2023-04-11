@@ -249,7 +249,7 @@ class ConfigurationStateManager:
                                            5,
                                            5,
                                            self.double_resolution_scale,
-                                           3),
+                                           1),
                                Text(13.75,
                                     60,
                                     15,
@@ -273,7 +273,7 @@ class ConfigurationStateManager:
                                            5,
                                            5,
                                            self.double_antialiasing_scale,
-                                           3)
+                                           1)
                            ]
                         if self.resolution_scale < 1:
                             if self.use_scale2x:
@@ -397,7 +397,7 @@ class ConfigurationStateManager:
                                         5,
                                         5,
                                         self.subtract_selected_key_one,
-                                        1),
+                                        3),
                             ArrowButton(75,
                                         70,
                                         5,
