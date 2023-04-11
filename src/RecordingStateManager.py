@@ -56,18 +56,9 @@ class RecordingStateManager:
                                                 source="RecordingStateManager",
                                                 message_type="Prime recording",
                                                 content=None))
-                if self.first_session_render:
-                    self.now_time = time()
-                    self.fade_in_start_time = self.now_time
-                    self.doing_fade_in = True
-                    self.first_session_render = False
-                if self.doing_fade_in:
-                    to_draw.append(Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
-                    for ii in range(len(to_draw)):
-                        to_draw[ii].function = no_function
-                    if self.now_time - self.fade_in_start_time >= self.config.fade_length:
-                        self.doing_fade_in = False
-                        self.now_time = None
+                to_draw.append(Blackout(0, self.config.fade_length))
+                for ii in range(len(to_draw)):
+                    to_draw[ii].function = no_function
                 self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                 source="RecordingStateManager",
                                                 message_type="render",
