@@ -348,44 +348,63 @@ class ConfigurationStateManager:
                         ]
                     # TODO: Add guitar UI elements here: Guitar tuning
                     if self.current_page == 1:
+                        tones = ["A", "A# / B♭", "B", "C", "C# / D♭", "D", "D# / E♭", "E", "F", "F# / G♭", "G", "G# / A♭"]
+                        tuning_indices = []
+                        default_indices = [7, 0, 5, 10, 2, 7]
+                        for ii in range(len(self.user_tuning)):
+                            if self.user_tuning[ii] + default_indices[ii] >= len(tones):
+                                tuning_indices.append((self.user_tuning[ii] + default_indices[ii]) % len(tones))
+                            elif self.user_tuning[ii] + default_indices[ii] < 0:
+                                tuning_indices.append(self.user_tuning[ii] + default_indices[ii])
+                                while tuning_indices[-1] < 0:
+                                    tuning_indices[-1] = tuning_indices[-1] + len(tones) - 1
+                            else:
+                                tuning_indices.append(self.user_tuning[ii] + default_indices[ii])
+                        print([tones[ii] for ii in tuning_indices])
                         # noinspection PyTypeChecker
                         to_draw = to_draw + [
-                            Text(15,
+                            Text(50,
+                                 22.5,
                                  30,
-                                 20,
                                  5,
                                  "Fret Count: {}".format(self.fret_count),
                                  self.regular),
-                            SlideBar(55,
-                                     30,
-                                     55,
+                            SlideBar(50,
+                                     27.5,
+                                     85,
                                      5,
                                      self.adjust_fret_count,
                                      100 * ((self.fret_count - 5) / 30)),
-                            Text(15,
-                                 45,
-                                 20,
+                            Text(50,
+                                 35,
+                                 30,
                                  5,
                                  "Fall Time: {}".format(self.recording_fall_time),
                                  self.regular),
-                            SlideBar(55,
-                                     45,
-                                     55,
+                            SlideBar(50,
+                                     40,
+                                     85,
                                      5,
                                      self.adjust_recording_fall_time,
                                      100 * ((self.recording_fall_time - 1.0) / 7.0)),
-                            Text(15,
-                                 60,
-                                 20,
+                            Text(50,
+                                 47.5,
+                                 30,
                                  5,
                                  "Vertical Scale: {}".format(self.recording_vertical_scale),
                                  self.regular),
-                            SlideBar(55,
-                                     60,
-                                     55,
+                            SlideBar(50,
+                                     52.5,
+                                     85,
                                      5,
                                      self.adjust_recording_vertical_scale,
                                      100 * ((self.recording_vertical_scale - 0.1) / 0.9)),
+                            Text(50,
+                                 60,
+                                 85,
+                                 5,
+                                 "Tuning:",
+                                 self.regular),
                             Text(50,
                                  80,
                                  20,
@@ -589,11 +608,11 @@ class ConfigurationStateManager:
 
     def subtract_selected_key_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
-            self.user_tuning[self.key_select] = max(self.user_tuning[self.key_select] - 0.5, -3)
+            self.user_tuning[self.key_select] = self.user_tuning[self.key_select] - 1
 
     def add_selected_key_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
-            self.user_tuning[self.key_select] = min(self.user_tuning[self.key_select] + 0.5, 3)
+            self.user_tuning[self.key_select] = self.user_tuning[self.key_select] + 1
 
     def change_E_low_key(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
