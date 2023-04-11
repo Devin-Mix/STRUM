@@ -399,32 +399,45 @@ class ArrowButton:
                                                       screen.get_width() * self.width_percent / 100,
                                                       screen.get_height() * self.height_percent / 100)
         BackgroundBox(self.x_percent, self.y_percent, self.width_percent, self.height_percent).draw(screen, config)
+        triangle_size = min(self.width_percent * 0.5, self.height_percent * 0.5)
+        color = pygame.color.Color(config.text_color, config.text_color, config.text_color)
         if self.direction == 0:
-            pygame.draw.line(screen,
-                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
-                             ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                             (self.x_percent * screen.get_width() / 100,
-                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
-            pygame.draw.line(screen,
-                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
-                             ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                             (self.x_percent * screen.get_width() / 100,
-                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+            points = [
+                [self.x_percent * screen.get_width() / 100,
+                 (self.y_percent - (triangle_size / 2)) * screen.get_height() / 100],
+                [(self.x_percent + (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent + (triangle_size / 2)) * screen.get_height() / 100],
+                [(self.x_percent - (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent + (triangle_size / 2)) * screen.get_height() / 100]
+            ]
+        elif self.direction == 1:
+            points = [
+                [(self.x_percent + (triangle_size / 2)) * screen.get_width() / 100,
+                 self.y_percent * screen.get_height() / 100],
+                [(self.x_percent - (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent + (triangle_size / 2)) * screen.get_height() / 100],
+                [(self.x_percent - (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent - (triangle_size / 2)) * screen.get_height() / 100]
+            ]
         elif self.direction == 2:
-            pygame.draw.line(screen,
-                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
-                             ((self.x_percent - (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                             (self.x_percent * screen.get_width() / 100,
-                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
-            pygame.draw.line(screen,
-                             pygame.color.Color(config.text_color, config.text_color, config.text_color),
-                             ((self.x_percent + (self.width_percent * 0.75 / 2)) * screen.get_width() / 100,
-                              (self.y_percent - (self.height_percent * 0.75 / 2)) * screen.get_height() / 100),
-                             (self.x_percent * screen.get_width() / 100,
-                              (self.y_percent + (self.height_percent * 0.75 / 2)) * screen.get_height() / 100))
+            points = [
+                [self.x_percent * screen.get_width() / 100,
+                 (self.y_percent + (triangle_size / 2)) * screen.get_height() / 100],
+                [(self.x_percent - (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent - (triangle_size / 2)) * screen.get_height() / 100],
+                [(self.x_percent + (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent - (triangle_size / 2)) * screen.get_height() / 100]
+            ]
+        elif self.direction == 3:
+            points = [
+                [(self.x_percent - (triangle_size / 2)) * screen.get_width() / 100,
+                 self.y_percent * screen.get_height() / 100],
+                [(self.x_percent + (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent - (triangle_size / 2)) * screen.get_height() / 100],
+                [(self.x_percent + (triangle_size / 2)) * screen.get_width() / 100,
+                 (self.y_percent + (triangle_size / 2)) * screen.get_height() / 100]
+            ]
+        pygame.draw.polygon(screen, color, points)
         return self
 
 class FadeInButton:
