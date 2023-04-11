@@ -85,7 +85,7 @@ class RecordingStateManager:
                         self.doing_fade_out = True
                     else:
                         if self.start_time is None:
-                            self.start_time = time() + self.config.recording_fall_time
+                            self.start_time = time() + (self.config.recording_fall_time * (1 / self.config.playback_speed_scale))
                         self.now_time = time() - self.start_time
                         if not self.playback_started and not len(self.current_tab.get_next_chords(self.now_time, self.config)) == len(self.current_tab.get_next_chords(0.0, self.config)):
                             self.outgoing_queue.put(Message(target="GUIEventBroker",

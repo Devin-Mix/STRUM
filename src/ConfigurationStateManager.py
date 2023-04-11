@@ -35,7 +35,7 @@ class ConfigurationStateManager:
             self.text_color = 0
             self.intro_start_time = 1.0
             self.intro_length = 1.0
-            self.fade_length = 0.25
+            self.fade_length = 2
             self.header = header
             self.italic = italic
             self.regular = regular
