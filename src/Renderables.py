@@ -766,9 +766,10 @@ class SlideBar:
         cursor_radius = self.height_percent * screen.get_height() / 200
         self.start_x = ((self.x_percent - (self.width_percent / 2)) * screen.get_width() / 100) + cursor_radius
         y = self.y_percent * screen.get_height() / 100
-        self.end_x = ((self.x_percent + (self.width_percent / 2)) * screen.get_width() / 100) + cursor_radius
+        self.end_x = ((self.x_percent + (self.width_percent / 2)) * screen.get_width() / 100) - cursor_radius
         pygame.draw.line(screen, pygame.color.Color(config.text_color, config.text_color, config.text_color), (self.start_x, y), (self.end_x, y))
-        cursor_x = (self.start_x + ((self.cursor_percent * self.width_percent / 100) * screen.get_width() / 100))
+        self.line_width_percent = 100 * (self.end_x - self.start_x) / screen.get_width()
+        cursor_x = (self.start_x + ((self.cursor_percent * self.line_width_percent / 100) * screen.get_width() / 100))
         self.bounding_box = pygame.draw.circle(screen, config.front_color, (cursor_x, y), cursor_radius)
         pygame.draw.circle(screen, config.middle_color, (cursor_x, y), cursor_radius * 0.9)
         pygame.draw.circle(screen, config.rear_color, (cursor_x, y), cursor_radius * 0.8)

@@ -1,3 +1,4 @@
+from math import log
 from Message import Message
 from os import scandir
 from queue import Queue
@@ -132,6 +133,18 @@ class SongSelectStateManager:
                                             5,
                                             self.square_tone_on,
                                             self.config.square_tone and self.config.play_tone))
+                    to_draw.append(Text(25,
+                                        67.5,
+                                        40,
+                                        5,
+                                        "Playback speed: {}x".format(self.config.playback_speed_scale),
+                                        self.config.regular))
+                    to_draw.append(SlideBar(25,
+                                            72.5,
+                                            30,
+                                            5,
+                                            self.adjust_playback_speed_scale,
+                                            100 * log(self.config.playback_speed_scale + 0.9, 10.9)))
                 to_draw.append(ArrowButton(100 - 2.5 - (45 / 2),
                                            18.75,
                                            45,
@@ -324,3 +337,13 @@ class SongSelectStateManager:
     def tone_wave_off(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
             self.config.play_tone = False
+
+    def adjust_playback_speed_scale(self, event, renderable):
+        if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            cursor_position = ((event.pos[0] * self.config.resolution_scale * self.config.antialiasing_scale)
+                               - renderable.start_x) / (renderable.end_x - renderable.start_x)
+            self.config.playback_speed_scale = round(pow(10.9, cursor_position) - 0.9, 1)
+            if self.config.playback_speed_scale < 0.1:
+                self.config.playback_speed_scale = 0.1
+            elif self.config.playback_speed_scale > 10:
+                self.config.playback_speed_scale = 10
