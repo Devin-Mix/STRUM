@@ -44,7 +44,7 @@ class ConfigurationStateManager:
             self.square_tone = False
             self.play_song = True
             self.play_tone = True
-            self.playback_speed_scale = 0.5
+            self.playback_speed_scale = 1
             self.resolution_scale = 1
             self.do_resolution_scaling = False
             self.use_scale2x = False

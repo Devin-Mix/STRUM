@@ -130,6 +130,8 @@ class AnalysisStateManager:
                                Text(50.0, 10, 85.0, 10, "Analysis Results", self.config.header),
                                Text(50.0, 20.0, 85.0, 5.0, "{} by {}".format(self.current_tab.title, self.current_tab.artist), self.config.italic),
                                Text(50.0, 27.5, 40.0, 5.0, "Number of analysis segments: {}".format(self.current_num_divisions), self.config.italic),
+                               ArrowButton(25, 27.5, 5, 5, self.decrease_num_analysis_segments, 3),
+                               ArrowButton(75, 27.5, 5, 5, self.increase_num_analysis_segments, 1),
                                Text(50.0, 35.0, 85.0, 5.0, "Dynamic Accuracy:", self.config.regular),
                                AnalysisGraph(47.5, 85.0, 15, self.dynamics_scores[self.current_num_divisions], self.config.regular, self.config.italic, self.current_tab.length),
                                Text(50.0, 60, 95.0, 5.0, "Pitch / Tempo Accuracy:",
@@ -187,6 +189,14 @@ class AnalysisStateManager:
         if event.type == pygame.MOUSEBUTTONUP:
             self.doing_fade_out = True
             self.fade_out_start_time = self.now_time
+
+    def decrease_num_analysis_segments(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.current_num_divisions = max(1, self.current_num_divisions - 1)
+
+    def increase_num_analysis_segments(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.current_num_divisions = min(self.current_num_divisions + 1, self.precision_level)
 
 
 def get_scores(low_index, high_index, recording_data_normalized, tone_wave_normalized, framerate):
