@@ -57,8 +57,6 @@ class SongSelectStateManager:
                                   20,
                                   10,
                                   "Back",
-                                  20,
-                                  7.5,
                                   self.config.regular,
                                   self.back)]
                 if self.current_tab_object is not None:
@@ -89,8 +87,6 @@ class SongSelectStateManager:
                                           45,
                                           10,
                                           "Start",
-                                          40,
-                                          7.5,
                                           self.config.regular,
                                           self.start))
                     to_draw.append(Text(20,
@@ -163,8 +159,6 @@ class SongSelectStateManager:
                                                      45,
                                                      10,
                                                      self.leaving_tab_object.title,
-                                                     40,
-                                                     7.5,
                                                      self.config.italic,
                                                      self.button_functions[0],
                                                      self.now_time - self.last_scroll_start,
@@ -174,8 +168,6 @@ class SongSelectStateManager:
                                                     45,
                                                     10,
                                                     self.tab_objects[-1].title,
-                                                    40,
-                                                    7.5,
                                                     self.config.italic,
                                                     self.button_functions[-1],
                                                     self.now_time - self.last_scroll_start,
@@ -186,8 +178,6 @@ class SongSelectStateManager:
                                                   45,
                                                   10,
                                                   self.tab_objects[ii].title,
-                                                  40,
-                                                  7.5,
                                                   self.config.italic,
                                                   self.button_functions[ii]))
                     else:
@@ -196,8 +186,6 @@ class SongSelectStateManager:
                                                     45,
                                                     10,
                                                     self.tab_objects[0].title,
-                                                    40,
-                                                    7.5,
                                                     self.config.italic,
                                                     self.button_functions[0],
                                                     self.now_time - self.last_scroll_start,
@@ -207,8 +195,6 @@ class SongSelectStateManager:
                                                      45,
                                                      10,
                                                      self.leaving_tab_object.title,
-                                                     40,
-                                                     7.5,
                                                      self.config.italic,
                                                      self.button_functions[-1],
                                                      self.now_time - self.last_scroll_start,
@@ -219,8 +205,6 @@ class SongSelectStateManager:
                                                   45,
                                                   10,
                                                   self.tab_objects[ii + 1].title,
-                                                  40,
-                                                  7.5,
                                                   self.config.italic,
                                                   self.button_functions[ii]))
                 else:
@@ -230,8 +214,6 @@ class SongSelectStateManager:
                                               45,
                                               10,
                                               self.tab_objects[ii].title,
-                                              40,
-                                              7.5,
                                               self.config.italic,
                                               self.button_functions[ii]))
                 if self.launch_recording or self.launch_title_screen:

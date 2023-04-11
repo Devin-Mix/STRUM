@@ -35,7 +35,7 @@ class ConfigurationStateManager:
             self.text_color = 0
             self.intro_start_time = 1.0
             self.intro_length = 1.0
-            self.fade_length = 2
+            self.fade_length = 0.25
             self.header = header
             self.italic = italic
             self.regular = regular
@@ -112,8 +112,6 @@ class ConfigurationStateManager:
                                       20,
                                       10,
                                       "Back",
-                                      20,
-                                      7.5,
                                       self.regular,
                                       self.back),
                                Button(65,
@@ -121,8 +119,6 @@ class ConfigurationStateManager:
                                       20,
                                       10,
                                       "Display",
-                                      20,
-                                      7.5,
                                       self.regular,
                                       self.show_display_page),
                                Button(100 - 12.5,
@@ -130,8 +126,6 @@ class ConfigurationStateManager:
                                       20,
                                       10,
                                       "Recording",
-                                      20,
-                                      7.5,
                                       self.regular,
                                       self.show_guitar_page)]
                     if self.current_page == 0:
@@ -415,8 +409,6 @@ class ConfigurationStateManager:
                                     5,
                                     5,
                                     "E",
-                                    5,
-                                    5,
                                     self.regular,
                                     self.change_E_low_key),
                             Button( 40,
@@ -424,8 +416,6 @@ class ConfigurationStateManager:
                                     5,
                                     5,
                                     "A",
-                                    5,
-                                    5,
                                     self.regular,
                                     self.change_A_key),
                             Button( 45,
@@ -433,8 +423,6 @@ class ConfigurationStateManager:
                                     5,
                                     5,
                                     "D",
-                                    5,
-                                    5,
                                     self.regular,
                                     self.change_D_key),
                             Button( 50,
@@ -442,8 +430,6 @@ class ConfigurationStateManager:
                                     5,
                                     5,
                                     "G",
-                                    5,
-                                    5,
                                     self.regular,
                                     self.change_G_key),
                             Button( 55,
@@ -451,8 +437,6 @@ class ConfigurationStateManager:
                                     5,
                                     5,
                                     "B",
-                                    5,
-                                    5,
                                     self.regular,
                                     self.change_B_key),
                             Button( 60,
@@ -460,8 +444,6 @@ class ConfigurationStateManager:
                                     5,
                                     5,
                                     "E",
-                                    5,
-                                    5,
                                     self.regular,
                                     self.change_E_high_key)
                         ]

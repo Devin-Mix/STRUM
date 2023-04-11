@@ -54,8 +54,8 @@ class TitleScreenStateManager:
                         self.doing_intro = False
                         self.fade_in_done = False
                 if not self.doing_intro:
-                    to_draw = [Button(25.625, 92.5, 46.25, 10, "Config", 46.25, 7.5, self.config.regular, self.launch_config),
-                               Button(74.375, 92.5, 46.25, 10, "Song Select", 46.25, 7.5, self.config.regular, self.launch_song_select),
+                    to_draw = [Button(25.625, 92.5, 46.25, 10, "Config", self.config.regular, self.launch_config),
+                               Button(74.375, 92.5, 46.25, 10, "Song Select", self.config.regular, self.launch_song_select),
                                Logo(50, 40, 95, 80, 5 * sin(1.5 * time()))]
                     if not self.fade_in_done and self.now_time - self.intro_end_time < self.config.transition_length:
                         to_draw.append(Blackout(self.now_time - self.intro_end_time, self.config.transition_length))

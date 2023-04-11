@@ -344,7 +344,7 @@ class AnalysisGraph:
                 next_mark_num = next_mark_num + 1
 
 class Button:
-    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent, text_height_percent, font, function):
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, font, function):
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
@@ -358,14 +358,8 @@ class Button:
             raise ValueError(
                 "Width plus offset out of bounds for Renderables.Button ({})".format(x_percent + width_percent))
         self.text = "{}".format(text)
-        if 0.0 <= text_width_percent <= width_percent:
-            self.text_width_percent = text_width_percent
-        else:
-            raise ValueError("Text width percent out of bounds for Renderables.Button ({})".format(text_width_percent))
-        if 0.0 <= text_height_percent <= height_percent:
-            self.text_height_percent = text_height_percent
-        else:
-            raise ValueError("Text height percent out of bounds for Renderables.Button ({})".format(text_height_percent))
+        self.text_width_percent = 0.8 * self.width_percent
+        self.text_height_percent = 0.8 * self.height_percent
         if type(font) == pygame.freetype.Font:
             self.font = font
         else:
@@ -434,8 +428,7 @@ class ArrowButton:
         return self
 
 class FadeInButton:
-    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent,
-                 text_height_percent, font, function, time_alive, lifespan):
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, font, function, time_alive, lifespan):
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
@@ -449,16 +442,6 @@ class FadeInButton:
             raise ValueError(
                 "Width plus offset out of bounds for Renderables.FadeInButton ({})".format(x_percent + width_percent))
         self.text = "{}".format(text)
-        if 0.0 <= text_width_percent <= width_percent:
-            self.text_width_percent = text_width_percent
-        else:
-            raise ValueError(
-                "Text width percent out of bounds for Renderables.FadeInButton ({})".format(text_width_percent))
-        if 0.0 <= text_height_percent <= height_percent:
-            self.text_height_percent = text_height_percent
-        else:
-            raise ValueError(
-                "Text height percent out of bounds for Renderables.FadeInButton ({})".format(text_height_percent))
         if type(font) == pygame.freetype.Font:
             self.font = font
         else:
@@ -481,16 +464,14 @@ class FadeInButton:
             current_x_percent = self.x_percent + ((self.width_percent / 2) * (1 - self.age_percent))
             current_width_percent = self.width_percent * self.age_percent
             current_height_percent = self.height_percent * self.age_percent
-            current_text_width_percent = self.text_width_percent * self.age_percent
-            current_text_height_percent = self.text_height_percent * self.age_percent
             s.set_alpha(round(255 * self.age_percent, pygame.RLEACCEL))
-            self.bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s, config).bounding_box
+            self.bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, self.font, self.function).draw(s, config).bounding_box
             screen.blit(s, (0, 0))
             return self
 
 class FadeOutButton:
-    def __init__(self, x_percent, y_percent, width_percent, height_percent, text, text_width_percent,
-                 text_height_percent, font, function, time_alive, lifespan):
+    def __init__(self, x_percent, y_percent, width_percent, height_percent, text,
+                 font, function, time_alive, lifespan):
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
@@ -504,16 +485,6 @@ class FadeOutButton:
             raise ValueError(
                 "Width plus offset out of bounds for Renderables.FadeOutButton ({})".format(x_percent + width_percent))
         self.text = "{}".format(text)
-        if 0.0 <= text_width_percent <= width_percent:
-            self.text_width_percent = text_width_percent
-        else:
-            raise ValueError(
-                "Text width percent out of bounds for Renderables.FadeOutButton ({})".format(text_width_percent))
-        if 0.0 <= text_height_percent <= height_percent:
-            self.text_height_percent = text_height_percent
-        else:
-            raise ValueError(
-                "Text height percent out of bounds for Renderables.FadeOutButton ({})".format(text_height_percent))
         if type(font) == pygame.freetype.Font:
             self.font = font
         else:
@@ -536,10 +507,8 @@ class FadeOutButton:
             current_x_percent = self.x_percent + ((self.width_percent / 2) * self.age_percent)
             current_width_percent = self.width_percent * (1 - self.age_percent)
             current_height_percent = self.height_percent * (1 - self.age_percent)
-            current_text_width_percent = self.text_width_percent * (1 - self.age_percent)
-            current_text_height_percent = self.text_height_percent * (1 - self.age_percent)
             s.set_alpha(round(255 * (1 - self.age_percent)), pygame.RLEACCEL)
-            self.bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, current_text_width_percent, current_text_height_percent, self.font, self.function).draw(s, config).bounding_box
+            self.bounding_box = Button(current_x_percent, self.y_percent, current_width_percent, current_height_percent, self.text, self.font, self.function).draw(s, config).bounding_box
             screen.blit(s, (0, 0))
             return self
 

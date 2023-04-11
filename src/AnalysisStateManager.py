@@ -135,8 +135,8 @@ class AnalysisStateManager:
                                Text(50.0, 60, 95.0, 5.0, "Pitch / Tempo Accuracy:",
                                     self.config.regular),
                                AnalysisGraph(72.5, 85.0, 15, self.accuracy_scores[self.current_num_divisions], self.config.regular, self.config.italic, self.current_tab.length),
-                               Button(25.625, 92.5, 46.25, 10, "Save Recording", 46.25, 7.5, self.config.regular, self.save_recording),
-                               Button(74.375, 92.5, 46.25, 10, "Return", 46.25, 7.5, self.config.regular, self.return_to_menu)]
+                               Button(25.625, 92.5, 46.25, 10, "Save Recording", self.config.regular, self.save_recording),
+                               Button(74.375, 92.5, 46.25, 10, "Return", self.config.regular, self.return_to_menu)]
 
                 if self.doing_fade_in:
                     if self.now_time - self.fade_in_start_time >= self.config.fade_length:
