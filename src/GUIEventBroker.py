@@ -306,6 +306,8 @@ class GUIEventBroker:
             self.config.resolution = (self.display.get_width(), self.display.get_height())
 
     def stretch_playback_file(self):
+        if self.config.playback_speed_scale == 1:
+            return
         frames_as_np = np.frombuffer(self.playback_frames, pa_data_type_to_np(self.playback_format)).copy()
         max_amp = np.max(np.abs(frames_as_np))
         normalized_frames = frames_as_np / max_amp
