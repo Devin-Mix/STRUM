@@ -342,8 +342,12 @@ class SongSelectStateManager:
         if type(renderable) == SlideBar and event.type == pygame.MOUSEMOTION and event.buttons[0]:
             cursor_position = ((event.pos[0] * self.config.resolution_scale * self.config.antialiasing_scale)
                                - renderable.start_x) / (renderable.end_x - renderable.start_x)
-            self.config.playback_speed_scale = round(pow(10.9, cursor_position) - 0.9, 1)
+            self.config.playback_speed_scale = pow(10.9, cursor_position) - 0.9
+            if self.config.playback_speed_scale < 1:
+                self.config.playback_speed_scale = round(self.config.playback_speed_scale, 2)
+            elif self.config.playback_speed_scale > 1:
+                self.config.playback_speed_scale = round(self.config.playback_speed_scale, 1)
             if self.config.playback_speed_scale < 0.1:
                 self.config.playback_speed_scale = 0.1
             elif self.config.playback_speed_scale > 10:
-                self.config.playback_speed_scale = 10
+                self.config.playback_speed_scale = 10.0
