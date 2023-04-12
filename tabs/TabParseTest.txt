@@ -2,7 +2,7 @@ BPM=236
 Tuning=0,0,0,0,0,0
 Title=Wendy Clear
 Artist=Blink-182
-Song file=../test/Wendy_Clear.wav
+Song file=../tabs/Wendy_Clear.wav
 ///
 ||||||---.
 |3||||--

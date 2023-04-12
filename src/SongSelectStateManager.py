@@ -25,10 +25,10 @@ class SongSelectStateManager:
         self.scrolling = False
         self.last_scroll_start = None
         self.scroll_direction_is_up = True
-        tab_scanner = scandir("../test")
+        tab_scanner = scandir("../tabs")
         for scanned_object in tab_scanner:
             if scanned_object.is_file() and ".txt" in scanned_object.name:
-                self.tab_names.append("../test/{}".format(scanned_object.name))
+                self.tab_names.append("../tabs/{}".format(scanned_object.name))
         self.tab_objects = []
         if not self.tab_names == []:
             for ii in range(4):
