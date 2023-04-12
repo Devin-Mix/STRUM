@@ -348,7 +348,7 @@ class ConfigurationStateManager:
                         ]
                     # TODO: Add guitar UI elements here: Guitar tuning
                     if self.current_page == 1:
-                        tones = ["A", "A# / B♭", "B", "C", "C# / D♭", "D", "D# / E♭", "E", "F", "F# / G♭", "G", "G# / A♭"]
+                        tones = ["A", "A# / Bb", "B", "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab"]
                         tuning_indices = []
                         default_indices = [7, 0, 5, 10, 2, 7]
                         for ii in range(len(self.user_tuning)):
@@ -360,7 +360,6 @@ class ConfigurationStateManager:
                                     tuning_indices[-1] = tuning_indices[-1] + len(tones) - 1
                             else:
                                 tuning_indices.append(self.user_tuning[ii] + default_indices[ii])
-                        print([tones[ii] for ii in tuning_indices])
                         # noinspection PyTypeChecker
                         to_draw = to_draw + [
                             Text(50,
@@ -405,72 +404,114 @@ class ConfigurationStateManager:
                                  5,
                                  "Tuning:",
                                  self.regular),
-                            Text(50,
-                                 80,
-                                 20,
+                            ArrowButton(18.75,
+                                        67.5,
+                                        10,
+                                        5,
+                                        self.add_e_low_one,
+                                        0),
+                            ArrowButton(31.25,
+                                        67.5,
+                                        10,
+                                        5,
+                                        self.add_a_one,
+                                        0),
+                            ArrowButton(43.75,
+                                        67.5,
+                                        10,
+                                        5,
+                                        self.add_d_one,
+                                        0),
+                            ArrowButton(56.25,
+                                        67.5,
+                                        10,
+                                        5,
+                                        self.add_g_one,
+                                        0),
+                            ArrowButton(68.75,
+                                        67.5,
+                                        10,
+                                        5,
+                                        self.add_b_one,
+                                        0),
+                            ArrowButton(81.25,
+                                        67.5,
+                                        10,
+                                        5,
+                                        self.add_e_high_one,
+                                        0),
+                            Text(18.75,
+                                 75,
+                                 10,
                                  5,
-                                 "Selected Key: {}".format(self.key_select),
+                                 tones[tuning_indices[0]],
                                  self.regular),
-                            Text(50,
-                                 85,
-                                 20,
+                            Text(31.25,
+                                 75,
+                                 10,
                                  5,
-                                 "Key Value: {}".format(self.user_tuning[self.key_select]),
+                                 tones[tuning_indices[1]],
                                  self.regular),
-                            ArrowButton(20,
-                                        70,
+                            Text(43.75,
+                                 75,
+                                 10,
+                                 5,
+                                 tones[tuning_indices[2]],
+                                 self.regular),
+                            Text(56.25,
+                                 75,
+                                 10,
+                                 5,
+                                 tones[tuning_indices[3]],
+                                 self.regular),
+                            Text(68.75,
+                                 75,
+                                 10,
+                                 5,
+                                 tones[tuning_indices[4]],
+                                 self.regular),
+                            Text(81.25,
+                                 75,
+                                 10,
+                                 5,
+                                 tones[tuning_indices[5]],
+                                 self.regular),
+                            ArrowButton(18.75,
+                                        82.5,
+                                        10,
                                         5,
+                                        self.subtract_e_low_one,
+                                        2),
+                            ArrowButton(31.25,
+                                        82.5,
+                                        10,
                                         5,
-                                        self.subtract_selected_key_one,
-                                        3),
-                            ArrowButton(75,
-                                        70,
+                                        self.subtract_a_one,
+                                        2),
+                            ArrowButton(43.75,
+                                        82.5,
+                                        10,
                                         5,
+                                        self.subtract_d_one,
+                                        2),
+                            ArrowButton(56.25,
+                                        82.5,
+                                        10,
                                         5,
-                                        self.add_selected_key_one,
-                                        1),
-                            Button( 35,
-                                    70,
-                                    5,
-                                    5,
-                                    "E",
-                                    self.regular,
-                                    self.change_E_low_key),
-                            Button( 40,
-                                    70,
-                                    5,
-                                    5,
-                                    "A",
-                                    self.regular,
-                                    self.change_A_key),
-                            Button( 45,
-                                    70,
-                                    5,
-                                    5,
-                                    "D",
-                                    self.regular,
-                                    self.change_D_key),
-                            Button( 50,
-                                    70,
-                                    5,
-                                    5,
-                                    "G",
-                                    self.regular,
-                                    self.change_G_key),
-                            Button( 55,
-                                    70,
-                                    5,
-                                    5,
-                                    "B",
-                                    self.regular,
-                                    self.change_B_key),
-                            Button( 60,
-                                    70,
-                                    5,
-                                    5,
-                                    "E",
-                                    self.regular,
-                                    self.change_E_high_key)
+                                        self.subtract_g_one,
+                                        2),
+                            ArrowButton(68.75,
+                                        82.5,
+                                        10,
+                                        5,
+                                        self.subtract_b_one,
+                                        2),
+                            ArrowButton(81.25,
+                                        82.5,
+                                        10,
+                                        5,
+                                        self.subtract_e_high_one,
+                                        2)
                         ]
                     if self.doing_fade_out:
                         if self.now_time - self.fade_out_start_time >= self.fade_length:
@@ -605,6 +646,54 @@ class ConfigurationStateManager:
                 self.fret_count = 5
             elif self.fret_count > 35:
                 self.fret_count = 35
+
+    def add_e_low_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[0] = self.user_tuning[0] + 1
+
+    def subtract_e_low_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[0] = self.user_tuning[0] - 1
+
+    def add_a_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[1] = self.user_tuning[1] + 1
+
+    def subtract_a_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[1] = self.user_tuning[1] - 1
+
+    def add_d_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[2] = self.user_tuning[2] + 1
+
+    def subtract_d_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[2] = self.user_tuning[2] - 1
+
+    def add_g_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[3] = self.user_tuning[3] + 1
+
+    def subtract_g_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[3] = self.user_tuning[3] - 1
+
+    def add_b_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[4] = self.user_tuning[4] + 1
+
+    def subtract_b_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[4] = self.user_tuning[4] - 1
+
+    def add_e_high_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[5] = self.user_tuning[5] + 1
+
+    def subtract_e_high_one(self, event, renderable):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.user_tuning[5] = self.user_tuning[5] - 1
 
     def subtract_selected_key_one(self, event, renderable):
         if event.type == pygame.MOUSEBUTTONUP:
