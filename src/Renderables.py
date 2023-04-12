@@ -35,7 +35,8 @@ class StringLine:
 
 
 class FallingChord:
-    def __init__(self, chord, now_time, config, final_fret_offset):
+    def __init__(self, chord, now_time, config, final_fret_offset, tuning):
+        tuning_differences = [tuning[ii] - config.user_tuning[ii] for ii in range(6)]
         remaining_fall_time = chord[1] - now_time
         self.y_offset = (95 - (25 * config.recording_vertical_scale)) - (
                     (90 - (25 * config.recording_vertical_scale)) *
@@ -45,13 +46,14 @@ class FallingChord:
             self.to_draw.append(StringLine(95, self.y_offset + jj * 5 * config.recording_vertical_scale))
         for string_number in range(len(chord[0].play_string)):
             if chord[0].play_string[string_number]:
-                fret_number = chord[0].string_fret[string_number]
-                fret_offset = 0.0
-                for kk in range(fret_number):
-                    fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
-                fret_offset = 2.5 + (95 * fret_offset / final_fret_offset)
-                self.to_draw.append(FretMark(fret_offset, self.y_offset + (5 - string_number) * 5 *
-                                    config.recording_vertical_scale))
+                fret_number = chord[0].string_fret[string_number] + tuning_differences[string_number]
+                if 0 <= fret_number <= config.fret_count:
+                    fret_offset = 0.0
+                    for kk in range(fret_number):
+                        fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
+                    fret_offset = 2.5 + (95 * fret_offset / final_fret_offset)
+                    self.to_draw.append(FretMark(fret_offset, self.y_offset + (5 - string_number) * 5 *
+                                        config.recording_vertical_scale))
 
     def draw(self, screen, config):
         s = pygame.Surface((screen.get_width(), screen.get_height()))

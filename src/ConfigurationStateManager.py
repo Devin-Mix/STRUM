@@ -62,6 +62,8 @@ class ConfigurationStateManager:
             self.current_page = 0
             self.user_tuning = [0, 0, 0, 0, 0, 0]
             self.key_select = 0
+            self.tones = ["A", "A# / Bb", "B", "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab"]
+            self.default_tone_indices = [7, 0, 5, 10, 2, 7]
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
                                             message_type="Config",
@@ -348,18 +350,7 @@ class ConfigurationStateManager:
                         ]
                     # TODO: Add guitar UI elements here: Guitar tuning
                     if self.current_page == 1:
-                        tones = ["A", "A# / Bb", "B", "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab"]
-                        tuning_indices = []
-                        default_indices = [7, 0, 5, 10, 2, 7]
-                        for ii in range(len(self.user_tuning)):
-                            if self.user_tuning[ii] + default_indices[ii] >= len(tones):
-                                tuning_indices.append((self.user_tuning[ii] + default_indices[ii]) % len(tones))
-                            elif self.user_tuning[ii] + default_indices[ii] < 0:
-                                tuning_indices.append(self.user_tuning[ii] + default_indices[ii])
-                                while tuning_indices[-1] < 0:
-                                    tuning_indices[-1] = tuning_indices[-1] + len(tones) - 1
-                            else:
-                                tuning_indices.append(self.user_tuning[ii] + default_indices[ii])
+                        tuning_indices = self.get_tuning_indices(self.user_tuning)
                         # noinspection PyTypeChecker
                         to_draw = to_draw + [
                             Text(50,
@@ -444,37 +435,37 @@ class ConfigurationStateManager:
                                  75,
                                  10,
                                  5,
-                                 tones[tuning_indices[0]],
+                                 self.tones[tuning_indices[0]],
                                  self.regular),
                             Text(31.25,
                                  75,
                                  10,
                                  5,
-                                 tones[tuning_indices[1]],
+                                 self.tones[tuning_indices[1]],
                                  self.regular),
                             Text(43.75,
                                  75,
                                  10,
                                  5,
-                                 tones[tuning_indices[2]],
+                                 self.tones[tuning_indices[2]],
                                  self.regular),
                             Text(56.25,
                                  75,
                                  10,
                                  5,
-                                 tones[tuning_indices[3]],
+                                 self.tones[tuning_indices[3]],
                                  self.regular),
                             Text(68.75,
                                  75,
                                  10,
                                  5,
-                                 tones[tuning_indices[4]],
+                                 self.tones[tuning_indices[4]],
                                  self.regular),
                             Text(81.25,
                                  75,
                                  10,
                                  5,
-                                 tones[tuning_indices[5]],
+                                 self.tones[tuning_indices[5]],
                                  self.regular),
                             ArrowButton(18.75,
                                         82.5,
@@ -786,3 +777,16 @@ class ConfigurationStateManager:
                                             target="GUIEventBroker",
                                             message_type="Toggle fullscreen",
                                             content=None))
+
+    def get_tuning_indices(self, tuning):
+        tuning_indices = []
+        for ii in range(len(tuning)):
+            if tuning[ii] + self.default_tone_indices[ii] >= len(self.tones):
+                tuning_indices.append((tuning[ii] + self.default_tone_indices[ii]) % len(self.tones))
+            elif tuning[ii] + self.default_tone_indices[ii] < 0:
+                tuning_indices.append(tuning[ii] + self.default_tone_indices[ii])
+                while tuning_indices[-1] < 0:
+                    tuning_indices[-1] = tuning_indices[-1] + len(self.tones) - 1
+            else:
+                tuning_indices.append(tuning[ii] + self.default_tone_indices[ii])
+        return tuning_indices

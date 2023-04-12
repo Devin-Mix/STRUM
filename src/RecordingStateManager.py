@@ -183,10 +183,11 @@ class RecordingStateManager:
             if not (True in [ii[0].play_string[jj] for jj in range(6)]):
                 continue
             else:
-                res.append(FallingChord(ii, (self.now_time * self.config.playback_speed_scale), self.config, self.final_fret_offset))
+                res.append(FallingChord(ii, (self.now_time * self.config.playback_speed_scale), self.config, self.final_fret_offset, self.current_tab.tuning))
         return res
 
     def get_fading_chords(self):
+        tuning_differences = [self.current_tab.tuning[ii] + self.config.user_tuning[ii] for ii in range(6)]
         res = []
         if self.last_render_time is not None:
             last_chords = self.current_tab.get_next_chords(self.last_render_time, self.config)
@@ -199,12 +200,13 @@ class RecordingStateManager:
             for fade_chord in fade_chords:
                 for string_number in range(len(fade_chord[0].play_string)):
                     if fade_chord[0].play_string[string_number]:
-                        fret_number = fade_chord[0].string_fret[string_number]
-                        fret_offset = 0.0
-                        for kk in range(fret_number):
-                            fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
-                        fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
-                        res.append(FadingFretMark(fret_offset,
-                                                  y_offset + (5 - string_number) * 5 * self.config.recording_vertical_scale,
-                                                  fade_chord[1] * (1 / self.config.playback_speed_scale), fade_chord[2] * (1 / self.config.playback_speed_scale), self.now_time * self.config.playback_speed_scale))
+                        fret_number = fade_chord[0].string_fret[string_number] - tuning_differences[string_number]
+                        if 0 <= fret_number <= self.config.fret_count:
+                            fret_offset = 0.0
+                            for kk in range(fret_number):
+                                fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
+                            fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
+                            res.append(FadingFretMark(fret_offset,
+                                                      y_offset + (5 - string_number) * 5 * self.config.recording_vertical_scale,
+                                                      fade_chord[1] * (1 / self.config.playback_speed_scale), fade_chord[2] * (1 / self.config.playback_speed_scale), self.now_time * self.config.playback_speed_scale))
         return res
