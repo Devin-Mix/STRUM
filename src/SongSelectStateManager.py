@@ -72,16 +72,30 @@ class SongSelectStateManager:
                                         "{}".format(self.current_tab_object.title),
                                         self.config.header))
                     to_draw.append(Text(25,
-                                        35,
+                                        32.5,
                                         40,
                                         5,
                                         "{}".format(self.current_tab_object.artist),
                                         self.config.italic))
                     to_draw.append(Text(25,
-                                        40,
+                                        37.5,
                                         40,
                                         5,
                                         "{} BPM".format(self.current_tab_object.bpm),
+                                        self.config.italic))
+                    tuning_indices = self.config.get_tuning_indices(self.current_tab_object.tuning)
+                    to_draw.append(Text(25,
+                                        42.5,
+                                        40,
+                                        5,
+                                        "Tuning: {} {} {} {} {} {}".format(
+                                            self.config.tones_flats_only[tuning_indices[0]],
+                                            self.config.tones_flats_only[tuning_indices[1]],
+                                            self.config.tones_flats_only[tuning_indices[2]],
+                                            self.config.tones_flats_only[tuning_indices[3]],
+                                            self.config.tones_flats_only[tuning_indices[4]],
+                                            self.config.tones_flats_only[tuning_indices[5]],
+                                        ),
                                         self.config.italic))
                     to_draw.append(Button(25,
                                           100 - 2.5 - 5,
@@ -91,13 +105,13 @@ class SongSelectStateManager:
                                           self.config.regular,
                                           self.start))
                     to_draw.append(Text(20,
-                                        47.5,
+                                        50,
                                         25,
                                         5,
                                         "Play studio track:",
                                         self.config.regular))
                     to_draw.append(CheckBox(35,
-                                            47.5,
+                                            50,
                                             5,
                                             5,
                                             self.toggle_song,
@@ -110,37 +124,37 @@ class SongSelectStateManager:
                     else:
                         tone_style = "Off"
                     to_draw.append(Text(25,
-                                        55,
+                                        57.5,
                                         40,
                                         5,
                                         "Tone wave style: {}".format(tone_style),
                                         self.config.regular))
                     to_draw.append(CheckBox(15,
-                                            60,
+                                            62.5,
                                             5,
                                             5,
                                             self.tone_wave_off,
                                             not self.config.play_tone))
                     to_draw.append(CheckBox(25,
-                                            60,
+                                            62.5,
                                             5,
                                             5,
                                             self.sine_tone_on,
                                             (not self.config.square_tone) and self.config.play_tone))
                     to_draw.append(CheckBox(35,
-                                            60,
+                                            62.5,
                                             5,
                                             5,
                                             self.square_tone_on,
                                             self.config.square_tone and self.config.play_tone))
                     to_draw.append(Text(25,
-                                        67.5,
+                                        70,
                                         40,
                                         5,
                                         "Playback speed: {}x".format(self.config.playback_speed_scale),
                                         self.config.regular))
                     to_draw.append(SlideBar(25,
-                                            72.5,
+                                            75,
                                             30,
                                             5,
                                             self.adjust_playback_speed_scale,

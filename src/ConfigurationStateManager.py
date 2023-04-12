@@ -63,6 +63,7 @@ class ConfigurationStateManager:
             self.user_tuning = [0, 0, 0, 0, 0, 0]
             self.key_select = 0
             self.tones = ["A", "A# / Bb", "B", "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab"]
+            self.tones_flats_only = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]
             self.default_tone_indices = [7, 0, 5, 10, 2, 7]
             self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                             source="ConfigurationStateManager",
