@@ -187,7 +187,7 @@ class RecordingStateManager:
         return res
 
     def get_fading_chords(self):
-        tuning_differences = [self.current_tab.tuning[ii] + self.config.user_tuning[ii] for ii in range(6)]
+        tuning_differences = [self.current_tab.tuning[ii] - self.config.user_tuning[ii] for ii in range(6)]
         res = []
         if self.last_render_time is not None:
             last_chords = self.current_tab.get_next_chords(self.last_render_time, self.config)
@@ -200,7 +200,7 @@ class RecordingStateManager:
             for fade_chord in fade_chords:
                 for string_number in range(len(fade_chord[0].play_string)):
                     if fade_chord[0].play_string[string_number]:
-                        fret_number = fade_chord[0].string_fret[string_number] - tuning_differences[string_number]
+                        fret_number = fade_chord[0].string_fret[string_number] + tuning_differences[string_number]
                         if 0 <= fret_number <= self.config.fret_count:
                             fret_offset = 0.0
                             for kk in range(fret_number):

@@ -787,7 +787,7 @@ class ConfigurationStateManager:
             elif tuning[ii] + self.default_tone_indices[ii] < 0:
                 tuning_indices.append(tuning[ii] + self.default_tone_indices[ii])
                 while tuning_indices[-1] < 0:
-                    tuning_indices[-1] = tuning_indices[-1] + len(self.tones) - 1
+                    tuning_indices[-1] = tuning_indices[-1] + len(self.tones)
             else:
                 tuning_indices.append(tuning[ii] + self.default_tone_indices[ii])
         return tuning_indices
