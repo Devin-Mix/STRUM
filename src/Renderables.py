@@ -16,6 +16,8 @@ class StringLine:
             self.y_percent = float(y_percent)
         else:
             raise ValueError("y_percent out of bounds for StringLine renderable ({})".format(y_percent))
+        self.bounding_box = None
+        self.function = no_function
 
     # Expects a resolution in the format (x_resolution, y_resolution)
     def draw(self, screen, config):
@@ -26,10 +28,11 @@ class StringLine:
             start_x = ((100.0 - self.width_percent) / 200) * screen.get_width()
             end_x = screen.get_width() - start_x
             y = screen.get_height() * self.y_percent / 100
-            return pygame.draw.line(screen,
-                                    "black",
-                                    (start_x, y),
-                                    (end_x, y))
+            self.bounding_box = pygame.draw.line(screen,
+                                                 "black",
+                                                 (start_x, y),
+                                                 (end_x, y))
+            return self
 
 
 class FallingChord:

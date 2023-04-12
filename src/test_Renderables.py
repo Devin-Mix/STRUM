@@ -1,8 +1,6 @@
 import pygame
 import unittest
 from queue import Queue
-from sys import path
-path.append("../src")
 from ConfigurationStateManager import ConfigurationStateManager
 from Renderables import *
 
@@ -36,18 +34,18 @@ class StringLineTest(RenderableTestCase):
 
     def test_width_fills_screen(self):
         self.assertIsInstance(StringLine(100, 50).draw(self.display, self.config),
-                              pygame.rect.Rect,
-                              "StringLine did not return pygame.rect.Rect when width = 100%")
+                              StringLine,
+                              "StringLine did not return self when width = 100%")
 
     def test_y_zero(self):
         self.assertIsInstance(StringLine(50, 0).draw(self.display, self.config),
-                              pygame.rect.Rect,
-                              "StringLine did not return pygame.rect.Rect when y = 0")
+                              StringLine,
+                              "StringLine did not return self when y = 0")
 
     def test_y_one_hundred(self):
         self.assertIsInstance(StringLine(50, 100).draw(self.display, self.config),
-                              pygame.rect.Rect,
-                              "StringLine did not return pygame.rect.Rect when y = 100")
+                              StringLine,
+                              "StringLine did not return self when y = 100")
 
 
 if __name__ == "__main__":
