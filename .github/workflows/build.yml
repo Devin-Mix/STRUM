@@ -15,12 +15,8 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install Coverage.py
         run: pip install coverage
-      - name: Enter source directory
-        run: cd ./src
       - name: Run Coverage.py
-        run: coverage run -m unittest discover
-      - name: Return to root directory
-        run: cd ..
+        run: cd ./src && coverage run -m unittest discover && cd ..
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
