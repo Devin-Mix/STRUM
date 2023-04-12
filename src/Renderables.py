@@ -26,10 +26,10 @@ class StringLine:
             start_x = ((100.0 - self.width_percent) / 200) * screen.get_width()
             end_x = screen.get_width() - start_x
             y = screen.get_height() * self.y_percent / 100
-            pygame.draw.line(screen,
-                             "black",
-                             (start_x, y),
-                             (end_x, y))
+            return pygame.draw.line(screen,
+                                    "black",
+                                    (start_x, y),
+                                    (end_x, y))
 
 
 class FallingChord:

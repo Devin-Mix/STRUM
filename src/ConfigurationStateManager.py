@@ -40,7 +40,7 @@ class ConfigurationStateManager:
             self.italic = italic
             self.regular = regular
             self.transition_length = 1.0
-            self.logo = pygame.image.load("logo.svg")
+            self.logo = pygame.image.load("../src/logo.svg")
             self.square_tone = False
             self.play_song = True
             self.play_tone = True
