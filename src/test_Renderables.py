@@ -2,8 +2,11 @@ import pygame
 import unittest
 from queue import Queue
 from ConfigurationStateManager import ConfigurationStateManager
+from os import environ
 from Renderables import *
 
+
+environ["SDL_VIDEODRIVER"] = "dummy"
 
 class RenderableTestCase(unittest.TestCase):
     def setUp(self):
