@@ -14,7 +14,7 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install pyaudio
-        run: apt-get install python3-pyaudio
+        run: sudo apt-get install python3-pyaudio
       - name: Install dependencies, Coverage.py
         run: pip install coverage librosa numpy pygame scipy
       - name: Run Coverage.py
