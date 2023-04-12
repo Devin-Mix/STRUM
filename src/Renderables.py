@@ -1,8 +1,6 @@
 import pygame
 from math import pi
 
-corner = pygame.image.load("buttonCorner.png")
-edge = pygame.image.load("buttonEdge.png")
 
 
 def no_function(event, renderable):
