@@ -71,12 +71,12 @@ class AnalysisStateManager:
                 self.load_percent = 0.0
                 self.total_input_delay_seconds = self.recording_start_time - self.playback_start_time
                 self.total_input_delay_samples = 2 * floor(self.total_input_delay_seconds * self.framerate)
-                self.tone_wave = self.tone_wave[self.total_input_delay_samples:]
-                if np.size(self.tone_wave) > np.size(self.recording_data):
-                    self.tone_wave = self.tone_wave[:np.size(self.recording_data)]
+                self.tone_wave_normalized = self.tone_wave_normalized[self.total_input_delay_samples:]
+                if np.size(self.tone_wave_normalized) > np.size(self.recording_data_normalized):
+                    self.tone_wave_normalized = self.tone_wave_normalized[:np.size(self.recording_data_normalized)]
                 else:
-                    self.recording_data = self.recording_data[:np.size(self.tone_wave)]
-                self.precision_level = 16
+                    self.recording_data_normalized = self.recording_data_normalized[:np.size(self.tone_wave_normalized)]
+                self.precision_level = 64
                 self.current_num_divisions = 1
                 self.current_division_num = 0
                 self.number_of_ffts = np.sum(np.arange(self.precision_level + 1))
@@ -103,8 +103,8 @@ class AnalysisStateManager:
                     self.doing_fade_in = True
                     self.fade_in_start_time = self.now_time
                 if self.analysing:
-                    low_index = floor(self.current_division_num * np.size(self.tone_wave) / self.current_num_divisions)
-                    high_index = floor((self.current_division_num + 1) * np.size(self.tone_wave) / self.current_num_divisions)
+                    low_index = floor(self.current_division_num * np.size(self.tone_wave_normalized) / self.current_num_divisions)
+                    high_index = floor((self.current_division_num + 1) * np.size(self.tone_wave_normalized) / self.current_num_divisions)
                     dynamics_score, accuracy_score = get_scores(low_index, high_index, self.recording_data_normalized, self.tone_wave_normalized, self.framerate)
                     self.dynamics_scores[self.current_num_divisions].append(dynamics_score)
                     self.accuracy_scores[self.current_num_divisions].append(accuracy_score)
