@@ -189,7 +189,63 @@ class FadingFretMarkTest(RenderableTestCase):
                               FadingFretMark,
                               "FadingFretMark did not return self in average use case")
 
+class LoadBarTest(RenderableTestCase):
+    def test_y_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            LoadBar(101, 50, 50, 50).draw(self.display, self.config)
 
+    def test_y_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            LoadBar(-1, 50, 50, 50).draw(self.display, self.config)
+
+    def test_y_percent_zero(self):
+        self.assertIsInstance(LoadBar(0, 50, 50, 50).draw(self.display, self.config),
+                              LoadBar,
+                              "LoadBar did not return self when y_percent = 0")
+
+    def test_y_percent_one_hundred(self):
+        self.assertIsInstance(LoadBar(100, 50, 50, 50).draw(self.display, self.config),
+                              LoadBar,
+                              "LoadBar did not return self when y_percent = 100")
+
+    def test_height_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            LoadBar(50, 50, 101, 50).draw(self.display, self.config)
+
+    def test_height_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            LoadBar(50, 50, 0, 50).draw(self.display, self.config)
+
+    def test_height_percent_max(self):
+        self.assertIsInstance(LoadBar(50, 50, 100, 50).draw(self.display, self.config),
+                              LoadBar,
+                              "LoadBar did not return self when height_percent = 100 (max)")
+
+    def test_width_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            LoadBar(50, 101, 50, 50).draw(self.display, self.config)
+
+    def test_width_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            LoadBar(50, 0, 50, 50).draw(self.display, self.config)
+
+    def test_width_percent_max(self):
+        self.assertIsInstance(LoadBar(50, 100, 50, 50).draw(self.display, self.config),
+                              LoadBar,
+                              "LoadBar did not return self when width_percent = 100 (max)")
+
+    def test_load_percent_too_low(self):
+        with self.assertRaises(ValueError):
+            LoadBar(50, 50, 50, -1).draw(self.display, self.config)
+
+    def test_load_percent_too_high(self):
+        with self.assertRaises(ValueError):
+            LoadBar(50, 50, 50, 101).draw(self.display, self.config)
+
+    def test_average_case(self):
+        self.assertIsInstance(LoadBar(50, 50, 50, 50).draw(self.display, self.config),
+                              LoadBar,
+                              "LoadBar did not return self for average case")
 
 if __name__ == "__main__":
     unittest.main()
