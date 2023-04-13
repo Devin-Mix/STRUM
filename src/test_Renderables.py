@@ -139,6 +139,56 @@ class FretMarkTest(RenderableTestCase):
                               FretMark,
                               "FretMark did not return self in average use case")
 
+class FadingFretMarkTest(RenderableTestCase):
+    def test_x_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            FadingFretMark(100, 50, 0, 2, 1).draw(self.display, self.config)
+
+    def test_x_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FadingFretMark(0, 50, 0, 2, 1).draw(self.display, self.config)
+
+    def test_x_percent_min(self):
+        self.assertIsInstance(FadingFretMark(0.005, 50, 0, 2, 1).draw(self.display, self.config),
+                              FadingFretMark,
+                              "FadingFretMark did not return self when x_percent = 0.005 (min)")
+
+    def test_x_percent_max(self):
+        self.assertIsInstance(FadingFretMark(99.995, 50, 0, 2, 1).draw(self.display, self.config),
+                              FadingFretMark,
+                              "FadingFretMark did not return self when x_percent = 99.995 (max)")
+
+    def test_y_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            FadingFretMark(50, 100, 0, 2, 1).draw(self.display, self.config)
+
+    def test_y_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FadingFretMark(50, 0, 0, 2, 1).draw(self.display, self.config)
+
+    def test_y_percent_min(self):
+        self.assertIsInstance(FadingFretMark(50, 0.005, 0, 2, 1).draw(self.display, self.config),
+                              FadingFretMark,
+                              "FadingFretMark did not return self when y_percent = 0.005 (min)")
+
+    def test_y_percent_max(self):
+        self.assertIsInstance(FadingFretMark(50, 99.995, 0, 2, 1).draw(self.display, self.config),
+                              FadingFretMark,
+                              "FadingFretMark did not return self when y_percent = 99.995 (max)")
+
+    def test_birth_time_future(self):
+        with self.assertRaises(ValueError):
+            FadingFretMark(50, 50, 1, 2, 0).draw(self.display, self.config)
+
+    def test_time_to_live_exceeded(self):
+        with self.assertRaises(ValueError):
+            FadingFretMark(50, 50, 0, 2, 2).draw(self.display, self.config)
+
+    def test_average_case(self):
+        self.assertIsInstance(FadingFretMark(50, 50, 0, 2, 1).draw(self.display, self.config),
+                              FadingFretMark,
+                              "FadingFretMark did not return self in average use case")
+
 
 
 if __name__ == "__main__":
