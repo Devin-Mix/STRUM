@@ -97,6 +97,49 @@ class FretLineTest(RenderableTestCase):
                               FretLine,
                               "FretLine did not return self in average use case")
 
+class FretMarkTest(RenderableTestCase):
+    def test_x_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            FretMark(100, 50).draw(self.display, self.config)
+
+    def test_x_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FretMark(0, 50).draw(self.display, self.config)
+
+    def test_x_percent_min(self):
+        self.assertIsInstance(FretMark(0.005, 50).draw(self.display, self.config),
+                              FretMark,
+                              "FretMark did not return self when x_percent = 0.005 (min)")
+
+    def test_x_percent_max(self):
+        self.assertIsInstance(FretMark(99.995, 50).draw(self.display, self.config),
+                              FretMark,
+                              "FretMark did not return self when x_percent = 99.995 (max)")
+
+    def test_y_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            FretMark(50, 100).draw(self.display, self.config)
+
+    def test_y_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FretMark(50, 0).draw(self.display, self.config)
+
+    def test_y_percent_min(self):
+        self.assertIsInstance(FretMark(50, 0.005).draw(self.display, self.config),
+                              FretMark,
+                              "FretMark did not return self when y_percent = 0.005 (min)")
+
+    def test_y_percent_max(self):
+        self.assertIsInstance(FretMark(50, 99.995).draw(self.display, self.config),
+                              FretMark,
+                              "FretMark did not return self when y_percent = 99.995 (max)")
+
+    def test_average_case(self):
+        self.assertIsInstance(FretMark(50, 50).draw(self.display, self.config),
+                              FretMark,
+                              "FretMark did not return self in average use case")
+
+
 
 if __name__ == "__main__":
     unittest.main()
