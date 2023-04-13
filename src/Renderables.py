@@ -71,10 +71,12 @@ class FretLine:
             self.x_percent = x_percent
         else:
             raise ValueError("x_percent out of bounds for FretLine renderable ({})".format(x_percent))
-        if 0.0 <= height_percent <= 100.0:
+        if 0.0 <= height_percent <= 10.0:
             self.height_percent = height_percent
         else:
             raise ValueError("height_percent out of bounds for FretLine renderable ({})".format(height_percent))
+        self.bounding_box = None
+        self.function = no_function
 
     def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
@@ -84,10 +86,11 @@ class FretLine:
             start_y = (95.0 - self.height_percent) * screen.get_height() / 100
             end_y = 0.95 * screen.get_height()
             x = self.x_percent * screen.get_width() / 100
-            pygame.draw.line(screen,
-                             "white",
-                             (x, start_y),
-                             (x, end_y))
+            self.bounding_box = pygame.draw.line(screen,
+                                                 "white",
+                                                 (x, start_y),
+                                                 (x, end_y))
+            return self
 
 
 class FretMark:

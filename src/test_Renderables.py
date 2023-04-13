@@ -51,7 +51,7 @@ class StringLineTest(RenderableTestCase):
                               "StringLine did not return self when y = 100")
 
     def test_average_case(self):
-        self.assertIsInstance(StringLine(50, 50).draW(self.display, self.config),
+        self.assertIsInstance(StringLine(50, 50).draw(self.display, self.config),
                               StringLine,
                               "StringLine did not return self in average use case")
 
