@@ -122,18 +122,24 @@ class FretMark:
 
 class FadingFretMark:
     def __init__(self, x_percent, y_percent, birth_time, time_to_live, time_now):
-        if 0.0 <= x_percent <= 100.0:
+        if 0.005 <= x_percent <= 99.995:
             self.x_percent = x_percent
         else:
             raise ValueError("x_percent out of bounds for FretMark renderable ({})".format(x_percent))
-        if 0.0 <= y_percent <= 100.0:
+        if 0.005 <= y_percent <= 99.995:
             self.y_percent = y_percent
         else:
             raise ValueError("height_percent out of bounds for FretMark renderable ({})".format(y_percent))
         # TODO: Need type checking here for safety
-        self.birth_time = birth_time
-        self.time_to_live = time_to_live
-        self.time_now = time_now
+        if birth_time <= time_now < birth_time + time_to_live:
+            self.birth_time = birth_time
+            self.time_to_live = time_to_live
+            self.time_now = time_now
+        else:
+            raise ValueError("time_now not bounded by birth_time and time_to_live for FretMark renderable ({}, {}, {})"
+                             .format(time_now, birth_time, time_to_live))
+        self.bounding_box = None
+        self.function = no_function
 
     def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
@@ -142,13 +148,12 @@ class FadingFretMark:
         else:
             x = self.x_percent * screen.get_width() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
-            #s = pygame.Surface((screen.get_width(), screen.get_height()))
-            #s.set_alpha(round(255 * (1 - ((self.time_now - self.birth_time)/self.time_to_live))), pygame.RLEACCEL)
-            pygame.draw.circle(screen,
-                               "white",
-                               (x, y),
-                               0.01 * max(screen.get_width(), screen.get_height()) * (1 - ((self.time_now - self.birth_time)/self.time_to_live)))
-            #screen.blit(s, (0, 0))
+            self.bounding_box = pygame.draw.circle(screen,
+                                                   "white",
+                                                   (x, y),
+                                                   0.01 * max(screen.get_width(), screen.get_height()) * (1 - ((self.time_now - self.birth_time)/self.time_to_live)))
+            return self
+
 
     def is_alive(self):
         return (1 - ((self.time_now - self.birth_time)/self.time_to_live)) > 0
