@@ -50,6 +50,53 @@ class StringLineTest(RenderableTestCase):
                               StringLine,
                               "StringLine did not return self when y = 100")
 
+    def test_average_case(self):
+        self.assertIsInstance(StringLine(50, 50).draW(self.display, self.config),
+                              StringLine,
+                              "StringLine did not return self in average use case")
+
+class FretLineTest(RenderableTestCase):
+    def test_x_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            FretLine(101, 5).draw(self.display, self.config)
+
+    def test_x_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FretLine(-1, 5).draw(self.display, self.config)
+
+    def test_x_percent_zero(self):
+        self.assertIsInstance(FretLine(0, 5).draw(self.display, self.config),
+                              FretLine,
+                              "FretLine did not return self when x_percent = 0")
+
+    def test_x_percent_one_hundred(self):
+        self.assertIsInstance(FretLine(100, 5).draw(self.display, self.config),
+                              FretLine,
+                              "FretLine did not return self when x_percent = 100")
+
+    def test_height_percent_too_large(self):
+        with self.assertRaises(ValueError):
+            FretLine(50, 11).draw(self.display, self.config)
+
+    def test_height_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FretLine(50, -1).draw(self.display, self.config)
+
+    def test_height_percent_max(self):
+        self.assertIsInstance(FretLine(50, 10).draw(self.display, self.config),
+                              FretLine,
+                              "FretLine did not return self when height_percent = 10 (max)")
+
+    def test_height_percent_min(self):
+        self.assertIsInstance(FretLine(50, 0).draw(self.display, self.config),
+                              FretLine,
+                              "FretLine did not return self when height_percent = 0 (min)")
+
+    def test_average_case(self):
+        self.assertIsInstance(FretLine(50, 5).draw(self.display, self.config),
+                              FretLine,
+                              "FretLine did not return self in average use case")
+
 
 if __name__ == "__main__":
     unittest.main()
