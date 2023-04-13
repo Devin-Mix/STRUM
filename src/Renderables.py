@@ -287,12 +287,16 @@ class Text:
 
 class AnalysisGraph:
     def __init__(self, y_percent, width_percent, height_percent, values, regular_font, italic_font, song_length):
-        if 0.0 <= y_percent + height_percent <= 100.0:
+        if height_percent <= 0:
+            raise ValueError("Height too small for Renderables.AnalysisGraph ({})".format(height_percent))
+        if width_percent <= 0:
+            raise ValueError("Width too small for Renderables.AnalysisGraph ({})".format(width_percent))
+        if 0.0 <= y_percent - height_percent and y_percent + height_percent <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
         else:
             raise ValueError("Height plus offset out of bounds for Renderables.AnalysisGraph ({})".format(y_percent + height_percent))
-        if 0.0 <= width_percent <= 100.0:
+        if 0.0 <= 50 - width_percent and 50 + width_percent <= 100.0:
             self.width_percent = width_percent
         else:
             raise ValueError("Width out of bounds for Renderables.AnalysisGraph ({})".format(width_percent))

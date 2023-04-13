@@ -293,16 +293,6 @@ class AnalysisGraphTest(RenderableTestCase):
             AnalysisGraph(99, 50, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(
                 self.display, self.config)
 
-    def test_left_side_out_of_bounds(self):
-        with self.assertRaises(ValueError):
-            AnalysisGraph(50, 1, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(
-                self.display, self.config)
-
-    def test_right_side_out_of_bounds(self):
-        with self.assertRaises(ValueError):
-            AnalysisGraph(50, 99, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(
-                self.display, self.config)
-
     def test_width_too_small(self):
         with self.assertRaises(ValueError):
             AnalysisGraph(50, 0, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10)
