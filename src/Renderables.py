@@ -95,14 +95,16 @@ class FretLine:
 
 class FretMark:
     def __init__(self, x_percent, y_percent):
-        if 0.0 <= x_percent <= 100.0:
+        if 0.005 <= x_percent <= 99.995:
             self.x_percent = x_percent
         else:
             raise ValueError("x_percent out of bounds for FretMark renderable ({})".format(x_percent))
-        if 0.0 <= y_percent <= 100.0:
+        if 0.005 <= y_percent <= 99.995:
             self.y_percent = y_percent
         else:
             raise ValueError("height_percent out of bounds for FretMark renderable ({})".format(y_percent))
+        self.bounding_box = None
+        self.function = no_function
 
     def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
@@ -111,10 +113,11 @@ class FretMark:
         else:
             x = self.x_percent * screen.get_width() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
-            pygame.draw.circle(screen,
-                               "white",
-                               (x, y),
-                               0.01 * max(screen.get_width(), screen.get_height()))
+            self.bounding_box = pygame.draw.circle(screen,
+                                                   "white",
+                                                   (x, y),
+                                                   0.01 * max(screen.get_width(), screen.get_height()))
+            return self
 
 
 class FadingFretMark:
