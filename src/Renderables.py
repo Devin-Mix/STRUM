@@ -164,11 +164,15 @@ class FadingFretMark:
 
 class LoadBar:
     def __init__(self, y_percent, width_percent, height_percent, load_percent):
-        if 0.0 <= y_percent + height_percent <= 100.0:
+        if height_percent <= 0:
+            raise ValueError("Height percent too low for Renderables.LoadBar ({})".format(height_percent))
+        if width_percent <= 0:
+            raise ValueError("Width percent too low for Renderables.LoadBar ({})".format(width_percent))
+        if y_percent + (height_percent / 2) <= 100.0 and y_percent - (height_percent / 2) >= 0:
             self.y_percent = y_percent
             self.height_percent = height_percent
         else:
-            raise ValueError("Height plus offset out of bounds for Renderables.LoadBar ({})".format(y_percent + height_percent))
+            raise ValueError("Height plus/minus offset out of bounds for Renderables.LoadBar ({})".format(y_percent + height_percent))
         if 0.0 <= width_percent <= 100.0:
             self.width_percent = width_percent
         else:
@@ -178,6 +182,7 @@ class LoadBar:
         else:
             raise ValueError("Load percent out of bounts for Renderables.LoadBar ({})".format(load_percent))
         self.function = no_function
+        self.bounding_box = None
 
     def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
@@ -188,10 +193,11 @@ class LoadBar:
             width = (self.width_percent * screen.get_width() / 100.0) * (self.load_percent / 100.0)
             height = self.height_percent * screen.get_height() / 100.0
             y = self.y_percent * screen.get_height() / 100.0
-            return BackgroundBox(50 - ((self.width_percent / 2) * (1 - (self.load_percent / 100))),
-                                 self.y_percent,
-                                 self.width_percent * (self.load_percent / 100.0),
-                                 self.height_percent).draw(screen, config)
+            self.bounding_box =  BackgroundBox(50 - ((self.width_percent / 2) * (1 - (self.load_percent / 100))),
+                                               self.y_percent,
+                                               self.width_percent * (self.load_percent / 100.0),
+                                               self.height_percent).draw(screen, config)
+            return self
 
 class Text:
     def __init__(self, x_percent, y_percent, max_width_percent, max_height_percent, text, font, align_center=True, color=None):

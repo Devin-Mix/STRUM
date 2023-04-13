@@ -198,16 +198,6 @@ class LoadBarTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             LoadBar(-1, 50, 50, 50).draw(self.display, self.config)
 
-    def test_y_percent_zero(self):
-        self.assertIsInstance(LoadBar(0, 50, 50, 50).draw(self.display, self.config),
-                              LoadBar,
-                              "LoadBar did not return self when y_percent = 0")
-
-    def test_y_percent_one_hundred(self):
-        self.assertIsInstance(LoadBar(100, 50, 50, 50).draw(self.display, self.config),
-                              LoadBar,
-                              "LoadBar did not return self when y_percent = 100")
-
     def test_height_percent_too_large(self):
         with self.assertRaises(ValueError):
             LoadBar(50, 50, 101, 50).draw(self.display, self.config)
