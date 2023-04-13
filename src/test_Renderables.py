@@ -17,7 +17,6 @@ class RenderableTestCase(unittest.TestCase):
     def test_base_case_functionality(self):
         self.assertEqual(True, True, "Base RenderableTestCase assert failed")
 
-
 class GenericDerivedTestCase(RenderableTestCase):
     def test_derived_case_functionality(self):
         self.assertEqual(True, True, "Generic derived test case assert failed")
@@ -236,6 +235,47 @@ class LoadBarTest(RenderableTestCase):
         self.assertIsInstance(LoadBar(50, 50, 50, 50).draw(self.display, self.config),
                               LoadBar,
                               "LoadBar did not return self for average case")
+
+class TextTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(Text(50, 50, 50, 50, "Hello World!", self.config.regular, align_center=True),
+                              Text,
+                              "Text did not return self in average use case")
+
+    def test_left_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Text(1, 50, 50, 50, "Hello World!", self.config.regular, align_center=True).draw(self.display, self.config)
+
+    def test_right_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Text(99, 50, 50, 50, "Hello World!", self.config.regular, align_center=True).draw(self.display, self.config)
+
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Text(50, 1, 50, 50, "Hello World!", self.config.regular, align_center=True).draw(self.display, self.config)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Text(50, 99, 50, 50, "Hello World!", self.config.regular, align_center=True).draw(self.display, self.config)
+
+    def test_width_too_large(self):
+        with self.assertRaises(ValueError):
+            Text(50, 50, 101, 50, "Hello World!", self.config.regular, align_center=True)\
+                .draw(self.display, self.config)
+
+    def test_width_too_small(self):
+        with self.assertRaises(ValueError):
+            Text(50, 50, 0, 50, "Hello World!", self.config.regular, align_center=True).draw(self.display, self.config)
+
+    def test_height_too_large(self):
+        with self.assertRaises(ValueError):
+            Text(50, 50, 50, 101, "Hello World!", self.config.regular, align_center=True)\
+                .draw(self.display, self.config)
+
+    def test_height_too_small(self):
+        with self.assertRaises(ValueError):
+            Text(50, 50, 50, 0, "Hello World!", self.config.regular, align_center=True)\
+                .draw(self.display, self.config)
 
 if __name__ == "__main__":
     unittest.main()

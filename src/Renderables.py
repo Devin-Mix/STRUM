@@ -225,6 +225,10 @@ class Text:
                         y_percent, max_height_percent, align_center))
         else:
             raise ValueError("y_percent out of bounds for Renderables.Text ({})".format(y_percent))
+        if self.max_height_percent <= 0:
+            raise ValueError("max_height_percent too small for Renderables.Text ({})".format(self.max_height_percent))
+        if self.max_width_percent <= 0:
+            raise ValueError("max_width_percent too small for Renderables.Text ({})".format(self.max_width_percent))
         self.text = "{}".format(text)
         if type(align_center) is bool:
             self.align_center = align_center
