@@ -1,4 +1,4 @@
-import pygame
+import numpy as np
 import unittest
 from queue import Queue
 from ConfigurationStateManager import ConfigurationStateManager
@@ -276,6 +276,49 @@ class TextTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             Text(50, 50, 50, 0, "Hello World!", self.config.regular, align_center=True)\
                 .draw(self.display, self.config)
+
+class AnalysisGraphTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(AnalysisGraph(50, 50, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10),
+                              AnalysisGraph,
+                              "AnalysisGraph does not return self in average use case")
+
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(1, 50, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(
+                self.display, self.config)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(99, 50, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(
+                self.display, self.config)
+
+    def test_left_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(50, 1, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(
+                self.display, self.config)
+
+    def test_right_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(50, 99, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(
+                self.display, self.config)
+
+    def test_width_too_small(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(50, 0, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10)
+
+    def test_width_too_large(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(50, 101, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10)
+
+    def test_height_too_small(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(50, 50, 0, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10)
+
+    def test_height_too_large(self):
+        with self.assertRaises(ValueError):
+            AnalysisGraph(50, 50, 101, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10)
+
 
 if __name__ == "__main__":
     unittest.main()
