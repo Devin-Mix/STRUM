@@ -54,6 +54,8 @@ class StringLineTest(RenderableTestCase):
                               StringLine,
                               "StringLine did not return self in average use case")
 
+# TODO: FallingChordTest
+
 class FretLineTest(RenderableTestCase):
     def test_x_percent_too_large(self):
         with self.assertRaises(ValueError):
@@ -308,6 +310,36 @@ class AnalysisGraphTest(RenderableTestCase):
     def test_height_too_large(self):
         with self.assertRaises(ValueError):
             AnalysisGraph(50, 50, 101, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10)
+
+class ButtonTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(Button(50, 50, 50, 50, "Hello World!", self.config.regular, no_function),
+                              Button,
+                              "Button did not return self for average case")
+
+    def test_left_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Button(1, 50, 50, 50, "Hello World!", self.config.regular, no_function)
+
+    def test_right_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Button(99, 50, 50, 50, "Hello World!", self.config.regular, no_function)
+
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Button(50, 1, 50, 50, "Hello World!", self.config.regular, no_function)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Button(50, 99, 50, 50, "Hello World!", self.config.regular, no_function)
+
+    def test_width_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            Button(50, 50, 0, 50, "Hello World!", self.config.regular, no_function)
+
+    def test_height_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            Button(50, 50, 50, 0, "Hello World!", self.config.regular, no_function)
 
 
 if __name__ == "__main__":
