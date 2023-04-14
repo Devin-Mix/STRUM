@@ -352,10 +352,16 @@ class AnalysisGraph:
         points.append((screen.get_width() * (50.0 + (self.width_percent / 2)) / 100,
                        points[0][1]))
         points.append(points[0])
-        self.bounding_box = self.bounding_box.union(pygame.draw.polygon(screen,
-                                                                        "white",
-                                                                        points,
-                                                                        width=1))
+        if self.bounding_box is None:
+            self.bounding_box = pygame.draw.polygon(screen,
+                                                    "white",
+                                                    points,
+                                                    width=1)
+        else:
+            self.bounding_box = self.bounding_box.union(pygame.draw.polygon(screen,
+                                                                            "white",
+                                                                            points,
+                                                                            width=1))
         self.bounding_box = self.bounding_box.union(pygame.draw.line(screen,
                                                                      "white",
                                                                      (screen.get_width() * (100 - self.width_percent) / 200, screen.get_height() * (
