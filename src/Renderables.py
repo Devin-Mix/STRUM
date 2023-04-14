@@ -313,6 +313,8 @@ class AnalysisGraph:
         else:
             raise TypeError("Invalid italic font type for Renderables.AnalysisGraph ({})".format(type(italic_font)))
         self.song_length = song_length
+        self.bounding_box = None
+        self.function = None
 
     def draw(self, screen, config):
         division_width = self.width_percent / len(self.values)
@@ -321,13 +323,22 @@ class AnalysisGraph:
         points = [(screen.get_width() * (50.0 - (self.width_percent / 2)) / 100,
                    screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height)) / 100)]
         for ii in range(len(self.values)):
-            Text(50.0 - (self.width_percent / 2) + (ii * division_width) + (division_width / 2) + (0.025 * division_width),
-                 self.y_percent - (self.height_percent / 2) + (main_height / 2) + (0.025 * main_height),
-                 0.95 * division_width,
-                 0.95 * main_height,
-                 "{}%".format(round(100 * self.values[ii], 2)),
-                 self.regular_font).draw(screen, config)
-
+            if self.bounding_box is None:
+                self.bounding_box = Text(50.0 - (self.width_percent / 2) + (ii * division_width) + (division_width / 2) + (0.025 * division_width),
+                                                 self.y_percent - (self.height_percent / 2) + (main_height / 2) + (0.025 * main_height),
+                                                 0.95 * division_width,
+                                                 0.95 * main_height,
+                                                 "{}%".format(round(100 * self.values[ii], 2)),
+                                                 self.regular_font).draw(screen, config).bounding_box
+            else:
+                self.bounding_box = self.bounding_box.union(Text(
+                    50.0 - (self.width_percent / 2) + (ii * division_width) + (division_width / 2) + (
+                                0.025 * division_width),
+                    self.y_percent - (self.height_percent / 2) + (main_height / 2) + (0.025 * main_height),
+                    0.95 * division_width,
+                    0.95 * main_height,
+                    "{}%".format(round(100 * self.values[ii], 2)),
+                    self.regular_font).draw(screen, config).bounding_box)
             points.append((screen.get_width() * (50.0 - (self.width_percent / 2) + (ii * division_width)) / 100,
                            screen.get_height() * (self.y_percent - (self.height_percent / 2) + (2 * main_height) - (main_height * self.values[ii])) / 100))
             points.append((points[-1][0] + screen.get_width() * division_width / 100,
@@ -341,16 +352,16 @@ class AnalysisGraph:
         points.append((screen.get_width() * (50.0 + (self.width_percent / 2)) / 100,
                        points[0][1]))
         points.append(points[0])
-        pygame.draw.polygon(screen,
-                            "white",
-                            points,
-                            width=1)
-        pygame.draw.line(screen,
-                         "white",
-                         (screen.get_width() * (100 - self.width_percent) / 200, screen.get_height() * (
-                                     self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100),
-                         (screen.get_width() * (self.width_percent + ((100 - self.width_percent) / 2)) / 100, screen.get_height() * (
-                                     self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100))
+        self.bounding_box = self.bounding_box.union(pygame.draw.polygon(screen,
+                                                                        "white",
+                                                                        points,
+                                                                        width=1))
+        self.bounding_box = self.bounding_box.union(pygame.draw.line(screen,
+                                                                     "white",
+                                                                     (screen.get_width() * (100 - self.width_percent) / 200, screen.get_height() * (
+                                                                                 self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100),
+                                                                     (screen.get_width() * (self.width_percent + ((100 - self.width_percent) / 2)) / 100, screen.get_height() * (
+                                                                                 self.y_percent - (0.5 * self.height_percent) + (2 * main_height)) / 100)))
         seconds_per_timing_mark = 5
         if self.song_length > seconds_per_timing_mark:
             num_timing_marks = (self.song_length - (self.song_length % seconds_per_timing_mark)) / seconds_per_timing_mark
@@ -358,21 +369,26 @@ class AnalysisGraph:
             next_mark_percent = 0.0
             next_mark_num = 0
             while next_mark_percent <= self.width_percent:
-                pygame.draw.line(screen,
-                                 "white",
-                                 (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
-                                  screen.get_height() * (self.y_percent + (self.height_percent / 2) - key_height) / 100),
-                                 (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
-                                  screen.get_height() * (self.y_percent + (self.height_percent / 2) - (key_height / 2)) / 100))
+                self.bounding_box = self.bounding_box.union(
+                    pygame.draw.line(screen,
+                                     "white",
+                                     (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
+                                      screen.get_height() * (self.y_percent + (self.height_percent / 2) - key_height) / 100),
+                                     (screen.get_width() * ((100 - self.width_percent) / 2 + next_mark_percent) / 100,
+                                      screen.get_height() * (self.y_percent + (self.height_percent / 2) - (key_height / 2)) / 100))
+                )
                 if next_mark_percent > 0.0:
-                    Text(50.0 - (self.width_percent / 2) + next_mark_percent - (timing_mark_width / 2),
-                         self.y_percent + (self.height_percent / 2) - (key_height / 2),
-                         0.5 * timing_mark_width,
-                         0.5 * key_height,
-                         "{} - {}".format(as_time_string((next_mark_num - 1) * seconds_per_timing_mark), as_time_string(next_mark_num * seconds_per_timing_mark)),
-                         self.regular_font).draw(screen, config)
+                    self.bounding_box = self.bounding_box.union(
+                        Text(50.0 - (self.width_percent / 2) + next_mark_percent - (timing_mark_width / 2),
+                             self.y_percent + (self.height_percent / 2) - (key_height / 2),
+                             0.5 * timing_mark_width,
+                             0.5 * key_height,
+                             "{} - {}".format(as_time_string((next_mark_num - 1) * seconds_per_timing_mark), as_time_string(next_mark_num * seconds_per_timing_mark)),
+                             self.regular_font).draw(screen, config).bounding_box
+                    )
                 next_mark_percent = next_mark_percent + timing_mark_width
                 next_mark_num = next_mark_num + 1
+            return self
 
 class Button:
     def __init__(self, x_percent, y_percent, width_percent, height_percent, text, font, function):

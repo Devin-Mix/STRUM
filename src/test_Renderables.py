@@ -332,10 +332,16 @@ class TextTest(RenderableTestCase):
                               Text,
                               "Text did not return self with very small width and height arguments")
 
+    def test_top_left_align_draw(self):
+        self.assertIsInstance(
+            Text(50, 50, 25, 25, "Hello World!", self.config.regular, align_center=False).draw(self.display, self.config),
+            Text,
+            "Text did not return self with align_center=False")
+
 
 class AnalysisGraphTest(RenderableTestCase):
     def test_average_case(self):
-        self.assertIsInstance(AnalysisGraph(50, 50, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10),
+        self.assertIsInstance(AnalysisGraph(50, 50, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10).draw(self.display, self.config),
                               AnalysisGraph,
                               "AnalysisGraph does not return self in average use case")
 
@@ -364,6 +370,15 @@ class AnalysisGraphTest(RenderableTestCase):
     def test_height_too_large(self):
         with self.assertRaises(ValueError):
             AnalysisGraph(50, 50, 101, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10)
+
+    def test_bad_regular_font(self):
+        with self.assertRaises(TypeError):
+            AnalysisGraph(50, 50, 50, np.arange(0, 1, 0.01), 0, self.config.italic, 10)
+    def test_bad_italic_font(self):
+        with self.assertRaises(TypeError):
+            AnalysisGraph(50, 50, 50, np.arange(0, 1, 0.01), self.config.regular, 0, 10)
+
+
 
 class ButtonTest(RenderableTestCase):
     def test_average_case(self):
