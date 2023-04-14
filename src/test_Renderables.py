@@ -504,5 +504,19 @@ class BlackoutTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             Blackout(6, 5)
 
+class TitleTextTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(TitleText(0.5).draw(self.display, self.config),
+                              TitleText,
+                              "TitleText did not return self in average case")
+
+    def test_fade_percent_too_low(self):
+        with self.assertRaises(ValueError):
+            TitleText(-0.1)
+
+    def fade_percent_too_high(self):
+        with self.assertRaises(ValueError):
+            TitleText(1.1)
+
 if __name__ == "__main__":
     unittest.main()

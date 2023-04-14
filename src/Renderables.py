@@ -728,6 +728,8 @@ class TitleText:
             self.fade_percent = fade_percent
         else:
             raise ValueError("fade_percent out of bounds for Renderables.TitleText ({})".format(fade_percent))
+        self.bounding_box = None
+        self.function = None
     def draw(self, screen, config):
         s = pygame.Surface((screen.get_width(), screen.get_height()))
         s.fill(config.chroma_key)
