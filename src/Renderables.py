@@ -529,6 +529,14 @@ class FadeInButton:
 class FadeOutButton:
     def __init__(self, x_percent, y_percent, width_percent, height_percent, text,
                  font, function, time_alive, lifespan):
+        if width_percent <= 0:
+            raise ValueError("Width percent too small for Renderables.FadeOutButton ({})".format(width_percent))
+        if height_percent <= 0:
+            raise ValueError("Height percent too small for Renderables.FadeOutButton ({})".format(height_percent))
+        if time_alive > lifespan:
+            raise ValueError("Lifespan exceeded for Renderables.FadeOutButton")
+        if time_alive == lifespan:
+            raise ValueError("Renderables.FadeOutButton created too late; nothing to draw")
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
