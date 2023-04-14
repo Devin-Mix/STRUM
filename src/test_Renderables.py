@@ -54,6 +54,10 @@ class StringLineTest(RenderableTestCase):
                               StringLine,
                               "StringLine did not return self in average use case")
 
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            StringLine(50, 50).draw(None, self.config)
+
 # TODO: FallingChordTest
 
 class FretLineTest(RenderableTestCase):
@@ -98,6 +102,10 @@ class FretLineTest(RenderableTestCase):
                               FretLine,
                               "FretLine did not return self in average use case")
 
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            FretLine(50, 50).draw(None, self.config)
+
 class FretMarkTest(RenderableTestCase):
     def test_x_percent_too_large(self):
         with self.assertRaises(ValueError):
@@ -139,6 +147,10 @@ class FretMarkTest(RenderableTestCase):
         self.assertIsInstance(FretMark(50, 50).draw(self.display, self.config),
                               FretMark,
                               "FretMark did not return self in average use case")
+
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            FretMark(50, 50).draw(None, self.config)
 
 class FadingFretMarkTest(RenderableTestCase):
     def test_x_percent_too_large(self):
@@ -190,6 +202,18 @@ class FadingFretMarkTest(RenderableTestCase):
                               FadingFretMark,
                               "FadingFretMark did not return self in average use case")
 
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            FadingFretMark(50, 50, 0, 1, 0.5).draw(None, self.config)
+
+    def test_is_alive(self):
+        self.assertEquals(FadingFretMark(50, 50, 0, 1, 0.5).is_alive(), True)
+
+    def test_update_time(self):
+        self.assertIsInstance(FadingFretMark(50, 50, 0, 1, 0.5).update_time(0.75),
+                              FadingFretMark,
+                              "FadingFretMark does not return self after updating time")
+
 class LoadBarTest(RenderableTestCase):
     def test_y_percent_too_large(self):
         with self.assertRaises(ValueError):
@@ -238,6 +262,10 @@ class LoadBarTest(RenderableTestCase):
                               LoadBar,
                               "LoadBar did not return self for average case")
 
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            LoadBar(50, 50, 50, 50).draw(None, self.config)
+
 class TextTest(RenderableTestCase):
     def test_average_case(self):
         self.assertIsInstance(Text(50, 50, 50, 50, "Hello World!", self.config.regular, align_center=True),
@@ -278,6 +306,10 @@ class TextTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             Text(50, 50, 50, 0, "Hello World!", self.config.regular, align_center=True)\
                 .draw(self.display, self.config)
+
+    def test_bad_x_percent(self):
+        with self.assertRaises(ValueError):
+            Text(-1, 50, 50, 50, "Hello World!", self.config.regular)
 
 class AnalysisGraphTest(RenderableTestCase):
     def test_average_case(self):
@@ -621,6 +653,12 @@ class SlideBarTest(RenderableTestCase):
     def test_cursor_percent_too_high(self):
         with self.assertRaises(ValueError):
             SlideBar(50, 50, 50, 50, no_function, 101)
+
+class NoFunctionTest(RenderableTestCase):
+    def test_no_function(self):
+        self.assertIsInstance(no_function(None, BackgroundBox),
+                              type(None),
+                              "no_function does not return None")
 
 if __name__ == "__main__":
     unittest.main()
