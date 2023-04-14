@@ -696,6 +696,12 @@ class BackgroundBox:
 
 class Blackout:
     def __init__(self, age=None, lifespan=None, fade_out=True, function=no_function):
+        if age is not None and lifespan is not None and age > lifespan:
+            raise ValueError("lifespan exceeded for Renderables.Blackout")
+        if age is not None and lifespan is not None and fade_out and age == lifespan:
+            raise ValueError("fade_out age equals lifespan for Renderables.Blackout; nothing to draw")
+        if age is not None and lifespan is not None and not fade_out and age == 0:
+            raise ValueError("fade_in age is zero for Renderables.Blackout; nothing to draw")
         self.age = age
         self.lifespan = lifespan
         self.fade_out = fade_out

@@ -481,6 +481,28 @@ class BackgroundBoxTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             BackgroundBox(50, 50, 50, 101)
 
+class BlackoutTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(Blackout(50, 100).draw(self.display, self.config),
+                              Blackout,
+                              "Blackout did not return self in average case")
+
+    def test_full_blackout(self):
+        self.assertIsInstance(Blackout().draw(self.display, self.config),
+                              Blackout,
+                              "Blackout did not return self in full blackout case")
+
+    def test_nothing_to_draw_fade_out(self):
+        with self.assertRaises(ValueError):
+            Blackout(5, 5, fade_out=True)
+
+    def test_nothing_to_draw_fade_in(self):
+        with self.assertRaises(ValueError):
+            Blackout(0, 5, fade_out=False)
+
+    def test_lifespan_exceeded(self):
+        with self.assertRaises(ValueError):
+            Blackout(6, 5)
 
 if __name__ == "__main__":
     unittest.main()
