@@ -71,7 +71,7 @@ class FretLine:
             self.x_percent = x_percent
         else:
             raise ValueError("x_percent out of bounds for FretLine renderable ({})".format(x_percent))
-        if 0.0 <= height_percent <= 10.0:
+        if 0.0 <= height_percent <= 95.0:
             self.height_percent = height_percent
         else:
             raise ValueError("height_percent out of bounds for FretLine renderable ({})".format(height_percent))
@@ -196,7 +196,7 @@ class LoadBar:
             self.bounding_box =  BackgroundBox(50 - ((self.width_percent / 2) * (1 - (self.load_percent / 100))),
                                                self.y_percent,
                                                self.width_percent * (self.load_percent / 100.0),
-                                               self.height_percent).draw(screen, config)
+                                               self.height_percent).draw(screen, config).bounding_box
             return self
 
 class Text:
@@ -296,7 +296,7 @@ class AnalysisGraph:
             self.height_percent = height_percent
         else:
             raise ValueError("Height plus offset out of bounds for Renderables.AnalysisGraph ({})".format(y_percent + height_percent))
-        if 0.0 <= 50 - width_percent and 50 + width_percent <= 100.0:
+        if 0.0 <= 50 - (width_percent / 2) and 50 + (width_percent / 2) <= 100.0:
             self.width_percent = width_percent
         else:
             raise ValueError("Width out of bounds for Renderables.AnalysisGraph ({})".format(width_percent))
@@ -478,6 +478,10 @@ class ArrowButton:
 
 class FadeInButton:
     def __init__(self, x_percent, y_percent, width_percent, height_percent, text, font, function, time_alive, lifespan):
+        if width_percent <= 0:
+            raise ValueError("Width percent too small for Renderables.FadeInButton ({})".format(width_percent))
+        if height_percent <= 0:
+            raise ValueError("Height percent too small for Renderables.FadeInButton ({})".format(height_percent))
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent

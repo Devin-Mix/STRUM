@@ -77,7 +77,7 @@ class FretLineTest(RenderableTestCase):
 
     def test_height_percent_too_large(self):
         with self.assertRaises(ValueError):
-            FretLine(50, 11).draw(self.display, self.config)
+            FretLine(50, 96).draw(self.display, self.config)
 
     def test_height_percent_too_small(self):
         with self.assertRaises(ValueError):
@@ -370,6 +370,40 @@ class ArrowButtonTest(RenderableTestCase):
     def test_height_percent_too_small(self):
         with self.assertRaises(ValueError):
             ArrowButton(50, 50, 50, 0, no_function, 0)
+            
+class FadeInButtonTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(FadeInButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10),
+                              FadeInButton,
+                              "FadeInButton did not return self for average case")
+
+    def test_left_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(1, 50, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10)
+
+    def test_right_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(99, 50, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10)
+
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(50, 1, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(50, 99, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10)
+
+    def test_width_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(50, 50, 0, 50, "Hello World!", self.config.regular, no_function, 5, 10)
+
+    def test_height_percent_too_small(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(50, 50, 50, 0, "Hello World!", self.config.regular, no_function, 5, 10)
+
+    def test_lifespan_exceeded(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(50, 50, 50, 0, "Hello World!", self.config.regular, no_function, 11, 10)
 
 
 if __name__ == "__main__":
