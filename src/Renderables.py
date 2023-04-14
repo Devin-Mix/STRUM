@@ -523,10 +523,7 @@ class FadeInButton:
         else:
             raise TypeError("Invalid font type for Renderables.FadeInButton ({})".format(type(font)))
         self.function = function
-        if time_alive <= lifespan:
-            self.age_percent = time_alive / lifespan
-        else:
-            raise ValueError("Time alive exceeds lifespan for Renderables.FadeInButton ({}, {})".format(time_alive, lifespan))
+        self.age_percent = time_alive / lifespan
         self.bounding_box = None
 
     def draw(self, screen, config):
@@ -574,10 +571,7 @@ class FadeOutButton:
         else:
             raise TypeError("Invalid font type for Renderables.FadeOutButton ({})".format(type(font)))
         self.function = function
-        if time_alive <= lifespan:
-            self.age_percent = time_alive / lifespan
-        else:
-            raise ValueError("Time alive exceeds lifespan for Renderables.FadeOutButton ({}, {})".format(time_alive, lifespan))
+        self.age_percent = time_alive / lifespan
         self.bounding_box = None
 
     def draw(self, screen, config):
