@@ -239,6 +239,8 @@ class Text:
         else:
             raise TypeError("Invalid font type for Renderables.Text ({})".format(type(font)))
         self.color = color
+        self.bounding_box = None
+        self.function = no_function
 
     def draw(self, screen, config):
         if not type(screen) == pygame.surface.Surface:
@@ -269,19 +271,20 @@ class Text:
                 height = self.font.get_rect(self.text, size=size, style=pygame.freetype.STYLE_NORMAL).height
                 self.font.fgcolor = pygame.color.Color(config.text_color, config.text_color, config.text_color)
                 if self.align_center:
-                    self.font.render_to(screen,
-                                        (x - (width / 2.0), y - (height / 2.0)),
-                                        self.text,
-                                        fgcolor=self.color,
-                                        size=size,
-                                        style=pygame.freetype.STYLE_NORMAL)
+                    self.bounding_box = self.font.render_to(screen,
+                                                            (x - (width / 2.0), y - (height / 2.0)),
+                                                            self.text,
+                                                            fgcolor=self.color,
+                                                            size=size,
+                                                            style=pygame.freetype.STYLE_NORMAL)
                 else:
-                    self.font.render_to(screen,
-                                        (x, y),
-                                        self.text,
-                                        fgcolor=self.color,
-                                        size=size,
-                                        style=pygame.freetype.STYLE_NORMAL)
+                    self.bounding_box = self.font.render_to(screen,
+                                                            (x, y),
+                                                            self.text,
+                                                            fgcolor=self.color,
+                                                            size=size,
+                                                            style=pygame.freetype.STYLE_NORMAL)
+                return self
             else:
                 raise TypeError("Font {} not scalable".format(self.font))
 
@@ -729,15 +732,16 @@ class TitleText:
         else:
             raise ValueError("fade_percent out of bounds for Renderables.TitleText ({})".format(fade_percent))
         self.bounding_box = None
-        self.function = None
+        self.function = no_function
     def draw(self, screen, config):
         s = pygame.Surface((screen.get_width(), screen.get_height()))
         s.fill(config.chroma_key)
         s.set_colorkey(config.chroma_key, pygame.RLEACCEL)
         s.set_alpha(round(255 * self.fade_percent), pygame.RLEACCEL)
-        Text(50, 45, 100, 10, "Team S.T.R.U.M.", config.header, color="white").draw(s, config)
-        Text(50, 52.5, 100, 5, "presents", config.italic, color="white").draw(s, config)
+        self.bounding_box = Text(50, 45, 100, 10, "Team S.T.R.U.M.", config.header, color="white").draw(s, config).bounding_box
+        self.bounding_box = self.bounding_box.union(Text(50, 52.5, 100, 5, "presents", config.italic, color="white").draw(s, config).bounding_box)
         screen.blit(s, (0, 0))
+        return self
 
 class Logo:
     def __init__(self, x_percent, y_percent, width_percent, height_percent, rotational_angle):
