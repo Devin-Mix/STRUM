@@ -449,6 +449,38 @@ class FadeOutButtonTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             FadeOutButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 11, 10)
 
+class BackgroundBoxTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(BackgroundBox(50, 50, 50, 50),
+                              BackgroundBox,
+                              "BackgroundBox does not return self in average use case")
+
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            BackgroundBox(50, 1, 50, 50).draw(
+                self.display, self.config)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            BackgroundBox(50, 99, 50, 50).draw(
+                self.display, self.config)
+
+    def test_width_too_small(self):
+        with self.assertRaises(ValueError):
+            BackgroundBox(50, 50, 0, 50)
+
+    def test_width_too_large(self):
+        with self.assertRaises(ValueError):
+            BackgroundBox(50, 50, 101, 50)
+
+    def test_height_too_small(self):
+        with self.assertRaises(ValueError):
+            BackgroundBox(50, 50, 50, 0)
+
+    def test_height_too_large(self):
+        with self.assertRaises(ValueError):
+            BackgroundBox(50, 50, 50, 101)
+
 
 if __name__ == "__main__":
     unittest.main()
