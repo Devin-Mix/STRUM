@@ -550,5 +550,38 @@ class LogoTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             Logo(50, 50, 50, 101, 0)
 
+class CheckBoxTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(CheckBox(50, 50, 50, 50, no_function, True),
+                              CheckBox,
+                              "CheckBox does not return self in average use case")
+        
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            CheckBox(50, 1, 50, 50, no_function, True).draw(
+                self.display, self.config)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            CheckBox(50, 99, 50, 50, no_function, True).draw(
+                self.display, self.config)
+
+    def test_width_too_small(self):
+        with self.assertRaises(ValueError):
+            CheckBox(50, 50, 0, 50, no_function, True)
+
+    def test_width_too_large(self):
+        with self.assertRaises(ValueError):
+            CheckBox(50, 50, 101, 50, no_function, True)
+
+    def test_height_too_small(self):
+        with self.assertRaises(ValueError):
+            CheckBox(50, 50, 50, 0, no_function, True)
+
+    def test_height_too_large(self):
+        with self.assertRaises(ValueError):
+            CheckBox(50, 50, 50, 101, no_function, True)
+
+
 if __name__ == "__main__":
     unittest.main()
