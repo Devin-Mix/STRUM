@@ -482,6 +482,10 @@ class FadeInButton:
             raise ValueError("Width percent too small for Renderables.FadeInButton ({})".format(width_percent))
         if height_percent <= 0:
             raise ValueError("Height percent too small for Renderables.FadeInButton ({})".format(height_percent))
+        if time_alive >= lifespan:
+            raise ValueError("Lifespan exceeded for Renderables.FadeInButton")
+        if time_alive <= 0:
+            raise ValueError("Renderables.FadeInButton created too soon; nothing to draw")
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent

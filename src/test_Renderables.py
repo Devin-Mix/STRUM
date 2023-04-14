@@ -373,7 +373,8 @@ class ArrowButtonTest(RenderableTestCase):
             
 class FadeInButtonTest(RenderableTestCase):
     def test_average_case(self):
-        self.assertIsInstance(FadeInButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10),
+        self.assertIsInstance(FadeInButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10)
+                              .draw(self.display, self.config),
                               FadeInButton,
                               "FadeInButton did not return self for average case")
 
@@ -403,7 +404,11 @@ class FadeInButtonTest(RenderableTestCase):
 
     def test_lifespan_exceeded(self):
         with self.assertRaises(ValueError):
-            FadeInButton(50, 50, 50, 0, "Hello World!", self.config.regular, no_function, 11, 10)
+            FadeInButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 10, 10)
+
+    def test_nothing_to_draw(self):
+        with self.assertRaises(ValueError):
+            FadeInButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 0, 10)
 
 
 if __name__ == "__main__":

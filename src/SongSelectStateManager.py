@@ -190,15 +190,16 @@ class SongSelectStateManager:
                                                      self.button_functions[0],
                                                      self.now_time - self.last_scroll_start,
                                                      self.scroll_time))
-                        to_draw.append(FadeInButton(100 - 2.5 - (45 / 2),
-                                                    100 - 31.25,
-                                                    45,
-                                                    10,
-                                                    self.tab_objects[-1].title,
-                                                    self.config.italic,
-                                                    self.button_functions[-1],
-                                                    self.now_time - self.last_scroll_start,
-                                                    self.scroll_time))
+                        if self.now_time > self.last_scroll_start:
+                            to_draw.append(FadeInButton(100 - 2.5 - (45 / 2),
+                                                        100 - 31.25,
+                                                        45,
+                                                        10,
+                                                        self.tab_objects[-1].title,
+                                                        self.config.italic,
+                                                        self.button_functions[-1],
+                                                        self.now_time - self.last_scroll_start,
+                                                        self.scroll_time))
                         for ii in range(3):
                             to_draw.append(Button(100 - 2.5 - (45 / 2),
                                                   43.75 + (ii * 12.5) - (12.5 * (self.now_time - self.last_scroll_start) / self.scroll_time),
@@ -208,15 +209,16 @@ class SongSelectStateManager:
                                                   self.config.italic,
                                                   self.button_functions[ii]))
                     else:
-                        to_draw.append(FadeInButton(100 - 2.5 - (45 / 2),
-                                                    31.25,
-                                                    45,
-                                                    10,
-                                                    self.tab_objects[0].title,
-                                                    self.config.italic,
-                                                    self.button_functions[0],
-                                                    self.now_time - self.last_scroll_start,
-                                                    self.scroll_time))
+                        if self.now_time > self.last_scroll_start:
+                            to_draw.append(FadeInButton(100 - 2.5 - (45 / 2),
+                                                        31.25,
+                                                        45,
+                                                        10,
+                                                        self.tab_objects[0].title,
+                                                        self.config.italic,
+                                                        self.button_functions[0],
+                                                        self.now_time - self.last_scroll_start,
+                                                        self.scroll_time))
                         to_draw.append(FadeOutButton(100 - 2.5 - (45 / 2),
                                                      100 - 31.25,
                                                      45,
