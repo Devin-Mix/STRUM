@@ -415,8 +415,20 @@ class ButtonTest(RenderableTestCase):
             Button(50, 50, 50, 50, "Hello World!", 0, no_function)
 
 class ArrowButtonTest(RenderableTestCase):
-    def test_average_case(self):
+    def test_average_case_up(self):
         self.assertIsInstance(ArrowButton(50, 50, 50, 50, no_function, 0).draw(self.display, self.config),
+                              ArrowButton,
+                              "ArrowButton did not return self for average case")
+    def test_average_case_right(self):
+        self.assertIsInstance(ArrowButton(50, 50, 50, 50, no_function, 1).draw(self.display, self.config),
+                              ArrowButton,
+                              "ArrowButton did not return self for average case")
+    def test_average_case_down(self):
+        self.assertIsInstance(ArrowButton(50, 50, 50, 50, no_function, 2).draw(self.display, self.config),
+                              ArrowButton,
+                              "ArrowButton did not return self for average case")
+    def test_average_case_left(self):
+        self.assertIsInstance(ArrowButton(50, 50, 50, 50, no_function, 3).draw(self.display, self.config),
                               ArrowButton,
                               "ArrowButton did not return self for average case")
 
