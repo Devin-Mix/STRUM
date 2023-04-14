@@ -518,5 +518,37 @@ class TitleTextTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             TitleText(1.1)
 
+class LogoTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(Logo(50, 50, 50, 50, 0),
+                              Logo,
+                              "Logo does not return self in average use case")
+
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Logo(50, 1, 50, 50, 0).draw(
+                self.display, self.config)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            Logo(50, 99, 50, 50, 0).draw(
+                self.display, self.config)
+
+    def test_width_too_small(self):
+        with self.assertRaises(ValueError):
+            Logo(50, 50, 0, 50, 0)
+
+    def test_width_too_large(self):
+        with self.assertRaises(ValueError):
+            Logo(50, 50, 101, 50, 0)
+
+    def test_height_too_small(self):
+        with self.assertRaises(ValueError):
+            Logo(50, 50, 50, 0, 0)
+
+    def test_height_too_large(self):
+        with self.assertRaises(ValueError):
+            Logo(50, 50, 50, 101, 0)
+
 if __name__ == "__main__":
     unittest.main()
