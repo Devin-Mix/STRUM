@@ -779,6 +779,10 @@ class Logo:
 
 class CheckBox:
     def __init__(self, x_percent, y_percent, width_percent, height_percent, function, value_set):
+        if width_percent <= 0:
+            raise ValueError("Width percent too small for Renderables.CheckBox ({})".format(width_percent))
+        if height_percent <= 0:
+            raise ValueError("Height percent too small for Renderables.CheckBox ({})".format(height_percent))
         if 0.0 <= y_percent - (height_percent / 2) and y_percent + (height_percent / 2) <= 100.0:
             self.y_percent = y_percent
             self.height_percent = height_percent
