@@ -582,6 +582,45 @@ class CheckBoxTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             CheckBox(50, 50, 50, 101, no_function, True)
 
+class SlideBarTest(RenderableTestCase):
+    def test_average_case(self):
+        self.assertIsInstance(SlideBar(50, 50, 50, 50, no_function, 50),
+                              SlideBar,
+                              "SlideBar does not return self in average use case")
+
+    def test_top_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 1, 50, 50, no_function, 50).draw(
+                self.display, self.config)
+
+    def test_bottom_side_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 99, 50, 50, no_function, 50).draw(
+                self.display, self.config)
+
+    def test_width_too_small(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 50, 0, 50, no_function, 50)
+
+    def test_width_too_large(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 50, 101, 50, no_function, 50)
+
+    def test_height_too_small(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 50, 50, 0, no_function, 50)
+
+    def test_height_too_large(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 50, 50, 101, no_function, 50)
+
+    def test_cursor_percent_too_low(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 50, 50, 50, no_function, -1)
+
+    def test_cursor_percent_too_high(self):
+        with self.assertRaises(ValueError):
+            SlideBar(50, 50, 50, 50, no_function, 101)
 
 if __name__ == "__main__":
     unittest.main()
