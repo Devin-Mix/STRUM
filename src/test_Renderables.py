@@ -311,6 +311,28 @@ class TextTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             Text(-1, 50, 50, 50, "Hello World!", self.config.regular)
 
+    def test_bad_y_percent(self):
+        with self.assertRaises(ValueError):
+            Text(50, -1, 50, 50, "Hello World!", self.config.regular)
+
+    def test_bad_align_center_arg(self):
+        with self.assertRaises(TypeError):
+            Text(50, 50, 50, 50, "Hello World!", self.config.regular, align_center="ASDF")
+
+    def test_bad_font_arg(self):
+        with self.assertRaises(TypeError):
+            Text(50, 50, 50, 50, "Hello World!", "ASDF")
+
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            Text(50, 50, 50, 50, "Hello World!").draw(None, self.config)
+
+    def test_very_small_text(self):
+        self.assertIsInstance(Text(50, 50, 0.001, 0.001, "Hello World!", self.config.regular).draw(self.display, self.config),
+                              Text,
+                              "Text did not return self with very small width and height arguments")
+
+
 class AnalysisGraphTest(RenderableTestCase):
     def test_average_case(self):
         self.assertIsInstance(AnalysisGraph(50, 50, 50, np.arange(0, 1, 0.01), self.config.regular, self.config.italic, 10),
