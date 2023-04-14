@@ -410,9 +410,13 @@ class ButtonTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             Button(50, 50, 50, 0, "Hello World!", self.config.regular, no_function)
 
+    def test_bad_font(self):
+        with self.assertRaises(TypeError):
+            Button(50, 50, 50, 50, "Hello World!", 0, no_function)
+
 class ArrowButtonTest(RenderableTestCase):
     def test_average_case(self):
-        self.assertIsInstance(ArrowButton(50, 50, 50, 50, no_function, 0),
+        self.assertIsInstance(ArrowButton(50, 50, 50, 50, no_function, 0).draw(self.display, self.config),
                               ArrowButton,
                               "ArrowButton did not return self for average case")
 
@@ -439,6 +443,12 @@ class ArrowButtonTest(RenderableTestCase):
     def test_height_percent_too_small(self):
         with self.assertRaises(ValueError):
             ArrowButton(50, 50, 50, 0, no_function, 0)
+
+    def test_bad_direction(self):
+        with self.assertRaises(ValueError):
+            ArrowButton(50, 50, 50, 50, no_function, 5001)
+
+
             
 class FadeInButtonTest(RenderableTestCase):
     def test_average_case(self):
@@ -478,6 +488,14 @@ class FadeInButtonTest(RenderableTestCase):
     def test_nothing_to_draw(self):
         with self.assertRaises(ValueError):
             FadeInButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 0, 10)
+
+    def test_bad_font(self):
+        with self.assertRaises(TypeError):
+            FadeInButton(50, 50, 50, 50, "Hello World!", 0, no_function, 5, 10)
+
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            FadeInButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10).draw(None, self.config)
             
 class FadeOutButtonTest(RenderableTestCase):
     def test_average_case(self):
@@ -518,6 +536,15 @@ class FadeOutButtonTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             FadeOutButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 11, 10)
 
+    def test_bad_font(self):
+        with self.assertRaises(TypeError):
+            FadeOutButton(50, 50, 50, 50, "Hello World!", 0, no_function, 5, 10)
+
+    def test_bad_screen(self):
+        with self.assertRaises(TypeError):
+            FadeOutButton(50, 50, 50, 50, "Hello World!", self.config.regular, no_function, 5, 10).draw(None,
+                                                                                                       self.config)
+
 class BackgroundBoxTest(RenderableTestCase):
     def test_average_case(self):
         self.assertIsInstance(BackgroundBox(50, 50, 50, 50),
@@ -556,6 +583,11 @@ class BlackoutTest(RenderableTestCase):
                               Blackout,
                               "Blackout did not return self in average case")
 
+    def test_average_case_fade_in(self):
+        self.assertIsInstance(Blackout(50, 100, fade_out=False).draw(self.display, self.config),
+                              Blackout,
+                              "Blackout did not return self in average case")
+
     def test_full_blackout(self):
         self.assertIsInstance(Blackout().draw(self.display, self.config),
                               Blackout,
@@ -589,7 +621,7 @@ class TitleTextTest(RenderableTestCase):
 
 class LogoTest(RenderableTestCase):
     def test_average_case(self):
-        self.assertIsInstance(Logo(50, 50, 50, 50, 0),
+        self.assertIsInstance(Logo(50, 50, 50, 50, 0).draw(self.display, self.config),
                               Logo,
                               "Logo does not return self in average use case")
 
@@ -619,9 +651,19 @@ class LogoTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             Logo(50, 50, 50, 101, 0)
 
+    def test_very_thin(self):
+        self.assertIsInstance(Logo(50, 50, 1, 99, 0).draw(self.display, self.config),
+                              Logo,
+                              "Logo did not return self when very thin")
+
+    def test_very_wide(self):
+        self.assertIsInstance(Logo(50, 50, 99, 1, 0).draw(self.display, self.config),
+                              Logo,
+                              "Logo did not return self when very wide")
+
 class CheckBoxTest(RenderableTestCase):
     def test_average_case(self):
-        self.assertIsInstance(CheckBox(50, 50, 50, 50, no_function, True),
+        self.assertIsInstance(CheckBox(50, 50, 50, 50, no_function, True).draw(self.display, self.config),
                               CheckBox,
                               "CheckBox does not return self in average use case")
         
@@ -651,9 +693,13 @@ class CheckBoxTest(RenderableTestCase):
         with self.assertRaises(ValueError):
             CheckBox(50, 50, 50, 101, no_function, True)
 
+    def test_bad_set_arg(self):
+        with self.assertRaises(TypeError):
+            CheckBox(50, 50, 50, 50, no_function, "ASDF")
+
 class SlideBarTest(RenderableTestCase):
     def test_average_case(self):
-        self.assertIsInstance(SlideBar(50, 50, 50, 50, no_function, 50),
+        self.assertIsInstance(SlideBar(50, 50, 50, 50, no_function, 50).draw(self.display, self.config),
                               SlideBar,
                               "SlideBar does not return self in average use case")
 

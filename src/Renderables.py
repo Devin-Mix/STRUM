@@ -780,6 +780,8 @@ class Logo:
                 "Width plus offset out of bounds for Renderables.Logo ({})".format(
                     x_percent + width_percent))
         self.rotational_angle = rotational_angle
+        self.bounding_box = None
+        self.function = no_function
     def draw(self, screen, config):
         if (self.width_percent / self.height_percent) > (config.logo.get_width() / config.logo.get_height()):
             scaler = (self.height_percent * screen.get_height()) / (100 * config.logo.get_height())
@@ -791,7 +793,8 @@ class Logo:
                         unsetcolor=None)
         x_px = (self.x_percent * screen.get_width() / 100) - (scaled_logo.get_width() / 2)
         y_px = (self.y_percent * screen.get_height() / 100) - (scaled_logo.get_height() / 2)
-        screen.blit(scaled_logo, (x_px, y_px))
+        self.bounding_box = screen.blit(scaled_logo, (x_px, y_px))
+        return self
 
 class CheckBox:
     def __init__(self, x_percent, y_percent, width_percent, height_percent, function, value_set):
