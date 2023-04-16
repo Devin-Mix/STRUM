@@ -83,7 +83,10 @@ class AnalysisStateManager:
                 self.number_of_ffts_completed = 0
                 self.dynamics_scores = {1: []}
                 self.accuracy_scores = {1: []}
-                to_draw = [LoadBar(50, 95.0, 10.0, self.load_percent)]
+                if self.load_percent > 0:
+                    to_draw = [LoadBar(50, 95.0, 10.0, self.load_percent)]
+                else:
+                    to_draw = []
                 if self.doing_fade_in:
                     if self.now_time - self.fade_in_start_time >= self.config.fade_length:
                         self.doing_fade_in = False
@@ -122,9 +125,12 @@ class AnalysisStateManager:
                         self.accuracy_scores.pop(self.current_num_divisions)
                         self.dynamics_scores.pop(self.current_num_divisions)
                         self.current_num_divisions = self.current_num_divisions - 1
-                    to_draw = [LoadBar(50.0, 95.0, 10.0, self.load_percent),
-                               Text(50.0, 50.0, 95.0, 10.0, "Analysing... {}%"
-                                    .format(round(self.load_percent, 1)), self.config.header)]
+                    if self.load_percent > 0:
+                        to_draw = [LoadBar(50, 95.0, 10.0, self.load_percent)]
+                    else:
+                        to_draw = []
+                    to_draw.append(Text(50.0, 50.0, 95.0, 10.0, "Analysing... {}%"
+                                    .format(round(self.load_percent, 1)), self.config.header))
                 else:
                     to_draw = [BackgroundBox(50, 43.75, 95, 82.5, 4.625 / 95),
                                Text(50.0, 10, 85.0, 10, "Analysis Results", self.config.header),

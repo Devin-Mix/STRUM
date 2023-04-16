@@ -314,7 +314,7 @@ class AnalysisGraph:
             raise TypeError("Invalid italic font type for Renderables.AnalysisGraph ({})".format(type(italic_font)))
         self.song_length = song_length
         self.bounding_box = None
-        self.function = None
+        self.function = no_function
 
     def draw(self, screen, config):
         division_width = self.width_percent / len(self.values)

@@ -98,6 +98,9 @@ class RecordingStateManager:
                                                             content=None))
                             self.playback_started = True
                             self.playback_start_time = self.now_time
+                        # TODO: If using playback speed < 1, this raises an error:
+                        #  ValueError: time_now not bounded by birth_time and time_to_live for FretMark renderable (0.19462438821792605, 0.34668721109399075, 0.4622496147919876)
+                        #  Need to fix before poster session demo
                         self.fading_chords = self.fading_chords + self.get_fading_chords()
                         self.fading_chords = [ii.update_time(self.now_time) for ii in self.fading_chords]
                         self.fading_chords = [ii for ii in self.fading_chords if ii.is_alive()]
@@ -119,12 +122,13 @@ class RecordingStateManager:
                     self.now_time = time()
                     to_draw = to_draw + [Text(2.5, 2.5, 95, 10.0, self.current_tab.title, self.config.header, align_center=False),
                                               Text(2.5, 12.5, 95, 5.0, self.current_tab.artist, self.config.italic, align_center=False)]
-                    to_draw.append(Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
-                    for ii in range(len(to_draw)):
-                        to_draw[ii].function = no_function
                     if self.now_time - self.fade_in_start_time >= self.config.fade_length:
                         self.doing_fade_in = False
                         self.now_time = None
+                    else:
+                        to_draw.append(Blackout(self.now_time - self.fade_in_start_time, self.config.fade_length))
+                        for ii in range(len(to_draw)):
+                            to_draw[ii].function = no_function
                     self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                     source="RecordingStateManager",
                                                     message_type="render",
@@ -134,9 +138,6 @@ class RecordingStateManager:
                     to_draw = to_draw + [
                         Text(2.5, 2.5, 95, 10.0, self.current_tab.title, self.config.header, align_center=False),
                         Text(2.5, 12.5, 95, 5.0, self.current_tab.artist, self.config.italic, align_center=False)]
-                    to_draw.append(Blackout(self.now_time - self.fade_out_start_time, self.config.fade_length, False))
-                    for ii in range(len(to_draw)):
-                        to_draw[ii].function = no_function
                     if self.now_time - self.fade_out_start_time >= self.config.fade_length:
                         self.doing_fade_out = False
                         self.now_time = None
@@ -146,6 +147,9 @@ class RecordingStateManager:
                                                         message_type="Send recording",
                                                         content=self.current_tab))
                     else:
+                        to_draw.append(Blackout(self.now_time - self.fade_out_start_time, self.config.fade_length, False))
+                        for ii in range(len(to_draw)):
+                            to_draw[ii].function = no_function
                         self.outgoing_queue.put(Message(target="GUIEventBroker",
                                                         source="RecordingStateManager",
                                                         message_type="render",
