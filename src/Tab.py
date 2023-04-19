@@ -154,8 +154,7 @@ class Tab:
             output_chunk_count = output_chunk_count + 1
 
         count_samples_to_mix = floor(-last_output_chunk_num_samples / 4)
-        output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * np.arange(1, 0,
-                                                                                            1 / count_samples_to_mix)
+        output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * np.linspace(1, 0, abs(count_samples_to_mix))
 
         # with wave.open("output_tone.wav".format(output_chunk_count), "wb") as file:
         #     file.setnchannels(1)

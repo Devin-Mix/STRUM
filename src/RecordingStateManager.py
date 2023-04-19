@@ -210,7 +210,10 @@ class RecordingStateManager:
                             for kk in range(fret_number):
                                 fret_offset = ((95.0 - fret_offset) / 17.817) + fret_offset
                             fret_offset = 2.5 + (95 * fret_offset / self.final_fret_offset)
-                            res.append(FadingFretMark(fret_offset,
-                                                      y_offset + (5 - string_number) * 5 * self.config.recording_vertical_scale,
-                                                      fade_chord[1] * (1 / self.config.playback_speed_scale), fade_chord[2] * (1 / self.config.playback_speed_scale), self.now_time * self.config.playback_speed_scale))
+                            birth_time = fade_chord[1] * (1 / self.config.playback_speed_scale)
+                            time_to_live = fade_chord[2] * (1 / self.config.playback_speed_scale)
+                            if birth_time < self.now_time < birth_time + time_to_live:
+                                res.append(FadingFretMark(fret_offset,
+                                                          y_offset + (5 - string_number) * 5 * self.config.recording_vertical_scale,
+                                                          birth_time, time_to_live, self.now_time))
         return res
