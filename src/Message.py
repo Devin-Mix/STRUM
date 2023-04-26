@@ -1,29 +1,28 @@
 # Should contain the names of the classes of all processes to be launched as strings
 # This is essentially a duplicated version of ApplicationStateManager.process_classes.keys(), but is included to prevent
 # a circular dependency issue.
-process_class_keys = ["AnalysisStateManager", "ConfigurationStateManager", "GUIEventBroker", "RecordingStateManager", "SongSelectStateManager"]
+process_class_keys = ["AnalysisStateManager", "ConfigurationStateManager", "GUIEventBroker", "RecordingStateManager", "SongSelectStateManager", "TitleScreenStateManager"]
 
 
 # Defines messages to be exchanged between processes
 class Message:
     def __init__(self, target, source, message_type, content):
         # Defines types of messages to be exchanged
-        self.valid_types = ["Fret count",
-                            "Get fret count",
+        self.valid_types = ["Config",
+                            "End recording",
+                            "Fret count",
+                            "Get config",
                             "Get GUI update",
-                            "Get recording fall time",
-                            "Get recording vertical scale",
-                            "Get resolution",
+                            "Prime playback",
+                            "Prime recording",
                             "Quit",
-                            "Recording fall time",
-                            "Recording vertical scale",
                             "render",
-                            "Resolution",
                             "Send recording",
                             "Start analysis",
                             "Start playback",
                             "Start recording",
                             "Start recording session",
+                            "Toggle fullscreen",
                             "Update playback"]
 
         # Type checking ensures that every message has a type

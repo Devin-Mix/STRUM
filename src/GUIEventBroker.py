@@ -1,10 +1,11 @@
+import numpy as np
 import pyaudio
 import pygame
 import Renderables
 import wave
+from librosa.effects import time_stretch
 from math import floor
 from Message import Message
-import numpy as np
 from queue import Queue
 from Tab import pa_data_type_to_np
 from time import time
@@ -25,8 +26,6 @@ class GUIEventBroker:
 
             # TODO: Replace with configuration from either a file or another state manager
             # A default set of config values could potentially be used in lieu of "real" values as well
-            self.config = {"resolution": (640, 480),
-                           "background color": "grey"}
             self.current_source = None
             self.last_frame_time = time()
             self.this_frame_time = self.last_frame_time
@@ -42,8 +41,6 @@ class GUIEventBroker:
             self.playback_frame_num_bytes = None
             self.play_to_pos = None
             self.playback_format = None
-            self.play_tone = None
-            self.play_song = None
             self.tab_object = None
             self.playback_num_channels = None
             self.playback_framerate = None
@@ -51,21 +48,30 @@ class GUIEventBroker:
             self.in_stream = None
             self.recording_data = None
             self.out_stream_done = None
-            self.sending_recording = None
+            self.ending_recording = None
             self.input_latency = None
             self.recording_start_time = None
             self.playback_start_time = None
             self.gui_start_time = time()
-
-            pygame.init()
-            self.screen = pygame.display.set_mode(self.config["resolution"], pygame.RESIZABLE)
-            pygame.display.set_caption("S.T.R.U.M.")
+            self.config = None
+            self.display = None
 
     def handle(self):
         if not self.incoming_queue.empty():
             message = self.incoming_queue.get()
-            if message.type == "render":
+            if message.type == "Config":
+                self.config = message.content
+            elif message.type == "render":
+                if self.display is None:
+                    pygame.init()
+                    if self.config.fullscreen:
+                        self.display = pygame.display.set_mode(self.config.resolution, pygame.FULLSCREEN)
+                    else:
+                        self.display = pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
+                    pygame.display.set_caption("S.T.R.U.M.")
                 self.current_source = message.source
+                self.screen = pygame.surface.Surface((self.display.get_width() * self.config.resolution_scale * self.config.antialiasing_scale,
+                                                      self.display.get_height() * self.config.resolution_scale * self.config.antialiasing_scale))
                 self.draw_background()
                 interactables = []
                 # GUI event broker expects a list of Renderable objects in message content
@@ -74,29 +80,81 @@ class GUIEventBroker:
                     if not type(render_object) in Renderables.available:
                         raise TypeError("Invalid render object type (got {})".format(type(render_object)))
                     else:
-                        interactable_to_add = render_object.draw(self.screen)
+                        interactable_to_add = render_object.draw(self.screen, self.config)
                         if interactable_to_add is not None:
+                            interactable_to_add.bounding_box.x = interactable_to_add.bounding_box.x / (self.config.resolution_scale * self.config.antialiasing_scale)
+                            interactable_to_add.bounding_box.y = interactable_to_add.bounding_box.y / (self.config.resolution_scale * self.config.antialiasing_scale)
+                            interactable_to_add.bounding_box.width = interactable_to_add.bounding_box.width / (self.config.resolution_scale * self.config.antialiasing_scale)
+                            interactable_to_add.bounding_box.height = interactable_to_add.bounding_box.height / (self.config.resolution_scale * self.config.antialiasing_scale)
                             # Using a tuple here makes the pygame.rect.Rect returned hashable
                             interactables.append((interactable_to_add, render_object))
+                if self.config.use_antialiasing:
+                    if self.config.use_smooth_downscaling:
+                        self.screen = pygame.transform.smoothscale(self.screen,
+                                                                   (self.display.get_width() * self.config.resolution_scale,
+                                                                    self.display.get_height() * self.config.resolution_scale))
+                    else:
+                        self.screen = pygame.transform.scale(self.screen,
+                                                             (self.display.get_width() * self.config.resolution_scale,
+                                                              self.display.get_height() * self.config.resolution_scale))
+                if self.config.resolution_scale < 1:
+                    if self.config.use_scale2x:
+                        while self.screen.get_width() < self.display.get_width():
+                            self.screen = pygame.transform.scale2x(self.screen)
+                            # Correction for if the window width is an odd number. Barely noticeable to the user.
+                            if (self.display.get_width() / 2) < self.screen.get_width() < self.display.get_width():
+                                self.display = pygame.display.set_mode((self.screen.get_width(), self.screen.get_height()), pygame.RESIZABLE)
+                                self.update_resolution()
+                                break
+                        self.display.blit(self.screen, (0, 0))
+                    elif self.config.use_bilinear_filtering:
+                        pygame.transform.smoothscale(self.screen,
+                                                     (self.display.get_width(), self.display.get_height()),
+                                                     self.display)
+                    else:
+                        pygame.transform.scale(self.screen, (self.display.get_width(), self.display.get_height()), self.display)
+                else:
+                    self.display.blit(self.screen, (0, 0))
+
+                # Super basic antialiasing of the resulting surface via blurring of internal pixels
+                # Commented out because the performance hit is huge for HD rendering and the result didn't look great
+                # pixels = pygame.surfarray.pixels3d(self.screen).astype(np.uint16)
+                # new_pixels = np.ndarray(pixels.shape)
+                # new_pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :] = \
+                #     (pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :] +
+                #      pixels[0:(pixels.shape[0] - 2), 1:(pixels.shape[1] - 1), :] +
+                #      pixels[1:(pixels.shape[0] - 1), 0:(pixels.shape[1] - 2), :] +
+                #      pixels[0:(pixels.shape[0] - 2), 0:(pixels.shape[1] - 2), :] +
+                #      pixels[2:(pixels.shape[0]), 1:(pixels.shape[1] - 1), :] +
+                #      pixels[2:(pixels.shape[0]), 0:(pixels.shape[1] - 2), :] +
+                #      pixels[2:(pixels.shape[0]), 2:(pixels.shape[1]), :] +
+                #      pixels[1:(pixels.shape[0] - 1), 2:(pixels.shape[1]), :] +
+                #      pixels[0:(pixels.shape[0] - 2), 2:(pixels.shape[1]), :]) / 9
+                # pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :] = new_pixels[1:(pixels.shape[0] - 1), 1:(pixels.shape[1] - 1), :]
+                # pygame.surfarray.blit_array(self.screen, pixels)
                 pygame.display.flip()
                 events = pygame.event.get()
                 for event in events:
                     if event.type == pygame.QUIT:
                         self.quit()
+                    elif event.type == pygame.WINDOWRESIZED:
+                        self.update_resolution()
+                    elif event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
+                        for interactable in interactables:
+                            if interactable[0].bounding_box.collidepoint(event.pos[0], event.pos[1]):
+                                interactable[1].function(event, interactable[1])
                 self.outgoing_queue.put(Message(target=self.current_source,
                                                 source="GUIEventBroker",
                                                 message_type="Get GUI update",
-                                                content={"events":events, "interactables": interactables}))
+                                                content=None))
                 self.this_frame_time = time()
                 self.frame_lengths.append(self.this_frame_time - self.last_frame_time)
                 if len(self.frame_lengths) > 50:
                     self.frame_lengths.pop(0)
                 self.average_frame_time = sum(self.frame_lengths) / len(self.frame_lengths)
                 self.last_frame_time = self.this_frame_time
-            elif message.type == "Start playback":
+            elif message.type == "Prime playback":
                 self.playback_file_name = message.content["song_file"]
-                self.play_song = message.content["play_song"]
-                self.play_tone = message.content["play_tone"]
                 self.tab_object = message.content["tab_object"]
                 self.playback_file = wave.open(self.playback_file_name, "rb")
                 self.playback_frames = self.playback_file.readframes(self.playback_file.getnframes())
@@ -105,33 +163,40 @@ class GUIEventBroker:
                 self.playback_format = self.p.get_format_from_width(self.playback_file.getsampwidth())
                 self.playback_frame_num_bytes = int(len(self.playback_frames) / self.playback_file.getnframes())
                 self.playback_num_channels = self.playback_file.getnchannels()
+                self.stretch_playback_file()
                 self.tone_wave = self.tab_object.get_tone_wave(self.playback_framerate, self.playback_format,
-                                                               self.playback_num_channels)
-                if not self.play_song and self.play_tone:
+                                                               self.config, self.playback_num_channels)
+                if not self.config.play_song and self.config.play_tone:
                     self.playback_frames = self.tone_wave
-                elif self.play_song and self.play_tone:
+                elif self.config.play_song and self.config.play_tone:
                     self.mix_tone(0.5)
-                elif not self.play_song and not self.play_tone:
+                elif not self.config.play_song and not self.config.play_tone:
                     self.playback_frames = bytes()
 
                 self.playback_pos = 0
                 self.play_to_pos = 0
                 self.out_stream_done = False
-                self.sending_recording = False
+                self.ending_recording = False
                 self.out_stream = self.p.open(format=self.playback_format,
                                               channels=self.playback_num_channels,
                                               rate=self.playback_framerate,
                                               output=True,
-                                              stream_callback=self.playback_callback)
+                                              stream_callback=self.playback_callback,
+                                              start=False)
                 self.playback_file.close()
-            elif message.type == "Start recording":
+            elif message.type == "Start playback":
+                self.out_stream.start_stream()
+            elif message.type == "Prime recording":
                 # Recording should only start after playback has begun in order to use playback parameters
                 self.in_stream = self.p.open(channels=2,
                                              input=True,
                                              stream_callback=self.recording_callback,
                                              rate=self.playback_framerate,
-                                             format=self.playback_format)
+                                             format=self.playback_format,
+                                             start=False)
                 self.input_latency = self.in_stream.get_input_latency()
+            elif message.type == "Start recording":
+                self.in_stream.start_stream()
             elif message.type == "Update playback":
                 play_to_time = message.content
                 self.play_to_pos = floor(play_to_time / self.playback_frame_duration) * self.playback_frame_num_bytes
@@ -140,15 +205,20 @@ class GUIEventBroker:
                 if abs(positional_lag) > 8000:
                     self.playback_pos = self.play_to_pos
                     # print("Resync ({})".format(positional_lag))
-            elif message.type == "Send recording":
-                self.sending_recording = True
+            elif message.type == "End recording":
+                self.ending_recording = True
                 while not self.out_stream_done:
                     pass
-                self.sending_recording = None
+                self.ending_recording = None
                 self.out_stream.close()
                 self.out_stream = None
                 self.in_stream.close()
                 self.in_stream = None
+                self.outgoing_queue.put(Message(target=self.current_source,
+                                                source="GUIEventBroker",
+                                                message_type="Get GUI update",
+                                                content=None))
+            elif message.type == "Send recording":
                 self.outgoing_queue.put(Message(target="AnalysisStateManager",
                                                 source="GUIEventBroker",
                                                 message_type="Start analysis",
@@ -165,13 +235,18 @@ class GUIEventBroker:
                 self.recording_data = None
                 self.recording_start_time = None
                 self.playback_start_time = None
+            elif message.type == "Toggle fullscreen":
+                if self.config.fullscreen:
+                    pygame.display.set_mode((pygame.display.get_desktop_sizes()[0][0], pygame.display.get_desktop_sizes()[0][1]), pygame.FULLSCREEN)
+                else:
+                    pygame.display.set_mode(self.config.resolution, pygame.RESIZABLE)
             elif message.type == "Quit":
                 self.quit()
 
     def playback_callback(self, in_data, frame_count,  time_info, status):
         if self.playback_start_time is None:
             self.playback_start_time = time()
-        if self.sending_recording:
+        if self.ending_recording:
             self.out_stream_done = True
             return bytes(), pyaudio.paComplete
         bytes_count = frame_count * self.playback_frame_num_bytes
@@ -202,21 +277,43 @@ class GUIEventBroker:
     def mix_tone(self, song_volume):
         signal_1 = np.frombuffer(self.playback_frames, pa_data_type_to_np(self.playback_format)).copy()
         signal_2 = np.frombuffer(self.tone_wave, pa_data_type_to_np(self.playback_format))
-        signal_1[:np.size(signal_2)] = (signal_1[:np.size(signal_2)] * song_volume) + (signal_2 * (1 - song_volume))
+        if np.size(signal_2) < np.size(signal_1):
+            signal_1[:np.size(signal_2)] = (signal_1[:np.size(signal_2)] * song_volume) + (signal_2 * (1 - song_volume))
+        else:
+            signal_1[:] = (signal_1[:] * song_volume) + (signal_2[:np.size(signal_1)] * (1 - song_volume))
         self.playback_frames = pa_data_type_to_np(self.playback_format)(signal_1).tobytes()
 
     def draw_background(self):
-        self.screen.fill((255, 217, 146))
+        self.screen.fill(self.config.rear_color)
         now_time = time() - self.gui_start_time
         x_vals = np.arange(0 + now_time, (2 * np.pi) + now_time, 2 * np.pi / self.screen.get_width())
         y_vals = (np.sin(x_vals) * self.screen.get_height() * 0.03) + (self.screen.get_height() * 0.35)
         points = np.stack([(x_vals - now_time) * (self.screen.get_width() / (2 * np.pi)), y_vals]).T
         points = np.append(points, [[self.screen.get_width() - 1, self.screen.get_height() - 1],
                             [0, self.screen.get_height() - 1]], 0)
-        pygame.draw.polygon(self.screen, (255, 192, 76), points)
+        pygame.draw.polygon(self.screen, self.config.middle_color, points)
         x_vals = np.arange(0 + (now_time * 6), (4 * np.pi) + (now_time * 6), 4 * np.pi / self.screen.get_width())
         y_vals = (np.sin(x_vals) * self.screen.get_height() * 0.03) + (self.screen.get_height() * 0.45)
         points = np.stack([(x_vals - (now_time * 6)) * (self.screen.get_width() / (4 * np.pi)), y_vals]).T
         points = np.append(points, [[self.screen.get_width() - 1, self.screen.get_height() - 1],
                             [0, self.screen.get_height() - 1]], 0)
-        pygame.draw.polygon(self.screen, (255, 166, 0), points)
+        pygame.draw.polygon(self.screen, self.config.front_color, points)
+
+    def update_resolution(self):
+        if self.config.fullscreen:
+            self.config.fullscreen_resolution = (self.display.get_width(), self.display.get_height())
+        else:
+            self.config.resolution = (self.display.get_width(), self.display.get_height())
+
+    def stretch_playback_file(self):
+        if self.config.playback_speed_scale == 1:
+            return
+        frames_as_np = np.frombuffer(self.playback_frames, pa_data_type_to_np(self.playback_format)).copy()
+        max_amp = np.max(np.abs(frames_as_np))
+        normalized_frames = frames_as_np / max_amp
+        to_stretch = normalized_frames.astype(float)
+        to_stretch_two_channel = np.stack([to_stretch[0::2], to_stretch[1::2]])
+        new_frames_two_channel = time_stretch(to_stretch_two_channel,
+                                              rate=self.config.playback_speed_scale)
+        stretched = new_frames_two_channel.flatten("F") * max_amp
+        self.playback_frames = pa_data_type_to_np(self.playback_format)(stretched).tobytes()

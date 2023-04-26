@@ -73,15 +73,15 @@ class Tab:
                     scan_time = scan_time + chord_len_sec
         self.length = scan_time
 
-    def get_next_chords(self, current_time):
-        return [i for i in self.chords if i[1] >= current_time]
+    def get_next_chords(self, current_time, config):
+        return [i for i in self.chords if i[1] >= current_time * config.playback_speed_scale]
 
     def midi_number_to_frequency(self, string_number, fret_number):
         default_midi_numbers = [40, 45, 50, 55, 59, 64]
         target_midi_number = default_midi_numbers[string_number] + self.tuning[string_number] + fret_number
         return 440 * pow(2, (target_midi_number - 69) / 12)
 
-    def get_tone_wave(self, sample_rate, pyaudio_data_type, num_channels=2):
+    def get_tone_wave(self, sample_rate, pyaudio_data_type, config, num_channels=2):
         output_wave = None
         last_output_chunk_num_samples = None
         output_chunk_count = 0
@@ -96,17 +96,28 @@ class Tab:
                     string_frequency = self.midi_number_to_frequency(i, chord.string_fret[i])
                     # Big credit to
                     # https://stackoverflow.com/questions/48043004/how-do-i-generate-a-sine-wave-using-python
-                    samples = np.arange(chord_len * sample_rate) / sample_rate
+                    samples = np.arange(chord_len * sample_rate * (1 / config.playback_speed_scale)) / sample_rate
                     last_output_chunk_num_samples = np.size(samples)
-                    if output_chunk is None:
-                        output_chunk = np.sin(2 * np.pi * string_frequency * samples) / num_active_strings
+                    if config.square_tone:
+                        new_chunk = np.sin(2 * np.pi * string_frequency * samples)
+                        new_chunk[new_chunk >= 0] = 1.0
+                        new_chunk[new_chunk < 0] = -1.0
+                        # Dividing by 1.41 here for RMS correction
+                        new_chunk = new_chunk / (num_active_strings * 1.41)
+                        if output_chunk is None:
+                            output_chunk = new_chunk
+                        else:
+                            output_chunk = output_chunk + new_chunk
                     else:
-                        output_chunk = output_chunk + \
-                                       (np.sin(2 * np.pi * string_frequency * samples) / num_active_strings)
+                        if output_chunk is None:
+                            output_chunk = np.sin(2 * np.pi * string_frequency * samples) / num_active_strings
+                        else:
+                            output_chunk = output_chunk + \
+                                           (np.sin(2 * np.pi * string_frequency * samples) / num_active_strings)
                 else:
                     continue
 
-            if output_wave is not None:
+            if output_wave is not None and not config.square_tone:
                 mix_chunk = None
                 count_samples_to_mix = floor(-last_output_chunk_num_samples / 4)
                 for i in range(6):
@@ -123,18 +134,18 @@ class Tab:
                     else:
                         continue
                 output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * \
-                    np.arange(1, 0, 1 / count_samples_to_mix)
+                    np.linspace(1, 0, abs(count_samples_to_mix))
                 if mix_chunk is not None:
-                    mix_chunk = mix_chunk * np.arange(0, 1, abs(1 / count_samples_to_mix))
+                    mix_chunk = mix_chunk * np.linspace(0, 1, abs(count_samples_to_mix))
                     output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] + mix_chunk
                 last_output_chunk_num_samples = np.size(samples)
             else:
                 last_output_chunk_num_samples = np.size(samples)
 
             if output_chunk is None and output_wave is None:
-                output_wave = np.zeros(floor(chord_len * sample_rate))
+                output_wave = np.zeros(floor(chord_len * sample_rate * (1 / config.playback_speed_scale)))
             elif output_chunk is None and output_wave is not None:
-                output_wave = np.concatenate([output_wave, np.zeros(floor(chord_len * sample_rate))])
+                output_wave = np.concatenate([output_wave, np.zeros(floor(chord_len * sample_rate * (1 / config.playback_speed_scale)))])
             elif output_chunk is not None and output_wave is None:
                 output_wave = output_chunk
             else:
@@ -143,8 +154,7 @@ class Tab:
             output_chunk_count = output_chunk_count + 1
 
         count_samples_to_mix = floor(-last_output_chunk_num_samples / 4)
-        output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * np.arange(1, 0,
-                                                                                            1 / count_samples_to_mix)
+        output_wave[count_samples_to_mix:] = output_wave[count_samples_to_mix:] * np.linspace(1, 0, abs(count_samples_to_mix))
 
         # with wave.open("output_tone.wav".format(output_chunk_count), "wb") as file:
         #     file.setnchannels(1)

@@ -2,7 +2,7 @@ BPM=212
 Tuning=0,0,0,0,0,0
 Title=Want You Bad
 Artist=The Offspring
-Song file=../test/Want_You_Bad.wav
+Song file=../tabs/Want_You_Bad.wav
 ///
 |799||-.
 |799||--

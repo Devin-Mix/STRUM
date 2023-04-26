@@ -2,7 +2,7 @@ BPM=190
 Tuning=0,0,0,0,0,0
 Title=Quicksand
 Artist=The Story So Far
-Song file=../test/Quicksand.wav
+Song file=../tabs/Quicksand.wav
 ///
 ||||||
 ||||||
